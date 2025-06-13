@@ -3,7 +3,7 @@ name: Season Decor CI
 on:
   workflow_dispatch:
   push:
-    branch:
+    branches:
       - main
 
 env:
