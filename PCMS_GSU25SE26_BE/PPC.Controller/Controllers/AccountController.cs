@@ -64,20 +64,20 @@ namespace PPC.API.Controllers
             }
         }
 
-        //[Authorize(Roles = "2")] 
-        //[HttpGet("all")]
-        //public async Task<IActionResult> GetAllAccounts()
-        //{
-        //    try
-        //    {
-        //        var accounts = await _accountService.GetAllAccountsAsync();
-        //        return Ok(accounts);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { message = "Internal server error", error = ex.Message });
-        //    }
-        //}
+        [Authorize(Roles = "2")]
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllAccounts()
+        {
+            try
+            {
+                var accounts = await _accountService.GetAllAccountsAsync();
+                return Ok(accounts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
+        }
 
 
     }

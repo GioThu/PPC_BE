@@ -32,22 +32,22 @@ builder.Services.AddDbContext<CCPContext>(options =>
 
 builder.Services.AddControllers();
 
-//builder.Services.AddAuthentication("Bearer")
-//    .AddJwtBearer("Bearer", options =>
-//    {
-//        options.TokenValidationParameters = new TokenValidationParameters
-//        {
-//            ValidateIssuer = true,
-//            ValidateAudience = true,
-//            ValidateLifetime = true,
-//            ValidateIssuerSigningKey = true,
-//            ValidIssuer = builder.Configuration["JWTSettings:Issuer"],
-//            ValidAudience = builder.Configuration["JWTSettings:Audience"],
-//            IssuerSigningKey = new SymmetricSecurityKey(
-//                Encoding.UTF8.GetBytes(builder.Configuration["JWTSettings:SecretKey"]))
-//        };
-//    });
-//builder.Services.AddAuthorization();
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JWTSettings:Issuer"],
+            ValidAudience = builder.Configuration["JWTSettings:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["JWTSettings:SecretKey"]))
+        };
+    });
+builder.Services.AddAuthorization();
 
 
 // Swagger config
@@ -110,7 +110,7 @@ app.UseCors("AllowAllOrigins");
 
 app.UseHttpsRedirection();
 
-//app.UseAuthentication();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
