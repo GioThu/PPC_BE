@@ -20,25 +20,12 @@ namespace PPC.API.Controllers
         public async Task<IActionResult> RegisterCounselor([FromBody] AccountRegister accountRegister)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            try
-            {
-                var result = await _accountService.RegisterCounselorAsync(accountRegister);
-
-                if (result > 0)
-                {
-                    return Ok(new { message = "Counselor registered successfully!", result = result });
-                }
-
-                return BadRequest("Failed to register counselor.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
-            }
+            var response = await _accountService.RegisterCounselorAsync(accountRegister);
+            if (response.Success)
+                return Ok(response);
+            return BadRequest(response);
         }
 
         [HttpPost("login-counselor")]
@@ -47,46 +34,22 @@ namespace PPC.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var token = await _accountService.CounselorLogin(loginRequest);
-
-                if (token == null)
-                {
-                    return Unauthorized(new { message = "Invalid credentials or counselor not found." });
-                }
-
-                return Ok(new { token });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
-            }
+            var response = await _accountService.CounselorLogin(loginRequest);
+            if (response.Success)
+                return Ok(response);
+            return Unauthorized(response);
         }
 
         [HttpPost("register-member")]
         public async Task<IActionResult> RegisterMember([FromBody] AccountRegister accountRegister)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            try
-            {
-                var result = await _accountService.RegisterMemberAsync(accountRegister);
-
-                if (result > 0)
-                {
-                    return Ok(new { message = "Member registered successfully!", result = result });
-                }
-
-                return BadRequest("Failed to register member.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
-            }
+            var response = await _accountService.RegisterMemberAsync(accountRegister);
+            if (response.Success)
+                return Ok(response);
+            return BadRequest(response);
         }
 
         [HttpPost("login-member")]
@@ -95,38 +58,21 @@ namespace PPC.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var token = await _accountService.MemberLogin(loginRequest);
-
-                if (token == null)
-                {
-                    return Unauthorized(new { message = "Invalid credentials or member not found." });
-                }
-
-                return Ok(new { token });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
-            }
+            var response = await _accountService.MemberLogin(loginRequest);
+            if (response.Success)
+                return Ok(response);
+            return Unauthorized(response);
         }
 
         [Authorize(Roles = "2")]
         [HttpGet("all")]
         public async Task<IActionResult> GetAllAccounts()
         {
-            try
-            {
-                var accounts = await _accountService.GetAllAccountsAsync();
-                return Ok(accounts);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
-            }
+            var response = await _accountService.GetAllAccountsAsync();
+
+            if (response.Success)
+                return Ok(response);
+            return BadRequest(response);
         }
-
-
     }
 }

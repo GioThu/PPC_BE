@@ -1,19 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Service.Interfaces;
 using PPC.Service.Mappers;
 using PPC.Service.ModelRequest;
+using PPC.Service.ModelResponse;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
-
 
 namespace PPC.Service.Services
 {
@@ -25,8 +21,12 @@ namespace PPC.Service.Services
         private readonly IWalletRepository _walletRepository;
         private readonly IJwtService _jwtService;
 
-
-        public AccountService(IAccountRepository accountRepository, ICounselorRepository counselorRepository, IWalletRepository walletRepository, IJwtService jwtService, IMemberRepository memberRepository)
+        public AccountService(
+            IAccountRepository accountRepository,
+            ICounselorRepository counselorRepository,
+            IWalletRepository walletRepository,
+            IJwtService jwtService,
+            IMemberRepository memberRepository)
         {
             _accountRepository = accountRepository;
             _counselorRepository = counselorRepository;
@@ -35,78 +35,115 @@ namespace PPC.Service.Services
             _memberRepository = memberRepository;
         }
 
-        public async Task<string> CounselorLogin(LoginRequest loginRequest)
+        public async Task<ServiceResponse<string>> CounselorLogin(LoginRequest loginRequest)
         {
             try
             {
                 var account = await _accountRepository.CounselorLogin(loginRequest.Email, loginRequest.Password);
-                if (account == null || account.Counselors == null || !account.Counselors.Any())
+                if (account == null ||
+                    account.Counselors == null ||
+                    !account.Counselors.Any())
                 {
-                    throw new Exception("Invalid login or counselor not found.");
+                    return ServiceResponse<string>.ErrorResponse("Invalid login or counselor not found.");
                 }
 
                 var counselor = account.Counselors.First();
                 var token = _jwtService.GenerateCounselorToken(account.Id, counselor.Id, counselor.Fullname, account.Role, counselor.Avatar);
-                return token;
+                return ServiceResponse<string>.SuccessResponse(token);
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Login failed: " + ex.Message, ex);
+                return ServiceResponse<string>.ErrorResponse("Login failed: " + ex.Message);
             }
         }
 
-        public async Task<int> RegisterCounselorAsync(AccountRegister accountRegister)
+        public async Task<ServiceResponse<int>> RegisterCounselorAsync(AccountRegister accountRegister)
         {
-            var wallet = WalletMappers.ToCreateWallet();
-            await _walletRepository.CreateAsync(wallet);
+            try
+            {
+                if (await _accountRepository.IsEmailExistAsync(accountRegister.Email))
+                {
+                    return ServiceResponse<int>.ErrorResponse("Email already exists.");
+                }
 
-            var account = accountRegister.ToCreateCounselorAccount();
-            account.WalletId = wallet.Id;
-            await _accountRepository.CreateAsync(account);
+                var wallet = WalletMappers.ToCreateWallet();
+                await _walletRepository.CreateAsync(wallet);
 
-            var counselor = CounselorMappers.ToCreateCounselor(accountRegister.FullName, account.Id);
+                var account = accountRegister.ToCreateCounselorAccount();
+                account.WalletId = wallet.Id;
+                await _accountRepository.CreateAsync(account);
 
-            return await _counselorRepository.CreateAsyncNoRequest(counselor); ;
+                var counselor = CounselorMappers.ToCreateCounselor(accountRegister.FullName, account.Id);
+                var resultId = await _counselorRepository.CreateAsyncNoRequest(counselor);
+
+                return ServiceResponse<int>.SuccessResponse(resultId);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<int>.ErrorResponse(ex.Message);
+            }
         }
 
-
-        public async Task<int> RegisterMemberAsync(AccountRegister accountRegister)
+        public async Task<ServiceResponse<int>> RegisterMemberAsync(AccountRegister accountRegister)
         {
-            var wallet = WalletMappers.ToCreateWallet();
-            await _walletRepository.CreateAsync(wallet);
+            try
+            {
+                if (await _accountRepository.IsEmailExistAsync(accountRegister.Email))
+                {
+                    return ServiceResponse<int>.ErrorResponse("Email already exists.");
+                }
 
-            var account = accountRegister.ToCreateMemberAccount();
-            account.WalletId = wallet.Id;
-            await _accountRepository.CreateAsync(account);
+                var wallet = WalletMappers.ToCreateWallet();
+                await _walletRepository.CreateAsync(wallet);
 
-            var member = MemberMappers.ToCreateMember(accountRegister.FullName, account.Id);
+                var account = accountRegister.ToCreateMemberAccount();
+                account.WalletId = wallet.Id;
+                await _accountRepository.CreateAsync(account);
 
-            return await _memberRepository.CreateAsyncNoRequest(member); ;
+                var member = MemberMappers.ToCreateMember(accountRegister.FullName, account.Id);
+                var resultId = await _memberRepository.CreateAsyncNoRequest(member);
+
+                return ServiceResponse<int>.SuccessResponse(resultId);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<int>.ErrorResponse(ex.Message);
+            }
         }
 
-        public async Task<string> MemberLogin(LoginRequest loginRequest)
+        public async Task<ServiceResponse<string>> MemberLogin(LoginRequest loginRequest)
         {
             try
             {
                 var account = await _accountRepository.MemberLogin(loginRequest.Email, loginRequest.Password);
-                if (account == null || account.Members == null || !account.Members.Any())
+                if (account == null ||
+                    account.Members == null ||
+                    !account.Members.Any())
                 {
-                    throw new Exception("Invalid login or member not found.");
+                    return ServiceResponse<string>.ErrorResponse("Invalid login or member not found.");
                 }
 
                 var member = account.Members.First();
                 var token = _jwtService.GenerateMemberToken(account.Id, member.Id, member.Fullname, account.Role, member.Avatar);
-                return token;
+                return ServiceResponse<string>.SuccessResponse(token);
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Login failed: " + ex.Message, ex);
+                return ServiceResponse<string>.ErrorResponse("Login failed: " + ex.Message);
             }
         }
 
-        public async Task<IEnumerable<Account>> GetAllAccountsAsync()
+        public async Task<ServiceResponse<IEnumerable<Account>>> GetAllAccountsAsync()
         {
-            return await _accountRepository.GetAllAsync();
+            try
+            {
+                var accounts = await _accountRepository.GetAllAsync();
+                return ServiceResponse<IEnumerable<Account>>.SuccessResponse(accounts);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<IEnumerable<Account>>.ErrorResponse(ex.Message);
+            }
         }
     }
 }

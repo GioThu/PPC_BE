@@ -67,5 +67,10 @@ namespace PPC.Repository.Repositories
             return account;
         }
 
+        public async Task<bool> IsEmailExistAsync(string email)
+        {
+            return await _context.Accounts.AnyAsync(a => a.Email == email);
+        }
+
     }
 }
