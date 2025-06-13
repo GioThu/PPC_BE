@@ -1,0 +1,169 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "CCPContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": true,
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Models",
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "PPC.DAO",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[Account]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Answer]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Booking]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Booking_SubCategory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Category]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Certification]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Chapter]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Counselor]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Counselor_SubCategory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Couple]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Course]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Course_SubCategory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Deposit]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EnrollCourse]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Lecture]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Member]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Member_MemberShip]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[MemberShip]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Notification]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PersonType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Post]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Processing]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Question]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Quiz]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ResultHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ResultPersonType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SubCategory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Survey]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SysTransaction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Wallet]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[WorkSchedule]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false
+}
