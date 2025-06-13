@@ -8,14 +8,14 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: PPCbackend
-  AZURE_WEBAPP_PACKAGE_PATH: "./PPC.Controller/publish"
+  AZURE_WEBAPP_PACKAGE_PATH: "PCMS_GSU25SE26_BE/PPC.Controller/publish"
   DOTNET_VERSION: "8.x"
   SOLUTION_PATH: "PCMS_GSU25SE26_BE/PCMS_GSU25SE26_BE.sln"
   API_PROJECT_PATH: "PCMS_GSU25SE26_BE/PPC.Controller"
   PUBLISH_DIR: "PCMS_GSU25SE26_BE/PPC.Controller/publish"
 
 jobs:
-  build-and-test:git 
+  build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
 
