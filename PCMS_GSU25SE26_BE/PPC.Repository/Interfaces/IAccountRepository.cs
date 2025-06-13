@@ -11,5 +11,6 @@ namespace PPC.Repository.Interfaces
     public interface IAccountRepository : IGenericRepository<Account>
     {
         Task<Account> CounselorLogin(string email, string password);
+        Task<Account> MemberLogin(string email, string password);
     }
 }

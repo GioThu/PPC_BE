@@ -13,8 +13,6 @@ public partial class Account
 
     public string Password { get; set; }
 
-    public string Fullname { get; set; }
-
     public DateTime? CreateAt { get; set; }
 
     public int? Role { get; set; }

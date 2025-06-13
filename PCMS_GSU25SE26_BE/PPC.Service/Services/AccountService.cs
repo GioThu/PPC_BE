@@ -21,16 +21,18 @@ namespace PPC.Service.Services
     {
         private readonly IAccountRepository _accountRepository;
         private readonly ICounselorRepository _counselorRepository;
+        private readonly IMemberRepository _memberRepository;
         private readonly IWalletRepository _walletRepository;
         private readonly IJwtService _jwtService;
 
 
-        public AccountService(IAccountRepository accountRepository, ICounselorRepository counselorRepository, IWalletRepository walletRepository, IJwtService jwtService)
+        public AccountService(IAccountRepository accountRepository, ICounselorRepository counselorRepository, IWalletRepository walletRepository, IJwtService jwtService, IMemberRepository memberRepository)
         {
             _accountRepository = accountRepository;
             _counselorRepository = counselorRepository;
             _walletRepository = walletRepository;
             _jwtService = jwtService;
+            _memberRepository = memberRepository;
         }
 
         public async Task<string> CounselorLogin(LoginRequest loginRequest)
@@ -58,13 +60,48 @@ namespace PPC.Service.Services
             var wallet = WalletMappers.ToCreateWallet();
             await _walletRepository.CreateAsync(wallet);
 
-            var account = accountRegister.ToCreateAccount();
+            var account = accountRegister.ToCreateCounselorAccount();
             account.WalletId = wallet.Id;
             await _accountRepository.CreateAsync(account);
 
             var counselor = CounselorMappers.ToCreateCounselor(accountRegister.FullName, account.Id);
 
             return await _counselorRepository.CreateAsyncNoRequest(counselor); ;
+        }
+
+
+        public async Task<int> RegisterMemberAsync(AccountRegister accountRegister)
+        {
+            var wallet = WalletMappers.ToCreateWallet();
+            await _walletRepository.CreateAsync(wallet);
+
+            var account = accountRegister.ToCreateMemberAccount();
+            account.WalletId = wallet.Id;
+            await _accountRepository.CreateAsync(account);
+
+            var member = MemberMappers.ToCreateMember(accountRegister.FullName, account.Id);
+
+            return await _memberRepository.CreateAsyncNoRequest(member); ;
+        }
+
+        public async Task<string> MemberLogin(LoginRequest loginRequest)
+        {
+            try
+            {
+                var account = await _accountRepository.MemberLogin(loginRequest.Email, loginRequest.Password);
+                if (account == null || account.Members == null || !account.Members.Any())
+                {
+                    throw new Exception("Invalid login or member not found.");
+                }
+
+                var member = account.Members.First();
+                var token = _jwtService.GenerateMemberToken(account.Id, member.Id, member.Fullname, account.Role, member.Avatar);
+                return token;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Login failed: " + ex.Message, ex);
+            }
         }
 
         public async Task<IEnumerable<Account>> GetAllAccountsAsync()

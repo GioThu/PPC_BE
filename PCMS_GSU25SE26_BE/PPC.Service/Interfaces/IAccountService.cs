@@ -13,6 +13,8 @@ namespace PPC.Service.Interfaces
     {
         Task<int> RegisterCounselorAsync(AccountRegister accountRegister);
         Task<string> CounselorLogin (LoginRequest loginRequest);
+        Task<int> RegisterMemberAsync(AccountRegister accountRegister);
+        Task<string> MemberLogin(LoginRequest loginRequest);
 
         Task<IEnumerable<Account>> GetAllAccountsAsync();
 
