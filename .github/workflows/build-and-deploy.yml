@@ -8,9 +8,9 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: PPCbackend
-  AZURE_WEBAPP_PACKAGE_PATH: "PCMS_GSU25SE26_BE/PPC.Controller/publish"
+  AZURE_WEBAPP_PACKAGE_PATH: "./PPC.Controller/publish"
   DOTNET_VERSION: "8.0.x"
-  SOLUTION_PATH: "PCMS_GSU25SE26_BE.sln"
+  SOLUTION_PATH: "PCMS_GSU25SE26_BE/PCMS_GSU25SE26_BE.sln"
   API_PROJECT_PATH: "PCMS_GSU25SE26_BE/PPC.Controller"
   PUBLISH_DIR: "PCMS_GSU25SE26_BE/PPC.Controller/publish"
 
@@ -26,25 +26,25 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: ${{ env.DOTNET_VERSION}}
 
       - name: Restore
-        run: dotnet restore ${{ env.SOLUTION_PATH }}
+        run: dotnet restore ${{ env.SOLUTION_PATH}}
 
       - name: Build
-        run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore
+        run: dotnet build ${{ env.SOLUTION_PATH}} --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test ${{ env.SOLUTION_PATH }} --configuration Release --no-restore --no-build --verbosity normal
+        run: dotnet test ${{ env.SOLUTION_PATH}} --configuration Release --no-restore --no-build --verbosity normal
 
       - name: Publish
-        run: dotnet publish ${{ env.API_PROJECT_PATH }} --configuration Release --no-restore --no-build --property:PublishDir=${{ env.PUBLISH_DIR }}
+        run: dotnet publish ${{ env.API_PROJECT_PATH}} --configuration Release --no-restore --no-build --property:PublishDir=${{ env.PUBLISH_DIR}}
 
       - name: Publish Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: webapp
-          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          path: ${{ env.PUBLISH_DIR}}
 
   deploy:
     name: Deploy to Azure
@@ -56,11 +56,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: webapp
-          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          path: ${{ env.PUBLISH_DIR}}
 
       - name: Deploy
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          package: ${{ env.PUBLISH_DIR}}
