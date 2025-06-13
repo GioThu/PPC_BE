@@ -12,7 +12,7 @@ env:
   DOTNET_VERSION: "8.x"
   SOLUTION_PATH: "PCMS_GSU25SE26_BE/PCMS_GSU25SE26_BE.sln"
   API_PROJECT_PATH: "PCMS_GSU25SE26_BE/PPC.Controller"
-  PUBLISH_DIR: "./publish"
+  PUBLISH_DIR: "PCMS_GSU25SE26_BE/PPC.Controller/publish"
 
 jobs:
   build-and-test:
@@ -40,7 +40,7 @@ jobs:
         run: dotnet publish ${{ env.API_PROJECT_PATH }} --configuration Release --no-restore --no-build --property:PublishDir=${{ env.PUBLISH_DIR }}
 
       - name: Publish Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: webapp
           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
@@ -52,7 +52,7 @@ jobs:
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: webapp
           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
