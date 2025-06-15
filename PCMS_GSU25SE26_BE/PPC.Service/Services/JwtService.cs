@@ -4,10 +4,9 @@ using PPC.Service.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace PPC.Service.Services
 {
@@ -19,76 +18,59 @@ namespace PPC.Service.Services
         {
             _configuration = configuration;
         }
-        public string GenerateCounselorToken(string accountId, string counselorId, string fullname, int? role, string avartar)
+
+        private string GenerateAccountToken(string accountId, string id, string fullname, int? role, string avartar, string idClaimName)
         {
             if (avartar == null)
                 avartar = "not found";
 
-            // Check cấu hình
             var secretKey = _configuration["JWTSettings:SecretKey"];
+
             var issuer = _configuration["JWTSettings:Issuer"];
-            var audience = _configuration["JWTSettings:Audience"];
+
             var expire = _configuration["JWTSettings:ExpireMinutes"];
 
-            var claims = new[]
+            var audiences = _configuration.GetSection("JWTSettings:Audiences").Get<List<string>>()
+                    ?? new List<string>();
+
+            var claims = new List<Claim>
             {
-        new Claim(JwtRegisteredClaimNames.Sub, fullname),
-        new Claim(ClaimTypes.Role, role.ToString()),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        new Claim("accountId", accountId),
-        new Claim("counselorId", counselorId),
-        new Claim("avartar", avartar)
-    };
+                new Claim(JwtRegisteredClaimNames.Sub, fullname),
+                new Claim(ClaimTypes.Role, role.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("accountId", accountId),
+                new Claim(idClaimName, id),
+                new Claim("avartar", avartar)
+            };
+            foreach (var aud in audiences)
+            {
+                claims.Add(new Claim(JwtRegisteredClaimNames.Aud, aud)); // thêm nhiều aud
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
-                audience: audience,
-                claims: claims,
                 expires: DateTime.Now.AddMinutes(Convert.ToDouble(expire)),
-                signingCredentials: creds
+                signingCredentials: creds,
+                claims: claims
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string GenerateCounselorToken(string accountId, string counselorId, string fullname, int? role, string avartar)
+        {
+            return GenerateAccountToken(accountId, counselorId, fullname, role, avartar, "counselorId");
+
         }
 
         public string GenerateMemberToken(string accountId, string memberId, string fullname, int? role, string avartar)
         {
-            if (avartar == null)
-                avartar = "not found";
+            return GenerateAccountToken(accountId, memberId, fullname, role, avartar, "memberId");
 
-            // Check cấu hình
-            var secretKey = _configuration["JWTSettings:SecretKey"];
-            var issuer = _configuration["JWTSettings:Issuer"];
-            var audience = _configuration["JWTSettings:Audience"];
-            var expire = _configuration["JWTSettings:ExpireMinutes"];
-
-            var claims = new[]
-            {
-        new Claim(JwtRegisteredClaimNames.Sub, fullname),
-        new Claim(ClaimTypes.Role, role.ToString()),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        new Claim("accountId", accountId),
-        new Claim("memberId", memberId),
-        new Claim("avartar", avartar)
-    };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(Convert.ToDouble(expire)),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-
     }
 }

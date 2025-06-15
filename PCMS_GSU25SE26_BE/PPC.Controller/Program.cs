@@ -17,13 +17,18 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<ICounselorRepository, CounselorRepository>();
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
+builder.Services.AddScoped<IWorkScheduleRepository, WorkScheduleRepository>();
+
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IWorkScheduleService, WorkScheduleService>();
+
 builder.Services.AddScoped<IJwtService, JwtService>();
 
+builder.Services.AddAutoMapper(typeof(PPC.Service.Mappers.MappingProfile));
 
 
 builder.Services.AddDbContext<CCPContext>(options =>
@@ -42,7 +47,7 @@ builder.Services.AddAuthentication("Bearer")
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["JWTSettings:Issuer"],
-            ValidAudience = builder.Configuration["JWTSettings:Audience"],
+            ValidAudiences = builder.Configuration.GetSection("JWTSettings:Audiences").Get<string[]>(),
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["JWTSettings:SecretKey"]))
         };
@@ -58,7 +63,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "jwtToken_Auth_API",
+        Title = "PPC_API",
         Version = "v1",
     });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

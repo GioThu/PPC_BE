@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using PPC.DAO.Models;
+using PPC.Service.ModelResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace PPC.Service.Mappers
     {
         public MappingProfile()
         {
-
+            CreateMap<WorkSchedule, WorkScheduleDto>();
         }
     }
 }
