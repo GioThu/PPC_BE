@@ -27,6 +27,7 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IWorkScheduleService, WorkScheduleService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ICounselorService, CounselorService>();
 
 
 builder.Services.AddScoped<IJwtService, JwtService>();
