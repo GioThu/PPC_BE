@@ -24,7 +24,7 @@ namespace PPC.Controller.Controllers
 
             var counselorId = User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
             if (string.IsNullOrEmpty(counselorId))
-                return Unauthorized("CounselorId not found in token.");
+                return Unauthorized("Counselor not found.");
 
             var response = await _workScheduleService.CreateScheduleAsync(counselorId, request);
             if (response.Success)
@@ -41,6 +41,20 @@ namespace PPC.Controller.Controllers
                 return Unauthorized("CounselorId not found in token.");
 
             var response = await _workScheduleService.GetSchedulesByCounselorAsync(counselorId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [HttpDelete("{scheduleId}")]
+        public async Task<IActionResult> DeleteSchedule(string scheduleId)
+        {
+            var counselorId = User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
+            if (string.IsNullOrEmpty(counselorId))
+                return Unauthorized("Counselor not found.");
+
+            var response = await _workScheduleService.DeleteScheduleAsync(counselorId, scheduleId);
             if (response.Success)
                 return Ok(response);
 

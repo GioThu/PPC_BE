@@ -19,7 +19,7 @@ namespace PPC.Service.Mappers
                 Role = 2,
                 Password = accountRegister.Password,
                 CreateAt = Utils.Utils.GetTimeNow(),
-                Status = 0,
+                Status = 1,
             };
         }
 
@@ -32,7 +32,7 @@ namespace PPC.Service.Mappers
                 Role = 3,
                 Password = accountRegister.Password,
                 CreateAt = Utils.Utils.GetTimeNow(),
-                Status = 0,
+                Status = 1,
             };
         }
     }

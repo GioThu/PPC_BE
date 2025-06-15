@@ -16,6 +16,7 @@ namespace PPC.Service.Mappers
         public MappingProfile()
         {
             CreateMap<WorkSchedule, WorkScheduleDto>();
+            CreateMap<Category, CategoryDto>();
         }
     }
 }

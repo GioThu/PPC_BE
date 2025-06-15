@@ -13,6 +13,7 @@ namespace PPC.Service.Interfaces
     {
         Task<ServiceResponse<string>> CreateScheduleAsync(string counselorId, WorkScheduleCreateRequest request);
         Task<ServiceResponse<List<WorkScheduleDto>>> GetSchedulesByCounselorAsync(string counselorId);
+        Task<ServiceResponse<string>> DeleteScheduleAsync(string counselorId, string scheduleId);
 
     }
 }

@@ -133,6 +133,25 @@ namespace PPC.Service.Services
             }
         }
 
+        public async Task<ServiceResponse<string>> AdminLogin(LoginRequest loginRequest)
+        {
+            try
+            {
+                var account = await _accountRepository.AdminLogin(loginRequest.Email, loginRequest.Password);
+                if (account == null || account.Role != 1)
+                {
+                    return ServiceResponse<string>.ErrorResponse("Invalid login or admin not found.");
+                }
+
+                var token = _jwtService.GenerateAdminToken(account.Id, account.Role);
+                return ServiceResponse<string>.SuccessResponse(token);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<string>.ErrorResponse("Login failed: " + ex.Message);
+            }
+        }
+
         public async Task<ServiceResponse<IEnumerable<Account>>> GetAllAccountsAsync()
         {
             try

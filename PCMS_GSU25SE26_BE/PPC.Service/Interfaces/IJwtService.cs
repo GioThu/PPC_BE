@@ -11,5 +11,6 @@ namespace PPC.Service.Interfaces
     {
         string GenerateCounselorToken(string accountId, string counselorId, string fullname, int? role, string avartar);
         string GenerateMemberToken(string accountId, string memberId, string fullname, int? role, string avartar);
+        string GenerateAdminToken(string accountId,int? role);
     }
 }

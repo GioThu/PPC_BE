@@ -72,5 +72,14 @@ namespace PPC.Service.Services
             return GenerateAccountToken(accountId, memberId, fullname, role, avartar, "memberId");
 
         }
+
+        public string GenerateAdminToken(string accountId, int? role)
+        {
+            var adminId = accountId;
+            var fullname = "Administrator";
+            var avartar = "not found";
+            return GenerateAccountToken(accountId, adminId, fullname, role, avartar, "adminId");
+
+        }
     }
 }

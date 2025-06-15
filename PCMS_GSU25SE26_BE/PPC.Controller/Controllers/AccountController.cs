@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest;
 
-namespace PPC.API.Controllers
+namespace PPC.Controller.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -59,6 +59,18 @@ namespace PPC.API.Controllers
                 return BadRequest(ModelState);
 
             var response = await _accountService.MemberLogin(loginRequest);
+            if (response.Success)
+                return Ok(response);
+            return Unauthorized(response);
+        }
+
+        [HttpPost("login-admin")]
+        public async Task<IActionResult> LoginAdmin([FromBody] LoginRequest loginRequest)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _accountService.AdminLogin(loginRequest);
             if (response.Success)
                 return Ok(response);
             return Unauthorized(response);

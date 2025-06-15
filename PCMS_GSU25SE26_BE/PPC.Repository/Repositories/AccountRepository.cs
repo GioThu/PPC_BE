@@ -72,5 +72,11 @@ namespace PPC.Repository.Repositories
             return await _context.Accounts.AnyAsync(a => a.Email == email);
         }
 
+        public async Task<Account> AdminLogin(string email, string password)
+        {
+            return await _context.Accounts
+                .Where(a => a.Email == email && a.Password == password && a.Role == 1)
+                .FirstOrDefaultAsync();
+        }
     }
 }

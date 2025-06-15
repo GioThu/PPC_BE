@@ -18,6 +18,7 @@ builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<ICounselorRepository, CounselorRepository>();
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<IWorkScheduleRepository, WorkScheduleRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -25,6 +26,8 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IWorkScheduleService, WorkScheduleService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 

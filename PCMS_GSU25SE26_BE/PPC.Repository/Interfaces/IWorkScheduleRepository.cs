@@ -12,6 +12,6 @@ namespace PPC.Repository.Interfaces
     {
         Task<bool> IsScheduleOverlappingAsync(string counselorId, DateTime workDate, DateTime startTime, DateTime endTime);
         Task<List<WorkSchedule>> GetSchedulesByCounselorIdAsync(string counselorId);
-
+        Task<bool> DeleteScheduleByIdAsync(string scheduleId);
     }
 }

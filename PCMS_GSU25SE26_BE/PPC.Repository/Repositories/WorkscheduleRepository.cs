@@ -37,5 +37,14 @@ namespace PPC.Repository.Repositories
                 .OrderBy(ws => ws.WorkDate).ThenBy(ws => ws.StartTime)
                 .ToListAsync();
         }
+        public async Task<bool> DeleteScheduleByIdAsync(string scheduleId)
+        {
+            var schedule = await _context.WorkSchedules.FindAsync(scheduleId);
+            if (schedule == null) return false;
+
+            _context.WorkSchedules.Remove(schedule);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
