@@ -49,5 +49,14 @@ namespace PPC.Repository.Repositories
             return await _context.CounselorSubCategories
                 .AnyAsync(csc => csc.CounselorId == counselorId && csc.Status == 1);
         }
+
+        public async Task<List<SubCategory>> GetApprovedSubCategoriesByCounselorAsync(string counselorId)
+        {
+            return await _context.CounselorSubCategories
+                .Where(csc => csc.CounselorId == counselorId && csc.Status == 1)
+                .Include(csc => csc.SubCategory)
+                .Select(csc => csc.SubCategory)
+                .ToListAsync();
+        }
     }
 }

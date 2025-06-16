@@ -20,7 +20,7 @@ namespace PPC.Service.Mappers
             CreateMap<Counselor, CounselorDto>();
             CreateMap<SubCategory, SubCategoryDto>();
             CreateMap<Certification, CertificationWithSubDto>();
-
+            CreateMap<Counselor, CounselorWithSubDto>();
         }
     }
 }

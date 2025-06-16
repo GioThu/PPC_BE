@@ -14,6 +14,8 @@ namespace PPC.Repository.Interfaces
         Task<List<SubCategory>> GetSubCategoriesByCertificationIdAsync(string certificationId);
         Task<bool> RemoveByCertificationIdAsync(string certificationId);
         Task<bool> HasAnyApprovedSubCategoryAsync(string counselorId);
+        Task<List<SubCategory>> GetApprovedSubCategoriesByCounselorAsync(string counselorId);
+
 
     }
 

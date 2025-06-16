@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace PPC.Repository.Interfaces
 {
-    public interface ICounselorRepository : IGenericRepository<Counselor>
+    public interface IBookingRepository : IGenericRepository<Booking>
     {
-        Task<List<Counselor>> GetActiveWithApprovedSubCategoriesAsync();
+        Task<List<Booking>> GetConfirmedBookingsByDateAsync(string counselorId, DateTime workDate);
     }
 }

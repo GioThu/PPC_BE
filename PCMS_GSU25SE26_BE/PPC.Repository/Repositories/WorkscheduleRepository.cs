@@ -46,5 +46,11 @@ namespace PPC.Repository.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<List<WorkSchedule>> GetByCounselorAndDateAsync(string counselorId, DateTime date)
+        {
+            return await _context.WorkSchedules
+                .Where(ws => ws.CounselorId == counselorId && ws.WorkDate.HasValue && ws.WorkDate.Value.Date == date.Date)
+                .ToListAsync();
+        }
     }
 }
