@@ -13,6 +13,7 @@ namespace PPC.Service.ModelResponse
         public string? Avatar { get; set; }
         public string? Description { get; set; }
         public double? Price { get; set; }
+        public int? YearOfJob { get; set; }
         public double Rating { get; set; }
         public int Reviews { get; set; }
         public string? Phone { get; set; }

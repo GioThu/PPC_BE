@@ -17,7 +17,8 @@ public partial class Counselor
     public string Description { get; set; }
     public double Price { get; set; }
     public double Rating { get; set; }
-    public int Reviews { get; set; } 
+    public int Reviews { get; set; }
+    public int YearOfJob { get; set; }
     public string Phone { get; set; }
     public int? Status { get; set; }
 

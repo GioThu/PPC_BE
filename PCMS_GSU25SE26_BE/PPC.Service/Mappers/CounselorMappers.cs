@@ -18,6 +18,7 @@ namespace PPC.Service.Mappers
                 Fullname = fullname,
                 Avatar = "https://trilieutaman.vn/wp-content/uploads/2025/02/TAM-AN-WEB-BAI-1.png",
                 Description = "Một Counselor tuyệt vời",
+                YearOfJob = 0,
                 Price = 0,
                 Rating = 0,
                 Status = 0,
