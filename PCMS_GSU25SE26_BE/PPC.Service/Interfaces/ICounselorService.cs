@@ -13,7 +13,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<List<CounselorDto>>> GetAllCounselorsAsync();
         Task CheckAndUpdateCounselorStatusAsync(string counselorId);
         Task<ServiceResponse<List<CounselorWithSubDto>>> GetActiveCounselorsWithSubAsync();
-        Task<ServiceResponse<AvailableScheduleDto>> GetAvailableScheduleAsync(GetAvailableScheduleRequest request);
+        Task<ServiceResponse<AvailableScheduleOverviewDto>> GetAvailableScheduleAsync(GetAvailableScheduleRequest request);
 
     }
 }

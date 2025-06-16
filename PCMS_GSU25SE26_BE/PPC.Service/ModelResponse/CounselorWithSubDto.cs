@@ -17,7 +17,7 @@ namespace PPC.Service.ModelResponse
         public int Reviews { get; set; }
         public string Phone { get; set; }
         public int? Status { get; set; }
-
+        public bool IsBookingAvailible { get; set; } = true;
         public List<SubCategoryDto> SubCategories { get; set; }
     }
 }

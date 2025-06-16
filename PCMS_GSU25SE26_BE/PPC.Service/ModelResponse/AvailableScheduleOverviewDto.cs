@@ -6,12 +6,18 @@ using System.Threading.Tasks;
 
 namespace PPC.Service.ModelResponse
 {
-    public class AvailableScheduleDto
+    public class AvailableScheduleOverviewDto
     {
         public string CounselorId { get; set; }
-        public DateTime WorkDate { get; set; }
         public CounselorDto Counselor { get; set; }
-        public List<AvailableTimeSlotDto> AvailableSlots { get; set; }
         public List<SubCategoryDto> SubCategories { get; set; }
+        public List<DailyAvailableSlotDto> DailyAvailableSchedules { get; set; }
     }
+
+    public class DailyAvailableSlotDto
+    {
+        public DateTime WorkDate { get; set; }
+        public List<AvailableTimeSlotDto> AvailableSlots { get; set; }
+    }
+
 }

@@ -72,87 +72,97 @@ namespace PPC.Service.Services
             return ServiceResponse<List<CounselorWithSubDto>>.SuccessResponse(result);
         }
 
-        public async Task<ServiceResponse<AvailableScheduleDto>> GetAvailableScheduleAsync(GetAvailableScheduleRequest request)
+        public async Task<ServiceResponse<AvailableScheduleOverviewDto>> GetAvailableScheduleAsync(GetAvailableScheduleRequest request)
         {
-            var workSchedules = await _workScheduleRepo.GetByCounselorAndDateAsync(request.CounselorId, request.WorkDate);
-
-            var bookings = await _bookingRepo.GetConfirmedBookingsByDateAsync(request.CounselorId, request.WorkDate);
-
-            var subCategories = await _counselorSubCategoryRepository
-                .GetApprovedSubCategoriesByCounselorAsync(request.CounselorId);
-
             var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);
             if (counselor == null)
             {
-                return ServiceResponse<AvailableScheduleDto>.ErrorResponse("Counselor not found.");
+                return ServiceResponse<AvailableScheduleOverviewDto>.ErrorResponse("Counselor not found.");
             }
 
             var counselorDto = _mapper.Map<CounselorDto>(counselor);
-            var bookingIntervals = bookings
-                .Where(b => b.TimeStart.HasValue && b.TimeEnd.HasValue)
-                .Select(b => new
-                {
-                    Start = b.TimeStart.Value.TimeOfDay,
-                    End = b.TimeEnd.Value.TimeOfDay + TimeSpan.FromMinutes(10)
-                })
-                .OrderBy(b => b.Start)
-                .ToList();
+            var subCategories = await _counselorSubCategoryRepository
+                .GetApprovedSubCategoriesByCounselorAsync(request.CounselorId);
+            var subCategoryDtos = _mapper.Map<List<SubCategoryDto>>(subCategories);
 
-            var availableSlots = new List<AvailableTimeSlotDto>();
+            var dailySchedules = new List<DailyAvailableSlotDto>();
 
-            foreach (var schedule in workSchedules)
+            for (int i = 0; i < 7; i++)
             {
-                if (!schedule.StartTime.HasValue || !schedule.EndTime.HasValue)
-                    continue;
+                var currentDate = request.WorkDate.Date.AddDays(i);
+                var workSchedules = await _workScheduleRepo.GetByCounselorAndDateAsync(request.CounselorId, currentDate);
+                var bookings = await _bookingRepo.GetConfirmedBookingsByDateAsync(request.CounselorId, currentDate);
 
-                var currentStart = schedule.StartTime.Value.TimeOfDay;
-                var scheduleEnd = schedule.EndTime.Value.TimeOfDay;
+                var bookingIntervals = bookings
+                    .Where(b => b.TimeStart.HasValue && b.TimeEnd.HasValue)
+                    .Select(b => new
+                    {
+                        Start = b.TimeStart.Value.TimeOfDay,
+                        End = b.TimeEnd.Value.TimeOfDay + TimeSpan.FromMinutes(10)
+                    })
+                    .OrderBy(b => b.Start)
+                    .ToList();
 
-                foreach (var b in bookingIntervals)
+                var availableSlots = new List<AvailableTimeSlotDto>();
+
+                foreach (var schedule in workSchedules)
                 {
-                    if (b.End <= currentStart)
+                    if (!schedule.StartTime.HasValue || !schedule.EndTime.HasValue)
                         continue;
 
-                    if (b.Start >= scheduleEnd)
-                        break;
+                    var currentStart = schedule.StartTime.Value.TimeOfDay;
+                    var scheduleEnd = schedule.EndTime.Value.TimeOfDay;
 
-                    if (b.Start > currentStart)
+                    foreach (var b in bookingIntervals)
+                    {
+                        if (b.End <= currentStart)
+                            continue;
+
+                        if (b.Start >= scheduleEnd)
+                            break;
+
+                        if (b.Start > currentStart)
+                        {
+                            availableSlots.Add(new AvailableTimeSlotDto
+                            {
+                                Start = currentStart,
+                                End = b.Start < scheduleEnd ? b.Start : scheduleEnd
+                            });
+                        }
+
+                        currentStart = b.End > currentStart ? b.End : currentStart;
+                    }
+
+                    if (currentStart < scheduleEnd)
                     {
                         availableSlots.Add(new AvailableTimeSlotDto
                         {
                             Start = currentStart,
-                            End = b.Start < scheduleEnd ? b.Start : scheduleEnd
+                            End = scheduleEnd
                         });
                     }
-
-                    currentStart = b.End > currentStart ? b.End : currentStart;
                 }
 
-                if (currentStart < scheduleEnd)
+                if (availableSlots.Any())
                 {
-                    availableSlots.Add(new AvailableTimeSlotDto
+                    dailySchedules.Add(new DailyAvailableSlotDto
                     {
-                        Start = currentStart,
-                        End = scheduleEnd
+                        WorkDate = currentDate,
+                        AvailableSlots = availableSlots.OrderBy(s => s.Start).ToList()
                     });
                 }
             }
 
-            var subCategoryDtos = _mapper.Map<List<SubCategoryDto>>(subCategories);
-
-            availableSlots = availableSlots
-                .OrderBy(slot => slot.Start)
-                .ToList();
-
-            return ServiceResponse<AvailableScheduleDto>.SuccessResponse(new AvailableScheduleDto
+            var overviewDto = new AvailableScheduleOverviewDto
             {
                 CounselorId = request.CounselorId,
-                WorkDate = request.WorkDate.Date,
-                AvailableSlots = availableSlots,
+                Counselor = counselorDto,
                 SubCategories = subCategoryDtos,
-                Counselor = counselorDto
+                DailyAvailableSchedules = dailySchedules
+            };
 
-            });
+            return ServiceResponse<AvailableScheduleOverviewDto>.SuccessResponse(overviewDto);
         }
+
     }
 }
