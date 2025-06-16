@@ -81,7 +81,13 @@ namespace PPC.Service.Services
             var subCategories = await _counselorSubCategoryRepository
                 .GetApprovedSubCategoriesByCounselorAsync(request.CounselorId);
 
-            // ✅ Áp dụng buffer 10 phút SAU booking
+            var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);
+            if (counselor == null)
+            {
+                return ServiceResponse<AvailableScheduleDto>.ErrorResponse("Counselor not found.");
+            }
+
+            var counselorDto = _mapper.Map<CounselorDto>(counselor);
             var bookingIntervals = bookings
                 .Where(b => b.TimeStart.HasValue && b.TimeEnd.HasValue)
                 .Select(b => new
@@ -143,7 +149,9 @@ namespace PPC.Service.Services
                 CounselorId = request.CounselorId,
                 WorkDate = request.WorkDate.Date,
                 AvailableSlots = availableSlots,
-                SubCategories = subCategoryDtos
+                SubCategories = subCategoryDtos,
+                Counselor = counselorDto
+
             });
         }
     }

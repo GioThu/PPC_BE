@@ -16,7 +16,7 @@ public partial class Counselor
     public string Fullname { get; set; }
 
     public string Description { get; set; }
-
+    public string Price { get; set; }
     public string Phone { get; set; }
 
     public int? Status { get; set; }

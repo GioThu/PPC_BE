@@ -10,6 +10,7 @@ namespace PPC.Service.ModelResponse
     {
         public string CounselorId { get; set; }
         public DateTime WorkDate { get; set; }
+        public CounselorDto Counselor { get; set; }
         public List<AvailableTimeSlotDto> AvailableSlots { get; set; }
         public List<SubCategoryDto> SubCategories { get; set; }
     }

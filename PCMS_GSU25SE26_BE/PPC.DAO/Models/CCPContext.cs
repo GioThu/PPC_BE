@@ -375,6 +375,7 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.Fullname)
                 .HasMaxLength(255)
                 .HasColumnName("fullname");
+            entity.Property(e => e.Price).HasColumnName("price");
             entity.Property(e => e.Phone)
                 .HasMaxLength(20)
                 .IsUnicode(false)
