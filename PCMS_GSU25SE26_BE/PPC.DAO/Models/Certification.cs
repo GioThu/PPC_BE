@@ -21,6 +21,8 @@ public partial class Certification
 
     public string Description { get; set; }
 
+    public string RejectReason { get; set; }
+
     public int? Status { get; set; }
 
     public virtual Counselor Counselor { get; set; }

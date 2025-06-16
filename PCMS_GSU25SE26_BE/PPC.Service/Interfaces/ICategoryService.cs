@@ -14,6 +14,8 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> UpdateCategoryAsync(CategoryUpdateRequest request);
         Task<ServiceResponse<List<CategoryDto>>> GetAllCategoriesAsync();
         Task<ServiceResponse<string>> DeleteCategoryAsync(string id);
+        Task<ServiceResponse<List<CategoryDto>>> GetActiveCategoriesWithSubAsync();
+
 
     }
 }

@@ -11,5 +11,8 @@ namespace PPC.Repository.Interfaces
     public interface ICategoryRepository : IGenericRepository<Category>
     {
         Task<bool> IsCategoryNameExistsAsync(string name);
+        Task<List<Category>> GetAllWithSubCategoriesAsync();
+        Task<List<Category>> GetActiveCategoriesWithActiveSubCategoriesAsync();
+
     }
 }

@@ -10,5 +10,7 @@ namespace PPC.Service.Interfaces
     public interface ICounselorService
     {
         Task<ServiceResponse<List<CounselorDto>>> GetAllCounselorsAsync();
+        Task CheckAndUpdateCounselorStatusAsync(string counselorId);
+
     }
 }

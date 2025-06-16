@@ -65,5 +65,16 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpGet("active-with-sub")]
+        [AllowAnonymous] 
+        public async Task<IActionResult> GetActiveCategoriesWithSub()
+        {
+            var response = await _categoryService.GetActiveCategoriesWithSubAsync();
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

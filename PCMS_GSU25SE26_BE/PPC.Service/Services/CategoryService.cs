@@ -61,7 +61,7 @@ namespace PPC.Service.Services
 
         public async Task<ServiceResponse<List<CategoryDto>>> GetAllCategoriesAsync()
         {
-            var categories = await _categoryRepository.GetAllAsync(); 
+            var categories = await _categoryRepository.GetAllWithSubCategoriesAsync();
             var categoryDtos = _mapper.Map<List<CategoryDto>>(categories);
             return ServiceResponse<List<CategoryDto>>.SuccessResponse(categoryDtos);
         }
@@ -77,6 +77,13 @@ namespace PPC.Service.Services
                 return ServiceResponse<string>.ErrorResponse("Failed to delete category.");
 
             return ServiceResponse<string>.SuccessResponse("Category deleted successfully.");
+        }
+
+        public async Task<ServiceResponse<List<CategoryDto>>> GetActiveCategoriesWithSubAsync()
+        {
+            var categories = await _categoryRepository.GetActiveCategoriesWithActiveSubCategoriesAsync();
+            var categoryDtos = _mapper.Map<List<CategoryDto>>(categories);
+            return ServiceResponse<List<CategoryDto>>.SuccessResponse(categoryDtos);
         }
     }
 }

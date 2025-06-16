@@ -297,8 +297,10 @@ public partial class CCPContext : DbContext
                 .HasColumnName("image");
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
-                .IsUnicode(false)
                 .HasColumnName("name");
+            entity.Property(e => e.RejectReason)
+                .HasMaxLength(1000)
+                .HasColumnName("rejectReason");
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.Time)
                 .HasColumnType("datetime")

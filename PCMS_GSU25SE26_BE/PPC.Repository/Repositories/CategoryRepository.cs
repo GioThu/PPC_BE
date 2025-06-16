@@ -18,5 +18,22 @@ namespace PPC.Repository.Repositories
         {
             return await _context.Categories.AnyAsync(c => c.Name.ToLower() == name.ToLower());
         }
+
+        public async Task<List<Category>> GetAllWithSubCategoriesAsync()
+        {
+            return await _context.Categories
+                .Include(c => c.SubCategories)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
+
+        public async Task<List<Category>> GetActiveCategoriesWithActiveSubCategoriesAsync()
+        {
+            return await _context.Categories
+                .Where(c => c.Status == 1)
+                .Include(c => c.SubCategories.Where(sc => sc.Status == 1)) 
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
     }
 }

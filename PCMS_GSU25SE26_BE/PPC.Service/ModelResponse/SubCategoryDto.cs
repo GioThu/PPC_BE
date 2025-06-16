@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace PPC.Service.ModelResponse
 {
-    public class CategoryDto
+    public class SubCategoryDto
     {
         public string Id { get; set; }
         public string Name { get; set; }
         public int? Status { get; set; }
-        public List<SubCategoryDto> SubCategories { get; set; }
     }
 }

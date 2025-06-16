@@ -18,6 +18,9 @@ namespace PPC.Service.Mappers
             CreateMap<WorkSchedule, WorkScheduleDto>();
             CreateMap<Category, CategoryDto>();
             CreateMap<Counselor, CounselorDto>();
+            CreateMap<SubCategory, SubCategoryDto>();
+            CreateMap<Certification, CertificationWithSubDto>();
+
         }
     }
 }
