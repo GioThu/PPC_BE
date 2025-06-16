@@ -5,14 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PPC.Service.ModelRequest
+namespace PPC.Service.ModelRequest.CategoryRequest
 {
-    public class GetAvailableScheduleRequest
+    public class SubCategoryCreateRequest
     {
         [Required]
-        public string CounselorId { get; set; }
+        public string CategoryId { get; set; }
 
         [Required]
-        public DateTime WorkDate { get; set; }
+        [MaxLength(100)]
+        public string Name { get; set; }
     }
+
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
-using PPC.Service.ModelRequest;
+using PPC.Service.ModelRequest.CategoryRequest;
 
 namespace PPC.Controller.Controllers
 {

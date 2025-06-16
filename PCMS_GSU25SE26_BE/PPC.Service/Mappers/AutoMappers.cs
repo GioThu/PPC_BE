@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using PPC.DAO.Models;
-using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.CategoryResponse;
+using PPC.Service.ModelResponse.CirtificationResponse;
+using PPC.Service.ModelResponse.CounselorResponse;
+using PPC.Service.ModelResponse.WorkScheduleResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;

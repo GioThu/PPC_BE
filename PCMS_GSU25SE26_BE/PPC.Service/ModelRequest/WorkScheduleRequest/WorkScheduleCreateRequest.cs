@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PPC.Service.ModelRequest
+namespace PPC.Service.ModelRequest.WorkScheduleRequest
 {
     public class WorkScheduleCreateRequest
     {

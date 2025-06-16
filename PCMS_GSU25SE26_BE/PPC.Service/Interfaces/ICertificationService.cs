@@ -1,5 +1,6 @@
-﻿using PPC.Service.ModelRequest;
+﻿using PPC.Service.ModelRequest.CirtificationRequest;
 using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.CirtificationResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;

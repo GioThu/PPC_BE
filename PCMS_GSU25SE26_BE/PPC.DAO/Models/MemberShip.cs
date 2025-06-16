@@ -11,8 +11,6 @@ public partial class MemberShip
 
     public string MemberShipName { get; set; }
 
-    public string CounselorId { get; set; }
-
     public int? Rank { get; set; }
 
     public int? DiscountCourse { get; set; }

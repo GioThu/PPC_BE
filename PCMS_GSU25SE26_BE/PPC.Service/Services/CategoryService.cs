@@ -2,8 +2,9 @@
 using PPC.Repository.Interfaces;
 using PPC.Service.Interfaces;
 using PPC.Service.Mappers;
-using PPC.Service.ModelRequest;
+using PPC.Service.ModelRequest.CategoryRequest;
 using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.CategoryResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;

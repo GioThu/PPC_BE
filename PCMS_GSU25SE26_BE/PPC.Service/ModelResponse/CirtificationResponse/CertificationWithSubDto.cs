@@ -1,10 +1,11 @@
-﻿using System;
+﻿using PPC.Service.ModelResponse.CategoryResponse;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PPC.Service.ModelResponse
+namespace PPC.Service.ModelResponse.CirtificationResponse
 {
     public class CertificationWithSubDto
     {

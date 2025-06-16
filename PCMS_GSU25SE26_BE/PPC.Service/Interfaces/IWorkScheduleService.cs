@@ -1,6 +1,7 @@
 ﻿using PPC.DAO.Models;
-using PPC.Service.ModelRequest;
+using PPC.Service.ModelRequest.WorkScheduleRequest;
 using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.WorkScheduleResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;

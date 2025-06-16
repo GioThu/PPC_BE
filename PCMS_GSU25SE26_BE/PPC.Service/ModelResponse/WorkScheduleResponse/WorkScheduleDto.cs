@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PPC.Service.ModelResponse
+namespace PPC.Service.ModelResponse.WorkScheduleResponse
 {
     public class WorkScheduleDto
     {

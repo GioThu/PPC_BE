@@ -20,7 +20,7 @@ namespace PPC.Repository.Repositories
         {
             var account = await _context.Accounts
                 .Include(a => a.Counselors)
-                .Where(a => a.Email == email && a.Password == password && a.Role == 2 && a.Counselors.Any())
+                .Where(a => a.Email == email && a.Password == password && a.Role == 2 && a.Status==1 && a.Counselors.Any())
                 .Select(a => new Account
                 {
                     Id = a.Id,
@@ -45,7 +45,7 @@ namespace PPC.Repository.Repositories
         {
             var account = await _context.Accounts
                 .Include(a => a.Counselors)
-                .Where(a => a.Email == email && a.Password == password && a.Role == 3 && a.Members.Any())
+                .Where(a => a.Email == email && a.Password == password && a.Role == 3  && a.Status == 1 && a.Members.Any())
                 .Select(a => new Account
                 {
                     Id = a.Id,

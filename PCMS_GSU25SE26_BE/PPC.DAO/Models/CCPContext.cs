@@ -789,9 +789,7 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(64)
                 .IsUnicode(false)
                 .HasColumnName("id");
-            entity.Property(e => e.CounselorId)
-                .HasMaxLength(64)
-                .HasColumnName("counselorId");
+
             entity.Property(e => e.DiscountBooking).HasColumnName("discountBooking");
             entity.Property(e => e.DiscountCourse).HasColumnName("discountCourse");
             entity.Property(e => e.ExpiryDate).HasColumnName("expiryDate");
