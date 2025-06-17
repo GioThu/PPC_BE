@@ -111,6 +111,11 @@ namespace PPC.Service.Services
             if ((wallet.Remaining ?? 0) < price)
                 return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Not enough balance");
 
+            if (await _memberMemberShipRepository.MemberHasActiveMemberShipAsync(memberId, membership.Id))
+            {
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Member already owns this membership and it is not yet expire.");
+            }
+
             wallet.Remaining -= price;
             await _walletRepository.UpdateAsync(wallet);
 
@@ -149,6 +154,41 @@ namespace PPC.Service.Services
             };
 
             return ServiceResponse<MemberBuyMemberShipResponse>.SuccessResponse(response);
+        }
+        public async Task<ServiceResponse<List<MyMemberShipStatusResponse>>> GetMemberShipStatusAsync(string memberId)
+        {
+            var now = DateTime.UtcNow;
+
+            var memberships = await _memberShipRepository.GetAllActiveAsync();
+
+            var result = new List<MyMemberShipStatusResponse>();
+
+            foreach (var memberShip in memberships)
+            {
+                var expire = await _memberMemberShipRepository.GetMemberShipExpireDateAsync(memberId, memberShip.Id);
+
+                var isActive = expire != null || expire > now;
+
+                var response = new MyMemberShipStatusResponse
+                {
+                    MemberShip = new MemberShipDto
+                    {
+                        Id = memberShip.Id,
+                        MemberShipName = memberShip.MemberShipName,
+                        Rank = memberShip.Rank,
+                        DiscountBooking = memberShip.DiscountBooking,
+                        DiscountCourse = memberShip.DiscountCourse,
+                        Price = memberShip.Price,
+                        ExpiryDate = memberShip.ExpiryDate,
+                        Status = memberShip.Status
+                    },
+                    ExpiredDate = expire,
+                    IsActive = isActive
+                };
+                result.Add(response);
+            }
+
+            return ServiceResponse<List<MyMemberShipStatusResponse>>.SuccessResponse(result);
         }
     }
 }

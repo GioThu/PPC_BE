@@ -10,5 +10,7 @@ namespace PPC.Repository.Interfaces
 {
     public interface IMemberMemberShipRepository : IGenericRepository<MemberMemberShip>
     {
+        Task<bool> MemberHasActiveMemberShipAsync(string memberId, string memberShipId);
+        Task<DateTime?> GetMemberShipExpireDateAsync(string memberId, string memberShipId);
     }
 }

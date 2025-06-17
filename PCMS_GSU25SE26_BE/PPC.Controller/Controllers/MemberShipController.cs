@@ -41,6 +41,7 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize(Roles = "1")]
         [HttpPut]
         public async Task<IActionResult> UpdateMemberShip([FromBody] MemberShipUpdateRequest request)
         {
@@ -54,6 +55,7 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize(Roles = "1")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMemberShip(string id)
         {
@@ -74,6 +76,22 @@ namespace PPC.Controller.Controllers
             var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
             var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
             var response = await _memberShipService.BuyMemberShipAsync(memberId, accountId, request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "3")]
+        [HttpGet("my-membership-status")]
+        public async Task<IActionResult> GetMemberShipStatus()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found.");
+
+            var response = await _memberShipService.GetMemberShipStatusAsync(memberId);
             if (response.Success)
                 return Ok(response);
 
