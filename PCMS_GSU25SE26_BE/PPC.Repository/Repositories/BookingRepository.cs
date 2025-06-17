@@ -14,6 +14,21 @@ namespace PPC.Repository.Repositories
     {
         public BookingRepository(CCPContext context) : base(context) { }
 
+        public async Task<Booking> GetByIdWithCounselor(string bookingId)
+        {
+            if (string.IsNullOrWhiteSpace(bookingId))
+                return null;
+
+            var booking = await _context.Bookings
+                .Include(b => b.Counselor)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null || booking.Counselor == null)
+                return null;
+
+            return booking;
+        }
+
         public async Task<List<Booking>> GetConfirmedBookingsByDateAsync(string counselorId, DateTime workDate)
         {
             return await _context.Bookings

@@ -15,5 +15,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<List<MemberShipDto>>> GetAllMemberShipsAsync();
         Task<ServiceResponse<string>> UpdateMemberShipAsync(MemberShipUpdateRequest request);
         Task<ServiceResponse<string>> DeleteMemberShipAsync(string id);
+        Task<ServiceResponse<MemberBuyMemberShipResponse>> BuyMemberShipAsync(string memberId, string accountId, MemberBuyMemberShipRequest request);
     }
 }

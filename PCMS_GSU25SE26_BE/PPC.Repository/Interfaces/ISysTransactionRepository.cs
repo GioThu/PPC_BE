@@ -8,10 +8,7 @@ using System.Threading.Tasks;
 
 namespace PPC.Repository.Interfaces
 {
-    public interface IBookingRepository : IGenericRepository<Booking>
+    public interface ISysTransactionRepository : IGenericRepository<SysTransaction>
     {
-        Task<List<Booking>> GetConfirmedBookingsByDateAsync(string counselorId, DateTime workDate);
-
-        Task<Booking> GetByIdWithCounselor(string bookingId);
     }
 }

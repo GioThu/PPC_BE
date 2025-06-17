@@ -4,21 +4,28 @@ using PPC.Service.Mappers;
 using PPC.Service.ModelRequest.MemberShipRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.MemberShipResponse;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using PPC.DAO.Models;
+using PPC.Service.ModelRequest.TransactionRequest;
 
 namespace PPC.Service.Services
 {
     public class MemberShipService : IMemberShipService
     {
         private readonly IMemberShipRepository _memberShipRepository;
+        private readonly IMemberRepository _memberRepository;
+        private readonly IWalletRepository _walletRepository;
+        private readonly ISysTransactionRepository _sysTransactionRepository;
+        private readonly IAccountRepository _accountRepository;
+        private readonly IMemberMemberShipRepository _memberMemberShipRepository;
 
-        public MemberShipService(IMemberShipRepository memberShipRepository)
+        public MemberShipService(IMemberShipRepository memberShipRepository, IMemberRepository memberRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IAccountRepository accountRepository, IMemberMemberShipRepository memberMemberShipRepository)
         {
             _memberShipRepository = memberShipRepository;
+            _memberRepository = memberRepository;
+            _walletRepository = walletRepository;
+            _sysTransactionRepository = sysTransactionRepository;
+            _accountRepository = accountRepository;
+            _memberMemberShipRepository = memberMemberShipRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateMemberShipAsync(MemberShipCreateRequest request)
@@ -75,6 +82,73 @@ namespace PPC.Service.Services
             await _memberShipRepository.UpdateAsync(memberShip);
 
             return ServiceResponse<string>.SuccessResponse("Membership deleted (status set to 0).");
+        }
+
+        public async Task<ServiceResponse<MemberBuyMemberShipResponse>> BuyMemberShipAsync(string memberId, string accountId, MemberBuyMemberShipRequest request)
+        {
+            if (string.IsNullOrEmpty(accountId))
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Unauthorized");
+            if (string.IsNullOrEmpty(memberId))
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Unauthorized");
+
+            var member = await _memberRepository.GetByIdAsync(memberId);
+            if (member == null)
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Member not found");
+
+            var membership = await _memberShipRepository.GetByIdAsync(request.MemberShipId);
+            if (membership == null || membership.Status != 1)
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Membership not found or inactive");
+
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            if (account == null || string.IsNullOrEmpty(account.WalletId))
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Wallet not found");
+
+            var wallet = await _walletRepository.GetByIdAsync(account.WalletId);
+            if (wallet == null || wallet.Status != 1)
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Wallet not found or inactive");
+
+            var price = membership.Price ?? 0;
+            if ((wallet.Remaining ?? 0) < price)
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Not enough balance");
+
+            wallet.Remaining -= price;
+            await _walletRepository.UpdateAsync(wallet);
+
+            var now = DateTime.UtcNow;
+            var expiry = now.AddDays(membership.ExpiryDate ?? 30);
+            var memberMemberShip = new MemberMemberShip
+            {
+                Id = Utils.Utils.GenerateIdModel("MemberMemberShip"),
+                MemberId = member.Id,
+                MemberShipId = membership.Id,
+                Price = price,
+                CreateDate = now,
+                ExpiryDate = expiry,
+                Status = 1
+            };
+            await _memberMemberShipRepository.CreateAsync(memberMemberShip);
+
+            var sysTransaction = new SysTransaction
+            {
+                Id = Utils.Utils.GenerateIdModel("SysTransaction"),
+                TransactionType = "5",
+                DocNo = memberMemberShip.Id,
+                CreateBy = accountId,
+                CreateDate = now
+            };
+            await _sysTransactionRepository.CreateAsync(sysTransaction);
+
+            var response = new MemberBuyMemberShipResponse
+            {
+                MemberShipId = membership.Id,
+                MemberId = member.Id,
+                Price = price,
+                Remaining = wallet.Remaining,
+                TransactionId = sysTransaction.Id,
+                Message = "Buy membership successfully"
+            };
+
+            return ServiceResponse<MemberBuyMemberShipResponse>.SuccessResponse(response);
         }
     }
 }

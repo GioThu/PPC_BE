@@ -30,6 +30,7 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize(Roles = "1")]
         [HttpGet]
         public async Task<IActionResult> GetAllMemberShips()
         {
@@ -63,5 +64,20 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize(Roles = "3")]
+        [HttpPost("buy")]
+        public async Task<IActionResult> BuyMemberShip([FromBody] MemberBuyMemberShipRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            var response = await _memberShipService.BuyMemberShipAsync(memberId, accountId, request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }
