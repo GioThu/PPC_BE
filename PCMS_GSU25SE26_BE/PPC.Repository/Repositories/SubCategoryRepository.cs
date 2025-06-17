@@ -14,10 +14,10 @@ namespace PPC.Repository.Repositories
     {
         public SubCategoryRepository(CCPContext context) : base(context) { }
 
-        public async Task<bool> IsNameExistInCategoryAsync(string name, string categoryId)
+        public async Task<bool> IsNameExistInCategoryAsync(string name)
         {
             return await _context.SubCategories
-                .AnyAsync(sc => sc.Name == name && sc.CategoryId == categoryId);
+                .AnyAsync(sc => sc.Name == name);
         }
 
         public async Task<List<SubCategory>> GetByIdsAsync(List<string> ids)

@@ -5,7 +5,6 @@ using PPC.Service.ModelRequest.CategoryRequest;
 
 namespace PPC.Controller.Controllers
 {
-    [Authorize(Roles = "1")]
     [ApiController]
     [Route("api/[controller]")]
     public class SubCategoryController : ControllerBase
@@ -17,6 +16,8 @@ namespace PPC.Controller.Controllers
             _subCategoryService = subCategoryService;
         }
 
+        // Tạo SubCategory mới
+        [Authorize(Roles = "1")]
         [HttpPost]
         public async Task<IActionResult> CreateSubCategory([FromBody] SubCategoryCreateRequest request)
         {
@@ -29,5 +30,45 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        // Cập nhật SubCategory
+        [Authorize(Roles = "1")]
+        [HttpPut]
+        public async Task<IActionResult> UpdateSubCategory([FromBody] SubCategoryUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _subCategoryService.UpdateSubCategoryAsync(request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        // Block SubCategory
+        [Authorize(Roles = "1")]
+        [HttpPost("block")]
+        public async Task<IActionResult> BlockSubCategory(string id)
+        {
+            var response = await _subCategoryService.BlockSubCategoryAsync(id);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        // Unblock SubCategory
+        [Authorize(Roles = "1")]
+        [HttpPost("unblock")]
+        public async Task<IActionResult> UnblockSubCategory(string id)
+        {
+            var response = await _subCategoryService.UnblockSubCategoryAsync(id);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
     }
 }

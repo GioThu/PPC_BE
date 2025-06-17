@@ -67,17 +67,19 @@ namespace PPC.Service.Services
             return ServiceResponse<List<CategoryDto>>.SuccessResponse(categoryDtos);
         }
 
-        public async Task<ServiceResponse<string>> DeleteCategoryAsync(string id)
+        public async Task<ServiceResponse<string>> BlockCategoryAsync(string id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
                 return ServiceResponse<string>.ErrorResponse("Category not found.");
 
-            var result = await _categoryRepository.RemoveAsync(category);
-            if (!result)
-                return ServiceResponse<string>.ErrorResponse("Failed to delete category.");
+            category.Status = 0;
 
-            return ServiceResponse<string>.SuccessResponse("Category deleted successfully.");
+            var result = await _categoryRepository.UpdateAsync(category);
+            if (result != 1)
+                return ServiceResponse<string>.ErrorResponse("Failed to update category status.");
+
+            return ServiceResponse<string>.SuccessResponse("Category status updated to inactive (deleted).");
         }
 
         public async Task<ServiceResponse<List<CategoryDto>>> GetActiveCategoriesWithSubAsync()
@@ -85,6 +87,21 @@ namespace PPC.Service.Services
             var categories = await _categoryRepository.GetActiveCategoriesWithActiveSubCategoriesAsync();
             var categoryDtos = _mapper.Map<List<CategoryDto>>(categories);
             return ServiceResponse<List<CategoryDto>>.SuccessResponse(categoryDtos);
+        }
+
+        public async Task<ServiceResponse<string>> UnblockCategoryAsync(string id)
+        {
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null)
+                return ServiceResponse<string>.ErrorResponse("Category not found.");
+
+            category.Status = 1;
+
+            var result = await _categoryRepository.UpdateAsync(category);
+            if (result != 1)
+                return ServiceResponse<string>.ErrorResponse("Failed to unblock category.");
+
+            return ServiceResponse<string>.SuccessResponse("Category unblocked successfully.");
         }
     }
 }

@@ -10,7 +10,7 @@ namespace PPC.Repository.Interfaces
 {
     public interface ISubCategoryRepository : IGenericRepository<SubCategory>
     {
-        Task<bool> IsNameExistInCategoryAsync(string name, string categoryId);
+        Task<bool> IsNameExistInCategoryAsync(string name);
         Task<List<SubCategory>> GetByIdsAsync(List<string> ids);
 
     }

@@ -5,7 +5,6 @@ using PPC.Service.ModelRequest.MemberShipRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.MemberShipResponse;
 using PPC.DAO.Models;
-using PPC.Service.ModelRequest.TransactionRequest;
 
 namespace PPC.Service.Services
 {
@@ -198,7 +197,6 @@ namespace PPC.Service.Services
             var activeMemberships = await _memberMemberShipRepository
                 .GetActiveMemberShipsByMemberIdAsync(memberId); 
 
-            // Lọc các MemberShip đang hoạt động
             var validDiscounts = activeMemberships
                 .Where(mms => mms.MemberShip != null && mms.MemberShip.Status == 1)
                 .Select(mms => mms.MemberShip.DiscountBooking ?? 0)
