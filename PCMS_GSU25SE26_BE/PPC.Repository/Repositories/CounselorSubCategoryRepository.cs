@@ -25,7 +25,8 @@ namespace PPC.Repository.Repositories
         {
             return await _context.CounselorSubCategories
                 .Where(csc => csc.CertifivationId == certificationId)
-                .Include(csc => csc.SubCategory)
+                .Include(csc => csc.SubCategory)        
+                .ThenInclude(sc => sc.Category)         
                 .Select(csc => csc.SubCategory)
                 .ToListAsync();
         }

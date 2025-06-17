@@ -17,6 +17,12 @@ namespace PPC.Service.ModelResponse.CirtificationResponse
         public DateTime? Time { get; set; }
         public int? Status { get; set; }
 
+        public List<CategoryWithSubDto> Categories { get; set; }
+    }
+    public class CategoryWithSubDto
+    {
+        public string CategoryId { get; set; }
+        public string CategoryName { get; set; }
         public List<SubCategoryDto> SubCategories { get; set; }
     }
 }

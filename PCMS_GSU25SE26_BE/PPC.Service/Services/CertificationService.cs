@@ -117,8 +117,29 @@ namespace PPC.Service.Services
             foreach (var cert in certifications)
             {
                 var dto = _mapper.Map<CertificationWithSubDto>(cert);
+
                 var subCategories = await _cscRepo.GetSubCategoriesByCertificationIdAsync(cert.Id);
-                dto.SubCategories = _mapper.Map<List<SubCategoryDto>>(subCategories);
+
+                if (subCategories == null || !subCategories.Any())
+                {
+                    dto.Categories = new List<CategoryWithSubDto>(); 
+                }
+                else
+                {
+                    var categories = subCategories
+                        .Where(sc => sc.Category != null) 
+                        .GroupBy(sc => sc.CategoryId)
+                        .Select(group => new CategoryWithSubDto
+                        {
+                            CategoryId = group.Key,
+                            CategoryName = group.First().Category?.Name ?? "Unknown", 
+                            SubCategories = _mapper.Map<List<SubCategoryDto>>(group.ToList())
+                        })
+                        .ToList();
+
+                    dto.Categories = categories;
+                }
+
                 result.Add(dto);
             }
 
@@ -133,9 +154,22 @@ namespace PPC.Service.Services
             foreach (var cert in certifications)
             {
                 var dto = _mapper.Map<CertificationWithSubDto>(cert);
+
                 var subCategories = await _cscRepo.GetSubCategoriesByCertificationIdAsync(cert.Id);
-                dto.SubCategories = _mapper.Map<List<SubCategoryDto>>(subCategories);
-                result.Add(dto);
+
+                var categories = subCategories
+                    .Where(sc => sc.Category != null) 
+                    .GroupBy(sc => sc.CategoryId)
+                    .Select(group => new CategoryWithSubDto
+                    {
+                        CategoryId = group.Key,
+                        CategoryName = group.First().Category.Name, 
+                        SubCategories = _mapper.Map<List<SubCategoryDto>>(group.ToList()) 
+                    })
+                    .ToList();
+
+                dto.Categories = categories;
+                result.Add(dto); 
             }
 
             return ServiceResponse<List<CertificationWithSubDto>>.SuccessResponse(result);
