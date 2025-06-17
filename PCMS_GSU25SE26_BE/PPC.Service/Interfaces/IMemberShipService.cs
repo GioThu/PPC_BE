@@ -17,5 +17,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> DeleteMemberShipAsync(string id);
         Task<ServiceResponse<MemberBuyMemberShipResponse>> BuyMemberShipAsync(string memberId, string accountId, MemberBuyMemberShipRequest request);
         Task<ServiceResponse<List<MyMemberShipStatusResponse>>> GetMemberShipStatusAsync(string memberId);
+        Task<int> GetMaxBookingDiscountByMemberAsync(string memberId);
+
     }
 }

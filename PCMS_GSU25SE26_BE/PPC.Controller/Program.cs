@@ -26,6 +26,8 @@ builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IMemberShipRepository, MemberShipRepository>();
 builder.Services.AddScoped<IMemberMemberShipRepository, MemberMemberShipRepository>();
 builder.Services.AddScoped<ISysTransactionRepository, SysTransactionRepository>();
+builder.Services.AddScoped<IBookingSubCategoryRepository, BookingSubCategoryRepository>();
+
 
 
 
@@ -39,6 +41,8 @@ builder.Services.AddScoped<ICounselorService, CounselorService>();
 builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
 builder.Services.AddScoped<ICertificationService, CertificationService>();
 builder.Services.AddScoped<IMemberShipService, MemberShipService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+
 
 
 

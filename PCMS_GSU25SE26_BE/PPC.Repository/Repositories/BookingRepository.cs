@@ -39,5 +39,17 @@ namespace PPC.Repository.Repositories
                     b.TimeStart.Value.Date == workDate.Date)
                 .ToListAsync();
         }
+
+        public async Task<List<Booking>> GetConfirmedBookingsBetweenDatesAsync(string counselorId, DateTime from, DateTime to)
+        {
+            return await _context.Bookings
+                .Where(b => b.CounselorId == counselorId
+                            && b.Status == 1 
+                            && b.TimeStart.HasValue
+                            && b.TimeEnd.HasValue
+                            && b.TimeStart.Value.Date >= from
+                            && b.TimeStart.Value.Date <= to)
+                .ToListAsync();
+        }
     }
 }

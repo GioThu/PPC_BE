@@ -14,6 +14,7 @@ namespace PPC.Repository.Interfaces
         Task<List<WorkSchedule>> GetSchedulesByCounselorIdAsync(string counselorId);
         Task<bool> DeleteScheduleByIdAsync(string scheduleId);
         Task<List<WorkSchedule>> GetByCounselorAndDateAsync(string counselorId, DateTime date);
+        Task<List<WorkSchedule>> GetByCounselorBetweenDatesAsync(string counselorId, DateTime from, DateTime to);
 
     }
 }

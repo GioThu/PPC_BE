@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
@@ -75,6 +76,97 @@ namespace PPC.Service.Services
             return ServiceResponse<List<CounselorWithSubDto>>.SuccessResponse(result);
         }
 
+        //public async Task<ServiceResponse<AvailableScheduleOverviewDto>> GetAvailableScheduleAsync(GetAvailableScheduleRequest request)
+        //{
+        //    var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);
+        //    if (counselor == null)
+        //    {
+        //        return ServiceResponse<AvailableScheduleOverviewDto>.ErrorResponse("Counselor not found.");
+        //    }
+
+        //    var counselorDto = _mapper.Map<CounselorDto>(counselor);
+        //    var subCategories = await _counselorSubCategoryRepository
+        //        .GetApprovedSubCategoriesByCounselorAsync(request.CounselorId);
+        //    var subCategoryDtos = _mapper.Map<List<SubCategoryDto>>(subCategories);
+
+        //    var dailySchedules = new List<DailyAvailableSlotDto>();
+
+        //    for (int i = 0; i < 7; i++)
+        //    {
+        //        var currentDate = Utils.Utils.GetTimeNow().Date.AddDays(i);
+        //        var workSchedules = await _workScheduleRepo.GetByCounselorAndDateAsync(request.CounselorId, currentDate);
+        //        var bookings = await _bookingRepo.GetConfirmedBookingsByDateAsync(request.CounselorId, currentDate);
+
+        //        var bookingIntervals = bookings
+        //            .Where(b => b.TimeStart.HasValue && b.TimeEnd.HasValue)
+        //            .Select(b => new
+        //            {
+        //                Start = b.TimeStart.Value.TimeOfDay,
+        //                End = b.TimeEnd.Value.TimeOfDay + TimeSpan.FromMinutes(10)
+        //            })
+        //            .OrderBy(b => b.Start)
+        //            .ToList();
+
+        //        var availableSlots = new List<AvailableTimeSlotDto>();
+
+        //        foreach (var schedule in workSchedules)
+        //        {
+        //            if (!schedule.StartTime.HasValue || !schedule.EndTime.HasValue)
+        //                continue;
+
+        //            var currentStart = schedule.StartTime.Value.TimeOfDay;
+        //            var scheduleEnd = schedule.EndTime.Value.TimeOfDay;
+
+        //            foreach (var b in bookingIntervals)
+        //            {
+        //                if (b.End <= currentStart)
+        //                    continue;
+
+        //                if (b.Start >= scheduleEnd)
+        //                    break;
+
+        //                if (b.Start > currentStart)
+        //                {
+        //                    availableSlots.Add(new AvailableTimeSlotDto
+        //                    {
+        //                        Start = currentStart,
+        //                        End = b.Start < scheduleEnd ? b.Start : scheduleEnd
+        //                    });
+        //                }
+
+        //                currentStart = b.End > currentStart ? b.End : currentStart;
+        //            }
+
+        //            if (currentStart < scheduleEnd)
+        //            {
+        //                availableSlots.Add(new AvailableTimeSlotDto
+        //                {
+        //                    Start = currentStart,
+        //                    End = scheduleEnd
+        //                });
+        //            }
+        //        }
+
+        //        if (availableSlots.Any())
+        //        {
+        //            dailySchedules.Add(new DailyAvailableSlotDto
+        //            {
+        //                WorkDate = currentDate,
+        //                AvailableSlots = availableSlots.OrderBy(s => s.Start).ToList()
+        //            });
+        //        }
+        //    }
+
+        //    var overviewDto = new AvailableScheduleOverviewDto
+        //    {
+        //        CounselorId = request.CounselorId,
+        //        Counselor = counselorDto,
+        //        SubCategories = subCategoryDtos,
+        //        DailyAvailableSchedules = dailySchedules
+        //    };
+
+        //    return ServiceResponse<AvailableScheduleOverviewDto>.SuccessResponse(overviewDto);
+        //}
         public async Task<ServiceResponse<AvailableScheduleOverviewDto>> GetAvailableScheduleAsync(GetAvailableScheduleRequest request)
         {
             var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);
@@ -88,16 +180,40 @@ namespace PPC.Service.Services
                 .GetApprovedSubCategoriesByCounselorAsync(request.CounselorId);
             var subCategoryDtos = _mapper.Map<List<SubCategoryDto>>(subCategories);
 
+            // Lấy dữ liệu cho 7 ngày tiếp theo
+            var startDate = Utils.Utils.GetTimeNow().Date;
+            var endDate = startDate.AddDays(6);
+
+            var workSchedules = await _workScheduleRepo.GetByCounselorBetweenDatesAsync(request.CounselorId, startDate, endDate);
+            var bookings = await _bookingRepo.GetConfirmedBookingsBetweenDatesAsync(request.CounselorId, startDate, endDate);
+
+
+
+            var workScheduleMap = workSchedules
+                .Where(ws => ws.WorkDate.HasValue)
+                .GroupBy(ws => ws.WorkDate.Value.Date)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var bookingMap = bookings
+                .Where(b => b.TimeStart.HasValue)
+                .GroupBy(b => b.TimeStart.Value.Date)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             var dailySchedules = new List<DailyAvailableSlotDto>();
 
             for (int i = 0; i < 7; i++)
             {
-                var currentDate = Utils.Utils.GetTimeNow().Date.AddDays(i); 
-                var workSchedules = await _workScheduleRepo.GetByCounselorAndDateAsync(request.CounselorId, currentDate);
-                var bookings = await _bookingRepo.GetConfirmedBookingsByDateAsync(request.CounselorId, currentDate);
+                var currentDate = startDate.AddDays(i);
 
-                var bookingIntervals = bookings
-                    .Where(b => b.TimeStart.HasValue && b.TimeEnd.HasValue)
+                var daySchedules = workScheduleMap.ContainsKey(currentDate)
+                    ? workScheduleMap[currentDate]
+                    : new List<WorkSchedule>();
+
+                var dayBookings = bookingMap.ContainsKey(currentDate)
+                    ? bookingMap[currentDate]
+                    : new List<Booking>();
+
+                var bookingIntervals = dayBookings
                     .Select(b => new
                     {
                         Start = b.TimeStart.Value.TimeOfDay,
@@ -108,7 +224,7 @@ namespace PPC.Service.Services
 
                 var availableSlots = new List<AvailableTimeSlotDto>();
 
-                foreach (var schedule in workSchedules)
+                foreach (var schedule in daySchedules)
                 {
                     if (!schedule.StartTime.HasValue || !schedule.EndTime.HasValue)
                         continue;
@@ -118,11 +234,8 @@ namespace PPC.Service.Services
 
                     foreach (var b in bookingIntervals)
                     {
-                        if (b.End <= currentStart)
-                            continue;
-
-                        if (b.Start >= scheduleEnd)
-                            break;
+                        if (b.End <= currentStart) continue;
+                        if (b.Start >= scheduleEnd) break;
 
                         if (b.Start > currentStart)
                         {
@@ -166,6 +279,5 @@ namespace PPC.Service.Services
 
             return ServiceResponse<AvailableScheduleOverviewDto>.SuccessResponse(overviewDto);
         }
-
     }
 }

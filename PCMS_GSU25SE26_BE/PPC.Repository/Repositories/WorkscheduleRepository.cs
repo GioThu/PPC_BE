@@ -52,5 +52,12 @@ namespace PPC.Repository.Repositories
                 .Where(ws => ws.CounselorId == counselorId && ws.WorkDate.HasValue && ws.WorkDate.Value.Date == date.Date)
                 .ToListAsync();
         }
+
+        public async Task<List<WorkSchedule>> GetByCounselorBetweenDatesAsync(string counselorId, DateTime from, DateTime to)
+        {
+            return await _context.WorkSchedules
+                .Where(ws => ws.CounselorId == counselorId && ws.WorkDate >= from && ws.WorkDate <= to)
+                .ToListAsync();
+        }
     }
 }

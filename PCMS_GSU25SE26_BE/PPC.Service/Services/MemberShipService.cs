@@ -190,5 +190,21 @@ namespace PPC.Service.Services
 
             return ServiceResponse<List<MyMemberShipStatusResponse>>.SuccessResponse(result);
         }
+
+        public async Task<int> GetMaxBookingDiscountByMemberAsync(string memberId)
+        {
+            var now = DateTime.UtcNow;
+
+            var activeMemberships = await _memberMemberShipRepository
+                .GetActiveMemberShipsByMemberIdAsync(memberId); 
+
+            // Lọc các MemberShip đang hoạt động
+            var validDiscounts = activeMemberships
+                .Where(mms => mms.MemberShip != null && mms.MemberShip.Status == 1)
+                .Select(mms => mms.MemberShip.DiscountBooking ?? 0)
+                .ToList();
+
+            return validDiscounts.Any() ? validDiscounts.Max() : 0;
+        }
     }
 }

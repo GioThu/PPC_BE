@@ -13,5 +13,7 @@ namespace PPC.Repository.Interfaces
         Task<List<Booking>> GetConfirmedBookingsByDateAsync(string counselorId, DateTime workDate);
 
         Task<Booking> GetByIdWithCounselor(string bookingId);
+        Task<List<Booking>> GetConfirmedBookingsBetweenDatesAsync(string counselorId, DateTime from, DateTime to);
+
     }
 }
