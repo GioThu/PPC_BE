@@ -92,7 +92,7 @@ namespace PPC.Service.Services
 
             for (int i = 0; i < 7; i++)
             {
-                var currentDate = request.WorkDate.Date.AddDays(i);
+                var currentDate = Utils.Utils.GetTimeNow().Date.AddDays(i); 
                 var workSchedules = await _workScheduleRepo.GetByCounselorAndDateAsync(request.CounselorId, currentDate);
                 var bookings = await _bookingRepo.GetConfirmedBookingsByDateAsync(request.CounselorId, currentDate);
 

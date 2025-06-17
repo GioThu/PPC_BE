@@ -12,7 +12,5 @@ namespace PPC.Service.ModelRequest.WorkScheduleRequest
         [Required]
         public string CounselorId { get; set; }
 
-        [Required]
-        public DateTime WorkDate { get; set; }
     }
 }
