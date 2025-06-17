@@ -14,5 +14,8 @@ namespace PPC.Service.Interfaces
     public interface IBookingService
     {
         Task<ServiceResponse<BookingResultDto>> BookCounselingAsync(string memberId, string accountId, BookingRequest request);
+        Task<ServiceResponse<List<BookingDto>>> GetBookingsByCounselorAsync(string counselorId);
+        Task<ServiceResponse<List<BookingDto>>> GetBookingsByMemberAsync(string memberId);
+
     }
 }

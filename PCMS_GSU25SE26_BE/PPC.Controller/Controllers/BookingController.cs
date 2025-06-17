@@ -35,5 +35,35 @@ namespace PPC.Controller.Controllers
 
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+        [Authorize(Roles = "2")] 
+        [HttpGet("my-bookings")]
+        public async Task<IActionResult> GetMyBookingsForCounselor()
+        {
+            var counselorId = User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
+            if (string.IsNullOrEmpty(counselorId))
+                return Unauthorized("CounselorId not found in token.");
+
+            var response = await _bookingService.GetBookingsByCounselorAsync(counselorId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "3")] 
+        [HttpGet("my-bookings/member")]
+        public async Task<IActionResult> GetMyBookingsForMember()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _bookingService.GetBookingsByMemberAsync(memberId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

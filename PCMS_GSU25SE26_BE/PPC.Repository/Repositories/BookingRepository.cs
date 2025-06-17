@@ -51,5 +51,25 @@ namespace PPC.Repository.Repositories
                             && b.TimeStart.Value.Date <= to)
                 .ToListAsync();
         }
+
+        public async Task<List<Booking>> GetBookingsByMemberIdAsync(string memberId)
+        {
+            return await _context.Bookings
+                .Where(b => b.MemberId == memberId || b.Member2Id == memberId) 
+                .Include(b => b.BookingSubCategories)  
+                .ThenInclude(bsc => bsc.SubCategory)  
+                .OrderByDescending(b => b.TimeStart)
+                .ToListAsync();
+        }
+
+        public async Task<List<Booking>> GetBookingsByCounselorIdAsync(string counselorId)
+        {
+            return await _context.Bookings
+                .Where(b => b.CounselorId == counselorId)
+                .Include(b => b.BookingSubCategories) 
+                .ThenInclude(bsc => bsc.SubCategory)  
+                .OrderByDescending(b => b.TimeStart)
+                .ToListAsync();
+        }
     }
 }
