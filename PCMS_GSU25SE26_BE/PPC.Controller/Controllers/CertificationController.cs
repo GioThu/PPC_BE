@@ -103,5 +103,20 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+
+        [Authorize(Roles = "1")]
+        [HttpGet("Admin-get-detail")]
+        public async Task<IActionResult> GetCertificationById(string certificationId)
+        {
+            var response = await _certificationService.GetCertificationByIdAsync(certificationId);
+
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+
+            return BadRequest(response);
+        }
     }
 }

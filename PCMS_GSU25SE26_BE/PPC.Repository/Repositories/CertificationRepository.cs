@@ -18,15 +18,27 @@ namespace PPC.Repository.Repositories
         {
             return await _context.Certifications
                 .Where(c => c.CounselorId == counselorId)
-                .OrderByDescending(c => c.CreateAt)
+                .Include(c => c.Counselor)  
+                .OrderByDescending(c => c.Time)  
                 .ToListAsync();
         }
 
         public async Task<List<Certification>> GetAllCertificationsAsync()
         {
             return await _context.Certifications
-                .OrderByDescending(c => c.CreateAt)
+                .Include(c => c.Counselor)  
+                .OrderByDescending(c => c.Time)  
                 .ToListAsync();
         }
+
+        public async Task<Certification> GetCertificationByIdAsync(string certificationId)
+        {
+            return await _context.Certifications
+                .Where(c => c.Id == certificationId)
+                .Include(c => c.Counselor)  
+                .FirstOrDefaultAsync(); 
+        }
+
+
     }
 }

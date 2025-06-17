@@ -1,4 +1,6 @@
-﻿using PPC.Service.ModelResponse.CategoryResponse;
+﻿using PPC.DAO.Models;
+using PPC.Service.ModelResponse.CategoryResponse;
+using PPC.Service.ModelResponse.CounselorResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +18,7 @@ namespace PPC.Service.ModelResponse.CirtificationResponse
         public string RejectReason { get; set; }
         public DateTime? Time { get; set; }
         public int? Status { get; set; }
-
+        public CounselorDto Counselor { get; set; }
         public List<CategoryWithSubDto> Categories { get; set; }
     }
     public class CategoryWithSubDto

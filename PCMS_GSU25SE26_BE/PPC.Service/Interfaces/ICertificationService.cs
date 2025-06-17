@@ -17,6 +17,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<List<CertificationWithSubDto>>> GetMyCertificationsAsync(string counselorId);
         Task<ServiceResponse<List<CertificationWithSubDto>>> GetAllCertificationsAsync();
         Task<ServiceResponse<string>> UpdateCertificationAsync(string counselorId, UpdateCertificationRequest request);
-
+        Task<ServiceResponse<CertificationWithSubDto>> GetCertificationByIdAsync(string certificationId);
     }
 }

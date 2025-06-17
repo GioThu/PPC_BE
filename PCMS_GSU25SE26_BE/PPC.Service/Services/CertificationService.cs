@@ -7,6 +7,7 @@ using PPC.Service.ModelRequest.CirtificationRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.CategoryResponse;
 using PPC.Service.ModelResponse.CirtificationResponse;
+using PPC.Service.ModelResponse.CounselorResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,16 +23,18 @@ namespace PPC.Service.Services
         private readonly ISubCategoryRepository _subCategoryRepo;
         private readonly IMapper _mapper;
         private readonly ICounselorService _counselorService;
+        private readonly ICounselorRepository _counselorRepo;
 
 
 
-        public CertificationService(ICertificationRepository certRepo, ICounselorSubCategoryRepository cscRepo, ISubCategoryRepository subCategoryRepo, IMapper mapper, ICounselorService counselorService)
+        public CertificationService(ICertificationRepository certRepo, ICounselorSubCategoryRepository cscRepo, ISubCategoryRepository subCategoryRepo, IMapper mapper, ICounselorService counselorService, ICounselorRepository counselorRepo)
         {
             _certRepo = certRepo;
             _cscRepo = cscRepo;
             _subCategoryRepo = subCategoryRepo;
             _mapper = mapper;
             _counselorService = counselorService;
+            _counselorRepo = counselorRepo;
         }
 
         public async Task<ServiceResponse<string>> SendCertificationAsync(string counselorId, SendCertificationRequest request)
@@ -118,6 +121,8 @@ namespace PPC.Service.Services
             {
                 var dto = _mapper.Map<CertificationWithSubDto>(cert);
 
+                dto.Counselor = _mapper.Map<CounselorDto>(cert.Counselor);
+
                 var subCategories = await _cscRepo.GetSubCategoriesByCertificationIdAsync(cert.Id);
 
                 if (subCategories == null || !subCategories.Any())
@@ -155,6 +160,7 @@ namespace PPC.Service.Services
             {
                 var dto = _mapper.Map<CertificationWithSubDto>(cert);
 
+                dto.Counselor = _mapper.Map<CounselorDto>(cert.Counselor);
                 var subCategories = await _cscRepo.GetSubCategoriesByCertificationIdAsync(cert.Id);
 
                 var categories = subCategories
@@ -173,6 +179,37 @@ namespace PPC.Service.Services
             }
 
             return ServiceResponse<List<CertificationWithSubDto>>.SuccessResponse(result);
+        }
+
+        public async Task<ServiceResponse<CertificationWithSubDto>> GetCertificationByIdAsync(string certificationId)
+        {
+            var certification = await _certRepo.GetCertificationByIdAsync(certificationId);
+
+            if (certification == null)
+            {
+                return ServiceResponse<CertificationWithSubDto>.ErrorResponse("Certification not found.");
+            }
+
+            var dto = _mapper.Map<CertificationWithSubDto>(certification);
+
+            dto.Counselor = _mapper.Map<CounselorDto>(certification.Counselor);
+
+            var subCategories = await _cscRepo.GetSubCategoriesByCertificationIdAsync(certificationId);
+
+            var categories = subCategories
+                .Where(sc => sc.Category != null) 
+                .GroupBy(sc => sc.CategoryId)
+                .Select(group => new CategoryWithSubDto
+                {
+                    CategoryId = group.Key,
+                    CategoryName = group.First().Category.Name,
+                    SubCategories = _mapper.Map<List<SubCategoryDto>>(group.ToList()) 
+                })
+                .ToList();
+
+            dto.Categories = categories;
+
+            return ServiceResponse<CertificationWithSubDto>.SuccessResponse(dto);
         }
         public async Task<ServiceResponse<string>> UpdateCertificationAsync(string counselorId, UpdateCertificationRequest request)
         {
@@ -214,5 +251,7 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Certification updated and sent for re-approval.");
         }
+
+
     }
 }
