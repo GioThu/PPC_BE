@@ -159,7 +159,7 @@ namespace PPC.Controller.Controllers
             return BadRequest(response); 
         }
 
-        [HttpPost("{bookingId}/livekit-webhook")]
+        [HttpPost("livekit-webhook")]
         public async Task<IActionResult> Webhook()
         {
             using var reader = new StreamReader(Request.Body);
