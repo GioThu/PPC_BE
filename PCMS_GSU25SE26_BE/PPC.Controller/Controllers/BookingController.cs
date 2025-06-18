@@ -15,7 +15,7 @@ namespace PPC.Controller.Controllers
     public class BookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;
-
+        private readonly ILiveKitService _livekitService;
         public BookingController(IBookingService bookingService)
         {
             _bookingService = bookingService;
@@ -157,6 +157,16 @@ namespace PPC.Controller.Controllers
             }
 
             return BadRequest(response); 
+        }
+
+        [HttpPost("{bookingId}/livekit-webhook")]
+        public async Task<IActionResult> Webhook()
+        {
+            using var reader = new StreamReader(Request.Body);
+            var rawBody = await reader.ReadToEndAsync();
+            var authHeader = Request.Headers["Authorization"].ToString();
+            var success = await _livekitService.HandleWebhookAsync(rawBody, authHeader);
+            return success ? Ok() : Unauthorized();
         }
     }
 }

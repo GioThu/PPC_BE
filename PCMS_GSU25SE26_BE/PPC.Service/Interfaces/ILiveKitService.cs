@@ -9,5 +9,6 @@ namespace PPC.Service.Interfaces
     public interface ILiveKitService
     {
         string GenerateLiveKitToken(string room, string id, string name, DateTime startTime, DateTime endTime);
+        Task<bool> HandleWebhookAsync(string rawBody, string authorizationHeader);
     }
 }
