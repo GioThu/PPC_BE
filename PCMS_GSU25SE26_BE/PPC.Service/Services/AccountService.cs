@@ -1,10 +1,12 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using AutoMapper;
+using Microsoft.IdentityModel.Tokens;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Service.Interfaces;
 using PPC.Service.Mappers;
 using PPC.Service.ModelRequest.AccountRequest;
 using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.CounselorResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,19 +22,23 @@ namespace PPC.Service.Services
         private readonly IMemberRepository _memberRepository;
         private readonly IWalletRepository _walletRepository;
         private readonly IJwtService _jwtService;
+        private readonly IMapper _mapper;
+
 
         public AccountService(
             IAccountRepository accountRepository,
             ICounselorRepository counselorRepository,
             IWalletRepository walletRepository,
             IJwtService jwtService,
-            IMemberRepository memberRepository)
+            IMemberRepository memberRepository,
+            IMapper mapper)
         {
             _accountRepository = accountRepository;
             _counselorRepository = counselorRepository;
             _walletRepository = walletRepository;
             _jwtService = jwtService;
             _memberRepository = memberRepository;
+            _mapper = mapper;
         }
 
         public async Task<ServiceResponse<string>> CounselorLogin(LoginRequest loginRequest)
@@ -163,6 +169,39 @@ namespace PPC.Service.Services
             {
                 return ServiceResponse<IEnumerable<Account>>.ErrorResponse(ex.Message);
             }
+        }
+
+        public async Task<ServiceResponse<CounselorDto>> CounselorGetMyProfileAsync(string counselorId)
+        {
+            var counselor = await _counselorRepository.GetByIdAsync(counselorId);
+            if (counselor == null)
+            {
+                return ServiceResponse<CounselorDto>.ErrorResponse("Counselor not found.");
+            }
+
+            var counselorDto = _mapper.Map<CounselorDto>(counselor);
+            return ServiceResponse<CounselorDto>.SuccessResponse(counselorDto);
+        }
+
+        public async Task<ServiceResponse<string>> CounselorEditMyProfileAsync(string counselorId, CounselorEditRequest request)
+        {
+            var counselor = await _counselorRepository.GetByIdAsync(counselorId);
+            if (counselor == null)
+            {
+                return ServiceResponse<string>.ErrorResponse("Counselor not found.");
+            }
+
+            // Update fields based on the request
+            counselor.Fullname = request.Fullname ?? counselor.Fullname;
+            counselor.Description = request.Description ?? counselor.Description;
+            counselor.Price = request.Price ?? counselor.Price;
+            counselor.Phone = request.Phone ?? counselor.Phone;
+            counselor.Avatar = request.Avatar ?? counselor.Avatar;
+            counselor.YearOfJob = request.YearOfJob ?? counselor.YearOfJob;
+
+            await _counselorRepository.UpdateAsync(counselor);
+
+            return ServiceResponse<string>.SuccessResponse("Profile updated successfully.");
         }
     }
 }

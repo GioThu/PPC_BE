@@ -1,6 +1,7 @@
 ﻿using PPC.DAO.Models;
 using PPC.Service.ModelRequest.AccountRequest;
 using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.CounselorResponse;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,5 +15,8 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> MemberLogin(LoginRequest loginRequest);
         Task<ServiceResponse<IEnumerable<Account>>> GetAllAccountsAsync();
         Task<ServiceResponse<string>> AdminLogin(LoginRequest loginRequest);
+        Task<ServiceResponse<CounselorDto>> CounselorGetMyProfileAsync(string counselorId);
+        Task<ServiceResponse<string>> CounselorEditMyProfileAsync(string counselorId, CounselorEditRequest request);
+
     }
 }

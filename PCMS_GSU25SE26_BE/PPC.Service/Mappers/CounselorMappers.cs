@@ -1,4 +1,5 @@
 ﻿using PPC.DAO.Models;
+using PPC.Service.ModelResponse.CounselorResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PPC.Service.Mappers
 {
-    public class CounselorMappers
+    public static class CounselorMappers
     {
         public static Counselor ToCreateCounselor(string fullname, string accountId)
         {
@@ -22,6 +23,20 @@ namespace PPC.Service.Mappers
                 Price = 0,
                 Rating = 0,
                 Status = 0,
+            };
+        }
+
+        public static CounselorDto ToCounselorDto(this Counselor counselor)
+        {
+            return new CounselorDto
+            {
+                Id = counselor.Id,
+                Fullname = counselor.Fullname,
+                Description = counselor.Description,
+                YearOfJob = counselor.YearOfJob,
+                Price = counselor.Price,
+                Avatar = counselor.Avatar,
+                Phone = counselor.Phone,
             };
         }
     }

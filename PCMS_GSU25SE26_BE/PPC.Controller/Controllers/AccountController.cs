@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.AccountRequest;
+using PPC.Service.Services;
 
 namespace PPC.Controller.Controllers
 {
@@ -84,6 +85,36 @@ namespace PPC.Controller.Controllers
 
             if (response.Success)
                 return Ok(response);
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "2")]
+        [HttpGet("counselor-my-profile")]
+        public async Task<IActionResult> CounselorGetMyProfile()
+        {
+            var counselorId = User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
+            if (string.IsNullOrEmpty(counselorId))
+                return Unauthorized("CounselorId not found in token.");
+
+            var response = await _accountService.CounselorGetMyProfileAsync(counselorId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "2")]
+        [HttpPut("counselor-edit-profile")]
+        public async Task<IActionResult> CounselorEditMyProfile([FromBody] CounselorEditRequest request)
+        {
+            var counselorId = User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
+            if (string.IsNullOrEmpty(counselorId))
+                return Unauthorized("CounselorId not found in token.");
+
+            var response = await _accountService.CounselorEditMyProfileAsync(counselorId, request);
+            if (response.Success)
+                return Ok(response);
+
             return BadRequest(response);
         }
     }
