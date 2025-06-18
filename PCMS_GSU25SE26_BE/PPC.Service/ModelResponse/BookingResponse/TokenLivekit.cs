@@ -9,7 +9,7 @@ namespace PPC.Service.ModelResponse.BookingResponse
     public class TokenLivekit
     {
         public string token { get; set; }
-        public string serverUrl { get; set }; 
+        public string serverUrl { get; set; }
 
         public TokenLivekit(string Inputtoken)
         {
