@@ -16,9 +16,10 @@ namespace PPC.Controller.Controllers
     {
         private readonly IBookingService _bookingService;
         private readonly ILiveKitService _livekitService;
-        public BookingController(IBookingService bookingService)
+        public BookingController(IBookingService bookingService, ILiveKitService livekitService)
         {
             _bookingService = bookingService;
+            _livekitService = livekitService;
         }
 
         [Authorize(Roles = "3")]
