@@ -164,9 +164,13 @@ namespace PPC.Controller.Controllers
         public async Task<IActionResult> Webhook()
         {
             using var reader = new StreamReader(Request.Body);
-            var rawBody = await reader.ReadToEndAsync();
-            var authHeader = Request.Headers["Authorization"].ToString();
+            var rawBody = await reader.ReadToEndAsync();  // Đọc dữ liệu raw body
+            var authHeader = Request.Headers["Authorization"].ToString();  // Lấy Authorization header
+
+            // Xử lý webhook và xác thực token
             var success = await _livekitService.HandleWebhookAsync(rawBody, authHeader);
+
+            // Nếu thành công, trả về HTTP OK, nếu không thì Unauthorized
             return success ? Ok() : Unauthorized();
         }
     }

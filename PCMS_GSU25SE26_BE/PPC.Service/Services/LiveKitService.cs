@@ -86,8 +86,9 @@ namespace PPC.Service.Services
             if (string.IsNullOrEmpty(authorizationHeader) || !authorizationHeader.StartsWith("Bearer "))
                 return false;
 
-            var token = authorizationHeader["Bearer ".Length..];
+            var token = authorizationHeader.Substring("Bearer ".Length);  // Lấy token JWT từ header
 
+            // Xác thực JWT token
             var validationParams = new TokenValidationParameters
             {
                 ValidateIssuer = false,
@@ -103,41 +104,58 @@ namespace PPC.Service.Services
                 var principal = tokenHandler.ValidateToken(token, validationParams, out var validatedToken);
                 var jwtToken = (JwtSecurityToken)validatedToken;
 
+                // Lấy hash từ claims của token
                 var hashClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "hash")?.Value;
 
+                // Tính toán lại hash của payload
                 using var sha256 = SHA256.Create();
                 var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawBody));
                 var calculatedHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
 
+                // So sánh hash tính toán và hash trong token
                 if (calculatedHash != hashClaim?.ToLower())
-                    return false;
+                    return false;  // Nếu hash không khớp, không xử lý
 
-                var json = JsonDocument.Parse(rawBody);
-                var eventType = json.RootElement.GetProperty("event").GetString();
+                // Xử lý các sự kiện của LiveKit
+                var eventType = jwtToken.Claims.FirstOrDefault(c => c.Type == "event")?.Value;
 
                 switch (eventType)
                 {
                     case "participant_left":
-                        var roomSid = json.RootElement.GetProperty("room").GetProperty("sid").GetString();
-                        var participantIdentity = json.RootElement.GetProperty("participant").GetProperty("identity").GetString();
-                        Console.WriteLine($"Participant {participantIdentity} left room {roomSid}");
                         break;
 
                     case "room_finished":
-                        var roomSidFinished = json.RootElement.GetProperty("room").GetProperty("sid").GetString();
-                        var transaction = new SysTransaction
+                        new SysTransaction
                         {
                             Id = Guid.NewGuid().ToString(),
                             TransactionType = "LiveKitRoomFinished",
                             CreateBy = "system",
-                            DocNo = roomSidFinished,
-                            CreateDate = DateTime.UtcNow
+                            DocNo = "finish",
                         };
-                        await _sysTransactionRepository.CreateAsync(transaction);
+                        await _sysTransactionRepository.CreateAsync(new SysTransaction
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            TransactionType = "LiveKitRoomFinished",
+                            CreateBy = "system",
+                            DocNo = "finish",
+                        });
                         break;
 
                     default:
-                        Console.WriteLine($"Unhandled event: {eventType}");
+                        new SysTransaction
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            TransactionType = "LiveKitRoomFinished",
+                            CreateBy = "system",
+                            DocNo = "finish",
+                        };
+                        await _sysTransactionRepository.CreateAsync(new SysTransaction
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            TransactionType = "LiveKitRoomFinished",
+                            CreateBy = "system",
+                            DocNo = "finish",
+                        });
                         break;
                 }
 
@@ -145,9 +163,11 @@ namespace PPC.Service.Services
             }
             catch (Exception ex)
             {
+                // Log lỗi nếu có và trả về false
                 Console.WriteLine($"Webhook validation failed: {ex.Message}");
                 return false;
             }
         }
     }
 }
+
