@@ -3,6 +3,7 @@ using PPC.Service.ModelRequest.CategoryRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.BookingResponse;
 using PPC.Service.ModelResponse.CategoryResponse;
+using PPC.Service.ModelResponse.RoomResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,5 +23,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<BookingDto>> GetBookingByIdAsync(string bookingId);
         Task<bool> CheckIfCounselorCanAccessBooking(string bookingId, string counselorId);
         Task<bool> CheckIfMemberCanAccessBooking(string bookingId, string counselorId);
+        Task<ServiceResponse<RoomResponse>> CreateDailyRoomAsync(string accountId, string bookingId, int role);
     }
 }

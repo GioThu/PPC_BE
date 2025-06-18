@@ -4,10 +4,12 @@ using PPC.Repository.Interfaces;
 using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.BookingRequest;
+using PPC.Service.ModelRequest.RoomRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.BookingResponse;
 using PPC.Service.ModelResponse.CounselorResponse;
 using PPC.Service.ModelResponse.MemberResponse;
+using PPC.Service.ModelResponse.RoomResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +31,7 @@ namespace PPC.Service.Services
         private readonly IBookingSubCategoryRepository _bookingSubCategoryRepository;
         private readonly IMapper _mapper;
         private readonly ILiveKitService _liveKitService;
+        private readonly IRoomService _roomService;
 
         public BookingService(
             IBookingRepository bookingRepository,
@@ -41,7 +44,8 @@ namespace PPC.Service.Services
             ISubCategoryRepository subCategoryRepository,
             IBookingSubCategoryRepository bookingSubCategoryRepository,
             IMapper mapper,
-            ILiveKitService liveKitService
+            ILiveKitService liveKitService,
+            IRoomService roomService
           )
         {
             _bookingRepository = bookingRepository;
@@ -55,6 +59,7 @@ namespace PPC.Service.Services
             _bookingSubCategoryRepository = bookingSubCategoryRepository;
             _mapper = mapper;
             _liveKitService = liveKitService;
+            _roomService = roomService;
         }
 
         public async Task<ServiceResponse<BookingResultDto>> BookCounselingAsync(string memberId, string accountId, BookingRequest request)
@@ -373,6 +378,57 @@ namespace PPC.Service.Services
             if (booking == null)
                 return false;
             return booking.CounselorId == counselorId;
+        }
+
+        public async Task<ServiceResponse<RoomResponse>> CreateDailyRoomAsync(string accountId, string bookingId, int role)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null)
+            {
+                return ServiceResponse<RoomResponse>.ErrorResponse("Booking not found.");
+            }
+
+            string roomName = $"room_{bookingId}";
+            string userName = string.Empty;
+            DateTime startTime = booking.TimeStart ?? Utils.Utils.GetTimeNow();
+            DateTime endTime = booking.TimeEnd ?? Utils.Utils.GetTimeNow().AddHours(1);
+
+            if (role == 2)
+            {
+                var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
+                if (counselor == null)
+                {
+                    return ServiceResponse<RoomResponse>.ErrorResponse("Counselor not found.");
+                }
+
+                userName = counselor.Fullname;
+            }
+            else if (role == 3)
+            {
+                var member = await _memberRepository.GetByIdAsync(booking.MemberId);
+                if (member == null)
+                {
+                    return ServiceResponse<RoomResponse>.ErrorResponse("Member not found.");
+                }
+
+                userName = member.Fullname;
+            }
+            else
+            {
+                return ServiceResponse<RoomResponse>.ErrorResponse("Invalid role.");
+            }
+
+            var request = new CreateRoomRequest2
+            {
+                ApiKey = "106bf9f6fac65aab09b8572ca4c634305061956886d371fafc5c901e6cf74e0f", 
+                RoomName = roomName,
+                UserName = userName,
+                StartTime = startTime,
+                EndTime = endTime
+            };
+
+            var result = await _roomService.CreateRoomAsync(request); 
+            return result;
         }
     }
 }

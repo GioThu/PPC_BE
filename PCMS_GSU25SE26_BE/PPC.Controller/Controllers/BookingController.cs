@@ -160,6 +160,32 @@ namespace PPC.Controller.Controllers
             return BadRequest(response); 
         }
 
+        [Authorize]
+        [HttpGet("{bookingId}/GetRoomUrl")]
+        public async Task<IActionResult> GetRoomUrl(string bookingId)
+        {
+
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            if (string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(role))
+                return Unauthorized("Invalid token claims.");
+
+            // Chuyển role thành int
+            if (!int.TryParse(role, out var roleInt))
+                return BadRequest("Invalid role in token.");
+
+            var response = await _bookingService.CreateDailyRoomAsync(accountId, bookingId, roleInt);
+
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+
+            return BadRequest(response);
+        }
+
+
         [HttpPost("livekit-webhook")]
         public async Task<IActionResult> Webhook()
         {
