@@ -1,5 +1,6 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
+﻿using Livekit.Server.Sdk.Dotnet;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Service.Interfaces;
@@ -7,21 +8,23 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
+using Livekit.Server.Sdk.Dotnet;
+
 
 namespace PPC.Service.Services
 {
     public class LiveKitService : ILiveKitService
     {
         private readonly ISysTransactionRepository _sysTransactionRepository;
+        private readonly ILogger<LiveKitService> _logger;
         private readonly string _apiKey = "APItJgZdfH9Du4U";
         private readonly string _apiSecret = "yWDqIOHThQX7z8aNdFuzpTHxzjmrvMSsZYF4eXb8tbL";
 
-        public LiveKitService(ISysTransactionRepository sysTransactionRepository)
+        public LiveKitService(ISysTransactionRepository sysTransactionRepository, ILogger<LiveKitService> logger)
         {
             _sysTransactionRepository = sysTransactionRepository;
+            _logger = logger;
         }
 
         // Tạo LiveKit token
@@ -76,74 +79,34 @@ namespace PPC.Service.Services
         // Xử lý Webhook và xác thực token
         public async Task<bool> HandleWebhookAsync(string rawBody, string authorizationHeader)
         {
-            if (string.IsNullOrEmpty(authorizationHeader) || !authorizationHeader.StartsWith("Bearer "))
-            {
-                Console.WriteLine("Authorization header is missing or invalid.");
-                return false;
-            }
-
-            var token = authorizationHeader.Substring("Bearer ".Length);  // Lấy token JWT từ header
-
-            // Xác thực JWT token
-            var validationParams = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = _apiKey,  // Đảm bảo rằng bạn điền đúng giá trị
-                ValidAudiences = new[] { _apiKey },  // Đảm bảo rằng bạn điền đúng giá trị
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_apiSecret))
-            };
+            var webhookReceiver = new WebhookReceiver(_apiKey, _apiSecret);  // Sử dụng WebhookReceiver từ SDK
 
             try
             {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var principal = tokenHandler.ValidateToken(token, validationParams, out var validatedToken);
-                var jwtToken = (JwtSecurityToken)validatedToken;
+                var webhookEvent = webhookReceiver.Receive(rawBody, authorizationHeader);
 
-                // Lấy hash từ claims của token
-                var hashClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "hash")?.Value;
-
-                // Tính toán lại hash của payload
-                using var sha256 = SHA256.Create();
-                var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawBody));
-                var calculatedHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-
-                // So sánh hash tính toán và hash trong token
-                if (calculatedHash != hashClaim?.ToLower())
-                {
-                    Console.WriteLine("Hash mismatch: Calculated hash does not match the claim.");
-                    return false;  // Nếu hash không khớp, không xử lý
-                }
-
-                // Lấy loại sự kiện từ webhook
-                var eventType = jwtToken.Claims.FirstOrDefault(c => c.Type == "event")?.Value;
-
-                // Xử lý các sự kiện của LiveKit
-                switch (eventType)
+                switch (webhookEvent.Event)
                 {
                     case "participant_left":
-                        // Logic xử lý khi người tham gia rời phòng
-                        Console.WriteLine("Participant left the room.");
+                        _logger.LogInformation($"Participant left: {webhookEvent.Participant.Identity}");
                         break;
 
                     case "room_finished":
-                        var roomSidFinished = jwtToken.Claims.FirstOrDefault(c => c.Type == "roomSid")?.Value;
+                        var roomSid = webhookEvent.Room.Sid;
                         var transaction = new SysTransaction
                         {
                             Id = Guid.NewGuid().ToString(),
                             TransactionType = "LiveKitRoomFinished",
                             CreateBy = "system",
-                            DocNo = roomSidFinished,
+                            DocNo = roomSid,
                             CreateDate = DateTime.UtcNow
                         };
                         await _sysTransactionRepository.CreateAsync(transaction);
-                        Console.WriteLine("Room finished transaction recorded.");
+                        _logger.LogInformation($"Room finished: {roomSid}");
                         break;
 
                     default:
-                        Console.WriteLine($"Unhandled event: {eventType}");
+                        _logger.LogInformation($"Unhandled event: {webhookEvent.Event}");
                         break;
                 }
 
@@ -151,8 +114,7 @@ namespace PPC.Service.Services
             }
             catch (Exception ex)
             {
-                // Log lỗi nếu có và trả về false
-                Console.WriteLine($"Webhook validation failed: {ex.Message}");
+                _logger.LogError($"Error processing webhook: {ex.Message}");
                 return false;
             }
         }
