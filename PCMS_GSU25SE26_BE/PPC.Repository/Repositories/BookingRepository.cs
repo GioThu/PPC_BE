@@ -71,5 +71,14 @@ namespace PPC.Repository.Repositories
                 .OrderByDescending(b => b.TimeStart)
                 .ToListAsync();
         }
+
+        public async Task<Booking> GetDtoByIdAsync(string bookingId)
+        {
+            return await _context.Bookings
+                .Where(b => b.Id == bookingId)
+                .Include(b => b.BookingSubCategories)
+                    .ThenInclude(bsc => bsc.SubCategory)
+                .FirstOrDefaultAsync();
+        }
     }
 }

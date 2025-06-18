@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.BookingRequest;
+using PPC.Service.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -53,6 +55,21 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize(Roles = "2")]
+        [HttpGet("my-bookings-paging")]
+        public async Task<IActionResult> GetMyBookingsForCounselorPaging([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var counselorId = User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
+            if (string.IsNullOrEmpty(counselorId))
+                return Unauthorized("CounselorId not found in token.");
+
+            var response = await _bookingService.GetBookingsByCounselorAsync(counselorId, pageNumber, pageSize);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
         [Authorize(Roles = "3")] 
         [HttpGet("my-bookings/member")]
         public async Task<IActionResult> GetMyBookingsForMember()
@@ -68,11 +85,59 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize(Roles = "3")]
+        [HttpGet("my-bookings-paging/member")]
+        public async Task<IActionResult> GetMyBookingsForMemberPaging([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _bookingService.GetBookingsByMemberAsync(memberId, pageNumber, pageSize);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "1,2,3")]
+        [HttpGet("booking-detail/{bookingId}")]
+        public async Task<IActionResult> GetBookingById(string bookingId)
+        {
+            // Lấy accountId và role từ token
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            if (role == "2")
+            {
+                if (await _bookingService.CheckIfCounselorCanAccessBooking(bookingId, User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value) == false)
+                {
+                    return Unauthorized("You do not have permission to view this booking.");
+                }
+            }
+
+            if (role == "3") 
+            { 
+                if (await _bookingService.CheckIfMemberCanAccessBooking(bookingId, User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value) == false)
+                {
+                    return Unauthorized("You do not have permission to view this booking.");
+                }
+            }
+
+            var response = await _bookingService.GetBookingByIdAsync(bookingId);
+
+            if (response.Success)
+            {
+                return Ok(response.Data);
+            }
+
+            return BadRequest(response);
+        }
+
+
         [Authorize]
         [HttpGet("{bookingId}/livekit-token")]
         public async Task<IActionResult> GetLiveKitToken(string bookingId)
         {
-
 
             var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
             var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value; 
