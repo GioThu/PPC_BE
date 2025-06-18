@@ -314,12 +314,12 @@ namespace PPC.Service.Services
 
             return ServiceResponse<BookingDto>.SuccessResponse(bookingDto);
         }
-        public async Task<ServiceResponse<string>> GetLiveKitToken(string accountId, string bookingId, int role)
+        public async Task<ServiceResponse<TokenLivekit>> GetLiveKitToken(string accountId, string bookingId, int role)
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
             if (booking == null)
             {
-                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+                return ServiceResponse<TokenLivekit>.ErrorResponse("Booking not found.");
             }
 
             string room = $"room_{bookingId}";
@@ -328,36 +328,37 @@ namespace PPC.Service.Services
             DateTime startTime = booking.TimeStart ?? Utils.Utils.GetTimeNow();
             DateTime endTime = booking.TimeEnd ?? Utils.Utils.GetTimeNow().AddHours(1);
 
-            if (role == 2) 
+            if (role == 2)
             {
                 var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
                 if (counselor == null)
                 {
-                    return ServiceResponse<string>.ErrorResponse("Counselor not found.");
+                    return ServiceResponse<TokenLivekit>.ErrorResponse("Counselor not found.");
                 }
 
-                id = counselor.Id;  
-                name = counselor.Fullname;  
+                id = counselor.Id;
+                name = counselor.Fullname;
             }
             else if (role == 3)
             {
                 var member = await _memberRepository.GetByIdAsync(booking.MemberId);
                 if (member == null)
                 {
-                    return ServiceResponse<string>.ErrorResponse("Member not found.");
+                    return ServiceResponse<TokenLivekit>.ErrorResponse("Member not found.");
                 }
 
-                id = member.Id;  
-                name = member.Fullname;  
+                id = member.Id;
+                name = member.Fullname;
             }
             else
             {
-                return ServiceResponse<string>.ErrorResponse("Invalid role.");
+                return ServiceResponse<TokenLivekit>.ErrorResponse("Invalid role.");
             }
 
             var token = _liveKitService.GenerateLiveKitToken(room, id, name, startTime, endTime);
 
-            return ServiceResponse<string>.SuccessResponse(token);
+            var tokenLivekitResponse = new TokenLivekit(token);
+            return ServiceResponse<TokenLivekit>.SuccessResponse(tokenLivekitResponse);
         }
         public async Task<bool> CheckIfMemberCanAccessBooking(string bookingId, string memberId)
         {
