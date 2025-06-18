@@ -43,8 +43,6 @@ namespace PPC.Service.Services
                 { "sub", id },
                 { "name", name },
                 { "room", room },
-                { "startTime", startTime.ToString("o") },
-                { "endTime", endTime.ToString("o") },
                 { "video", new Dictionary<string, object>
                     {
                         { "canPublish", true },
@@ -79,7 +77,7 @@ namespace PPC.Service.Services
         // Xử lý Webhook và xác thực token
         public async Task<bool> HandleWebhookAsync(string rawBody, string authorizationHeader)
         {
-            var webhookReceiver = new WebhookReceiver(_apiKey, _apiSecret);  // Sử dụng WebhookReceiver từ SDK
+            var webhookReceiver = new WebhookReceiver(_apiKey, _apiSecret);  
 
             try
             {
