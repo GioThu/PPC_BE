@@ -22,7 +22,7 @@ namespace PPC.Service.Services
         {
         }
 
-        public LiveKitService(ISysTransactionRepository sysTransactionRepository, IBookingRepository bookingRepository)
+        public LiveKitService(ISysTransactionRepository sysTransactionRepository)
         {
             _sysTransactionRepository = sysTransactionRepository;
         }
@@ -83,28 +83,28 @@ namespace PPC.Service.Services
 
         public async Task<bool> HandleWebhookAsync(string rawBody, string authorizationHeader)
         {
-            var apiKey = "APItJgZdfH9Du4U";
             if (string.IsNullOrEmpty(authorizationHeader) || !authorizationHeader.StartsWith("Bearer "))
                 return false;
 
             var token = authorizationHeader["Bearer ".Length..];
 
-            var tokenHandler = new JwtSecurityTokenHandler();
             var validationParams = new TokenValidationParameters
             {
                 ValidateIssuer = false,
                 ValidateAudience = false,
                 ValidateLifetime = false,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(apiKey)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("yWDqIOHThQX7z8aNdFuzpTHxzjmrvMSsZYF4eXb8tbL"))
             };
 
             try
             {
+                var tokenHandler = new JwtSecurityTokenHandler();
                 var principal = tokenHandler.ValidateToken(token, validationParams, out var validatedToken);
                 var jwtToken = (JwtSecurityToken)validatedToken;
 
                 var hashClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "hash")?.Value;
+
                 using var sha256 = SHA256.Create();
                 var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawBody));
                 var calculatedHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
@@ -112,37 +112,28 @@ namespace PPC.Service.Services
                 if (calculatedHash != hashClaim?.ToLower())
                     return false;
 
-                // Parse JSON
                 var json = JsonDocument.Parse(rawBody);
                 var eventType = json.RootElement.GetProperty("event").GetString();
 
-                // Handle different events
                 switch (eventType)
                 {
                     case "participant_left":
                         var roomSid = json.RootElement.GetProperty("room").GetProperty("sid").GetString();
                         var participantIdentity = json.RootElement.GetProperty("participant").GetProperty("identity").GetString();
-
-                        // TODO: Gọi logic kiểm tra còn ai không → nếu không còn, gọi cleanup
                         Console.WriteLine($"Participant {participantIdentity} left room {roomSid}");
                         break;
 
                     case "room_finished":
                         var roomSidFinished = json.RootElement.GetProperty("room").GetProperty("sid").GetString();
-                        new SysTransaction
+                        var transaction = new SysTransaction
                         {
                             Id = Guid.NewGuid().ToString(),
                             TransactionType = "LiveKitRoomFinished",
                             CreateBy = "system",
                             DocNo = roomSidFinished,
+                            CreateDate = DateTime.UtcNow
                         };
-                        await _sysTransactionRepository.CreateAsync(new SysTransaction
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            TransactionType = "LiveKitRoomFinished",
-                            CreateBy = "system",
-                            DocNo = roomSidFinished,
-                        });
+                        await _sysTransactionRepository.CreateAsync(transaction);
                         break;
 
                     default:
@@ -154,7 +145,7 @@ namespace PPC.Service.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Webhook validation failed: " + ex.Message);
+                Console.WriteLine($"Webhook validation failed: {ex.Message}");
                 return false;
             }
         }
