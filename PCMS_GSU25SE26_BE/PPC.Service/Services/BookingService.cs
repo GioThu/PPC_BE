@@ -28,6 +28,7 @@ namespace PPC.Service.Services
         private readonly ISubCategoryRepository _subCategoryRepository;
         private readonly IBookingSubCategoryRepository _bookingSubCategoryRepository;
         private readonly IMapper _mapper;
+        private readonly ILiveKitService _liveKitService;
 
         public BookingService(
             IBookingRepository bookingRepository,
@@ -39,7 +40,8 @@ namespace PPC.Service.Services
             ISysTransactionRepository sysTransactionRepository,
             ISubCategoryRepository subCategoryRepository,
             IBookingSubCategoryRepository bookingSubCategoryRepository,
-            IMapper mapper
+            IMapper mapper,
+            ILiveKitService liveKitService
           )
         {
             _bookingRepository = bookingRepository;
@@ -52,6 +54,7 @@ namespace PPC.Service.Services
             _subCategoryRepository = subCategoryRepository;
             _bookingSubCategoryRepository = bookingSubCategoryRepository;
             _mapper = mapper;
+            _liveKitService = liveKitService;
         }
 
         public async Task<ServiceResponse<BookingResultDto>> BookCounselingAsync(string memberId, string accountId, BookingRequest request)
@@ -352,8 +355,7 @@ namespace PPC.Service.Services
                 return ServiceResponse<string>.ErrorResponse("Invalid role.");
             }
 
-            var liveKitService = new LiveKitService();
-            var token = liveKitService.GenerateLiveKitToken(room, id, name, startTime, endTime);
+            var token = _liveKitService.GenerateLiveKitToken(room, id, name, startTime, endTime);
 
             return ServiceResponse<string>.SuccessResponse(token);
         }

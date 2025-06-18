@@ -163,15 +163,27 @@ namespace PPC.Controller.Controllers
         [HttpPost("livekit-webhook")]
         public async Task<IActionResult> Webhook()
         {
-            using var reader = new StreamReader(Request.Body);
-            var rawBody = await reader.ReadToEndAsync();  // Đọc dữ liệu raw body
-            var authHeader = Request.Headers["Authorization"].ToString();  // Lấy Authorization header
+            try
+            {
+                using var reader = new StreamReader(Request.Body);
+                var rawBody = await reader.ReadToEndAsync();
 
-            // Xử lý webhook và xác thực token
-            var success = await _livekitService.HandleWebhookAsync(rawBody, authHeader);
+                var authHeader = Request.Headers["Authorization"];
 
-            // Nếu thành công, trả về HTTP OK, nếu không thì Unauthorized
-            return success ? Ok() : Unauthorized();
+                if (string.IsNullOrEmpty(authHeader))
+                {
+                    return Unauthorized("Authorization header is missing.");
+                }
+
+                var success = await _livekitService.HandleWebhookAsync(rawBody, authHeader);
+
+                return success ? Ok() : Unauthorized("Invalid webhook token or payload.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error handling webhook: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
         }
     }
 }
