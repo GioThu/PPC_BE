@@ -136,6 +136,13 @@ namespace PPC.Service.Services
                             CreateBy = "system",
                             DocNo = roomSidFinished,
                         };
+                        await _sysTransactionRepository.CreateAsync(new SysTransaction
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            TransactionType = "LiveKitRoomFinished",
+                            CreateBy = "system",
+                            DocNo = roomSidFinished,
+                        });
                         break;
 
                     default:
