@@ -46,28 +46,5 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
-        // Block SubCategory
-        [Authorize(Roles = "1")]
-        [HttpPost("block")]
-        public async Task<IActionResult> BlockSubCategory(string id)
-        {
-            var response = await _subCategoryService.BlockSubCategoryAsync(id);
-            if (response.Success)
-                return Ok(response);
-
-            return BadRequest(response);
-        }
-
-        // Unblock SubCategory
-        [Authorize(Roles = "1")]
-        [HttpPost("unblock")]
-        public async Task<IActionResult> UnblockSubCategory(string id)
-        {
-            var response = await _subCategoryService.UnblockSubCategoryAsync(id);
-            if (response.Success)
-                return Ok(response);
-
-            return BadRequest(response);
-        }
     }
 }

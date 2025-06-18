@@ -16,6 +16,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<BookingResultDto>> BookCounselingAsync(string memberId, string accountId, BookingRequest request);
         Task<ServiceResponse<List<BookingDto>>> GetBookingsByCounselorAsync(string counselorId);
         Task<ServiceResponse<List<BookingDto>>> GetBookingsByMemberAsync(string memberId);
-
+        Task<ServiceResponse<string>> GetLiveKitToken(string accountId, string bookingId, int role);
     }
 }

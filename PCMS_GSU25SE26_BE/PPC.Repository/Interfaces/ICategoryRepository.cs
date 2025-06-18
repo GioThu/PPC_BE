@@ -13,6 +13,5 @@ namespace PPC.Repository.Interfaces
         Task<bool> IsCategoryNameExistsAsync(string name);
         Task<List<Category>> GetAllWithSubCategoriesAsync();
         Task<List<Category>> GetActiveCategoriesWithActiveSubCategoriesAsync();
-
     }
 }

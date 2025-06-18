@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.CirtificationRequest;
+using System.Security.Claims;
 
 namespace PPC.Controller.Controllers
 {
@@ -104,11 +105,32 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
-
         [Authorize(Roles = "1")]
-        [HttpGet("Admin-get-detail")]
+        [HttpGet("all-paging")]
+        public async Task<IActionResult> GetAllCertifications([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var response = await _certificationService.GetAllCertificationsAsync(pageNumber, pageSize);
+
+            if (response.Success)
+            {
+                return Ok(response.Data);  
+            }
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "1,2")]
+        [HttpGet("Get-detail")]
         public async Task<IActionResult> GetCertificationById(string certificationId)
         {
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            if  (role == "2")
+            {
+                if (await _certificationService.IsCertificationAssignedToCounselorAsync(certificationId, User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value) == false)
+                {
+                    return Unauthorized("You do not have permission to view this certification.");
+                }
+            }
+            var counselorId = User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
             var response = await _certificationService.GetCertificationByIdAsync(certificationId);
 
             if (response.Success)

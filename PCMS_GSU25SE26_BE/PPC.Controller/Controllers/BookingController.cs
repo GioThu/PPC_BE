@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.BookingRequest;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace PPC.Controller.Controllers
 {
@@ -64,6 +66,32 @@ namespace PPC.Controller.Controllers
                 return Ok(response);
 
             return BadRequest(response);
+        }
+
+        [Authorize]
+        [HttpGet("{bookingId}/livekit-token")]
+        public async Task<IActionResult> GetLiveKitToken(string bookingId)
+        {
+
+
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value; 
+
+            if (string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(role))
+                return Unauthorized("Invalid token claims.");
+
+            // Chuyển role thành int
+            if (!int.TryParse(role, out var roleInt))
+                return BadRequest("Invalid role in token.");
+
+            var response = await _bookingService.GetLiveKitToken(accountId, bookingId, roleInt);
+
+            if (response.Success)
+            {
+                return Ok(response); 
+            }
+
+            return BadRequest(response); 
         }
     }
 }

@@ -47,6 +47,8 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 
 
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<ILiveKitService, LiveKitService>();
+
 
 builder.Services.AddAutoMapper(typeof(PPC.Service.Mappers.MappingProfile));
 

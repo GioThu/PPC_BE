@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
+using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
 using PPC.Service.Mappers;
 using PPC.Service.ModelRequest.CirtificationRequest;
@@ -251,7 +252,61 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Certification updated and sent for re-approval.");
         }
+        public async Task<ServiceResponse<PagingResponse<CertificationWithSubDto>>> GetAllCertificationsAsync(int pageNumber, int pageSize)
+        {
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10; 
 
+            var certifications = await _certRepo.GetAllCertificationsAsync();
+            var totalCount = certifications.Count();  
+
+            // Áp dụng phân trang
+            var certificationsPaged = certifications
+                .Skip((pageNumber - 1) * pageSize)  
+                .Take(pageSize) 
+                .ToList();
+
+            var result = new List<CertificationWithSubDto>();
+            foreach (var cert in certificationsPaged)
+            {
+                var dto = _mapper.Map<CertificationWithSubDto>(cert);
+                dto.Counselor = _mapper.Map<CounselorDto>(cert.Counselor);
+
+                var subCategories = await _cscRepo.GetSubCategoriesByCertificationIdAsync(cert.Id);
+                var categories = subCategories
+                    .Where(sc => sc.Category != null)
+                    .GroupBy(sc => sc.CategoryId)
+                    .Select(group => new CategoryWithSubDto
+                    {
+                        CategoryId = group.Key,
+                        CategoryName = group.First().Category.Name,
+                        SubCategories = _mapper.Map<List<SubCategoryDto>>(group.ToList())
+                    })
+                    .ToList();
+
+                dto.Categories = categories;
+                result.Add(dto);
+            }
+
+            var pagingResponse = new PagingResponse<CertificationWithSubDto>(result, totalCount, pageNumber, pageSize);
+
+            return ServiceResponse<PagingResponse<CertificationWithSubDto>>.SuccessResponse(pagingResponse);
+        }
+
+        public async Task<bool> IsCertificationAssignedToCounselorAsync(string certificationId, string counselorId)
+        {
+            var certification = await _certRepo.GetByIdAsync(certificationId);
+            if (certification == null)
+            {
+                return false;
+            }
+            var isAssigned = false;
+            if (certification.CounselorId == counselorId)
+            {
+                isAssigned = true;
+            }
+            return isAssigned;
+        }
 
     }
 }

@@ -96,7 +96,7 @@ namespace PPC.Service.Services
                 Note = request.Note,
                 Price = finalPrice,
                 Status = 1,
-                CreateAt = DateTime.UtcNow
+                CreateAt = Utils.Utils.GetTimeNow(),
             };
             await _bookingRepository.CreateAsync(booking);
 
@@ -138,7 +138,7 @@ namespace PPC.Service.Services
                 TransactionType = "1",
                 DocNo = booking.Id,
                 CreateBy = accountId,
-                CreateDate = DateTime.UtcNow
+                CreateDate = Utils.Utils.GetTimeNow()
             };
             await _sysTransactionRepository.CreateAsync(transaction);
 
@@ -214,6 +214,53 @@ namespace PPC.Service.Services
             }
 
             return ServiceResponse<List<BookingDto>>.SuccessResponse(bookingDtos);
+        }
+
+        public async Task<ServiceResponse<string>> GetLiveKitToken(string accountId, string bookingId, int role)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null)
+            {
+                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+            }
+
+            string room = $"room_{bookingId}";
+            string id = string.Empty;
+            string name = string.Empty;
+            DateTime startTime = booking.TimeStart ?? Utils.Utils.GetTimeNow();
+            DateTime endTime = booking.TimeEnd ?? Utils.Utils.GetTimeNow().AddHours(1);
+
+            if (role == 2) 
+            {
+                var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
+                if (counselor == null)
+                {
+                    return ServiceResponse<string>.ErrorResponse("Counselor not found.");
+                }
+
+                id = counselor.Id;  
+                name = counselor.Fullname;  
+            }
+            else if (role == 3)
+            {
+                var member = await _memberRepository.GetByIdAsync(booking.MemberId);
+                if (member == null)
+                {
+                    return ServiceResponse<string>.ErrorResponse("Member not found.");
+                }
+
+                id = member.Id;  
+                name = member.Fullname;  
+            }
+            else
+            {
+                return ServiceResponse<string>.ErrorResponse("Invalid role.");
+            }
+
+            var liveKitService = new LiveKitService();
+            var token = liveKitService.GenerateLiveKitToken(room, id, name, startTime, endTime);
+
+            return ServiceResponse<string>.SuccessResponse(token);
         }
     }
 }

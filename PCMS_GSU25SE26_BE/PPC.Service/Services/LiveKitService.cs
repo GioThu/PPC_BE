@@ -22,46 +22,48 @@ namespace PPC.Service.Services
             var iat = nbf;
 
             var payload = new Dictionary<string, object>
+        {
+            { "exp", exp },
+            { "nbf", nbf },
+            { "iat", iat },
+            { "iss", apiKey },
+            { "sub", id },
+            { "name", name },
+            { "room", room },
+            { "startTime", startTime.ToString("o") },
+            { "endTime", endTime.ToString("o") },
+            { "video", new Dictionary<string, object>
                 {
-                    { "exp", exp },
-                    { "nbf", nbf },
-                    { "iat", iat },
-                    { "iss", apiKey },
-                    { "sub", id },
-                    { "name", name },
+                    { "canPublish", true },
+                    { "canPublishData", true },
+                    { "canSubscribe", true },
                     { "room", room },
-                    { "startTime", startTime.ToString("o") },
-                    { "endTime", endTime.ToString("o") },
-                    { "video", new Dictionary<string, object>
-                        {
-                            { "canPublish", true },
-                            { "canPublishData", true },
-                            { "canSubscribe", true },
-                            { "room", room },
-                            { "roomJoin", true }
-                        }
-                    }
-                };
+                    { "roomJoin", true }
+                }
+            }
+        };
 
-            string payloadJson = JsonConvert.SerializeObject(payload);
+            // Mã hóa secret key từ apiSecret
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(apiSecret));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+            // Tạo JWT token với các payload đã cung cấp
             var tokenHandler = new JwtSecurityTokenHandler();
-            var securityToken = tokenHandler.CreateJwtSecurityToken(
+            var securityToken = new JwtSecurityToken(
                 issuer: apiKey,
-                subject: null,
+                audience: apiKey, // Có thể là apiKey hoặc giá trị khác tùy vào ứng dụng của bạn
                 notBefore: DateTime.UtcNow,
                 expires: DateTime.UtcNow.AddMinutes(10),
                 signingCredentials: credentials
             );
 
-            securityToken.Payload.Clear();
+            // Không cần Clear() payload nữa
             foreach (var entry in payload)
             {
                 securityToken.Payload[entry.Key] = entry.Value;
             }
 
+            // Trả về token
             return tokenHandler.WriteToken(securityToken);
         }
     }
