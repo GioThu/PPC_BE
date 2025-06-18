@@ -131,6 +131,8 @@ namespace PPC.Service.Services
                             TransactionType = "LiveKitRoomFinished",
                             CreateBy = "system",
                             DocNo = "finish",
+                            CreateDate = DateTime.UtcNow,
+
                         };
                         await _sysTransactionRepository.CreateAsync(new SysTransaction
                         {
@@ -138,6 +140,7 @@ namespace PPC.Service.Services
                             TransactionType = "LiveKitRoomFinished",
                             CreateBy = "system",
                             DocNo = "finish",
+                            CreateDate = DateTime.UtcNow,
                         });
                         break;
 
@@ -148,6 +151,8 @@ namespace PPC.Service.Services
                             TransactionType = "LiveKitRoomFinished",
                             CreateBy = "system",
                             DocNo = "finish",
+                            CreateDate = DateTime.UtcNow,
+
                         };
                         await _sysTransactionRepository.CreateAsync(new SysTransaction
                         {
@@ -155,6 +160,7 @@ namespace PPC.Service.Services
                             TransactionType = "LiveKitRoomFinished",
                             CreateBy = "system",
                             DocNo = "finish",
+                            CreateDate = DateTime.UtcNow,
                         });
                         break;
                 }
