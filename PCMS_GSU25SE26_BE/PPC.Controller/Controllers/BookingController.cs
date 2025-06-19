@@ -161,7 +161,7 @@ namespace PPC.Controller.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetRoomUrl")]
+        [HttpGet("{bookingId}/GetRoomUrl")]
         public async Task<IActionResult> GetRoomUrl(string bookingId)
         {
 
