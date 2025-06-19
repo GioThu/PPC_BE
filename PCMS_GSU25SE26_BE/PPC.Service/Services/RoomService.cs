@@ -120,10 +120,10 @@ public class RoomService : IRoomService
         var claims = new[]
         {
             new Claim("iss", _apiKey),  // API Key
-            new Claim("nbf", new DateTimeOffset(startTime).ToUnixTimeSeconds().ToString()), // Thời gian bắt đầu
-            new Claim("exp", new DateTimeOffset(endTime).ToUnixTimeSeconds().ToString()), // Thời gian hết hạn
+            new Claim("nbf", new DateTimeOffset(startTime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64), // Thời gian bắt đầu
+            new Claim("exp", new DateTimeOffset(endTime).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64), // Thời gian hết hạn
             new Claim("room", roomName),  // Tên phòng
-            new Claim("user_name", userName),  // Tên người dùng
+            new Claim("user_name", userName , ClaimValueTypes.String),  // Tên người dùng
             new Claim("is_owner", "false")  // Người dùng không phải chủ phòng
         };
 

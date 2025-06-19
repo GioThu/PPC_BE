@@ -102,7 +102,7 @@ namespace PPC.Controller.Controllers
         }
 
         [Authorize(Roles = "1,2,3")]
-        [HttpGet("booking-detail/{bookingId}")]
+        [HttpGet("booking-detail")]
         public async Task<IActionResult> GetBookingById(string bookingId)
         {
             // Lấy accountId và role từ token
@@ -136,7 +136,7 @@ namespace PPC.Controller.Controllers
 
 
         [Authorize]
-        [HttpGet("{bookingId}/livekit-token")]
+        [HttpGet("livekit-token")]
         public async Task<IActionResult> GetLiveKitToken(string bookingId)
         {
 
