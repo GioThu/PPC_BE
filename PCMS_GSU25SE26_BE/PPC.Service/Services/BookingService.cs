@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Hangfire;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
+using PPC.Service.ModelRequest;
 using PPC.Service.ModelRequest.BookingRequest;
 using PPC.Service.ModelRequest.RoomRequest;
 using PPC.Service.ModelResponse;
@@ -379,7 +381,6 @@ namespace PPC.Service.Services
                 return false;
             return booking.CounselorId == counselorId;
         }
-
         public async Task<ServiceResponse<RoomResponse>> CreateDailyRoomAsync(string accountId, string bookingId, int role)
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
@@ -430,5 +431,53 @@ namespace PPC.Service.Services
             var result = await _roomService.CreateRoomAsync(request); 
             return result;
         }
+        public async Task<ServiceResponse<string>> ChangeStatusBookingAsync(string bookingId, int status)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null)
+                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+
+            booking.Status = status;
+
+            var result = await _bookingRepository.UpdateAsync(booking);
+            if (result == 0)
+                return ServiceResponse<string>.ErrorResponse("Update failed.");
+
+            if (status == 2)
+            {
+                BackgroundJob.Schedule<IBookingService>(
+                    x => x.AutoCompleteBookingIfStillPending(booking.Id),
+                    TimeSpan.FromDays(1)
+                );
+            }
+
+            return ServiceResponse<string>.SuccessResponse("Booking ended successfully.");
+        }
+        public async Task<ServiceResponse<string>> ReportBookingAsync(BookingReportRequest request)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
+            if (booking == null)
+                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+
+            booking.IsReport = true;
+            booking.ReportMessage = request.ReportMessage;
+            booking.Status = 5;
+
+            var result = await _bookingRepository.UpdateAsync(booking);
+            if (result == 0)
+                return ServiceResponse<string>.ErrorResponse("Failed to report booking.");
+
+            return ServiceResponse<string>.SuccessResponse("Booking reported successfully.");
+        }
+        public async Task AutoCompleteBookingIfStillPending(string bookingId)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking != null && booking.Status == 2)
+            {
+                booking.Status = 7;
+                await _bookingRepository.UpdateAsync(booking);
+            }
+        }
+
     }
 }

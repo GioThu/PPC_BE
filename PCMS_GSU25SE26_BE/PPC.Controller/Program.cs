@@ -1,4 +1,6 @@
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PPC.DAO.Models;
 using PPC.Repository.GenericRepository;
@@ -6,7 +8,6 @@ using PPC.Repository.Interfaces;
 using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
 using PPC.Service.Services;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 
@@ -57,7 +58,10 @@ builder.Services.AddAutoMapper(typeof(PPC.Service.Mappers.MappingProfile));
 
 builder.Services.AddDbContext<CCPContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"))); 
 
+builder.Services.AddHangfireServer();
 
 builder.Services.AddControllers();
 
@@ -134,7 +138,7 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "PPC API V1");
     c.RoutePrefix = "swagger";
 });
-
+app.UseHangfireDashboard(); //http://localhost:xxxx/hangfire
 app.UseCors("AllowAllOrigins");
 
 app.UseHttpsRedirection();

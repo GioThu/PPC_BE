@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
 using PPC.Service.Interfaces;
+using PPC.Service.ModelRequest;
 using PPC.Service.ModelRequest.BookingRequest;
 using PPC.Service.Services;
 using System.IdentityModel.Tokens.Jwt;
@@ -211,5 +212,53 @@ namespace PPC.Controller.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
+        [Authorize(Roles = "2")]
+        [HttpPut("{bookingId}/finish")]
+        public async Task<IActionResult> EndBooking(string bookingId)
+        {
+            var response = await _bookingService.ChangeStatusBookingAsync(bookingId, 2);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "3")]
+        [HttpPut("{bookingId}/member-cancel")]
+        public async Task<IActionResult> MemberCancelBooking(string bookingId)
+        {
+            var response = await _bookingService.ChangeStatusBookingAsync(bookingId, 4);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "2")]
+        [HttpPut("{bookingId}/counselor-cancel")]
+        public async Task<IActionResult> CounselorCancelBooking(string bookingId)
+        {
+            var response = await _bookingService.ChangeStatusBookingAsync(bookingId, 6);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "3")]
+        [HttpPut("report")]
+        public async Task<IActionResult> ReportBooking([FromBody] BookingReportRequest request)
+        {
+            if (string.IsNullOrEmpty(request.BookingId) || string.IsNullOrEmpty(request.ReportMessage))
+                return BadRequest("BookingId and ReportMessage are required.");
+
+            var response = await _bookingService.ReportBookingAsync(request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
     }
 }

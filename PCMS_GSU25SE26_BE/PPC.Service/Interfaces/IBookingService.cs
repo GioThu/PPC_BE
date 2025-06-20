@@ -1,4 +1,5 @@
-﻿using PPC.Service.ModelRequest.BookingRequest;
+﻿using PPC.Service.ModelRequest;
+using PPC.Service.ModelRequest.BookingRequest;
 using PPC.Service.ModelRequest.CategoryRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.BookingResponse;
@@ -24,5 +25,8 @@ namespace PPC.Service.Interfaces
         Task<bool> CheckIfCounselorCanAccessBooking(string bookingId, string counselorId);
         Task<bool> CheckIfMemberCanAccessBooking(string bookingId, string counselorId);
         Task<ServiceResponse<RoomResponse>> CreateDailyRoomAsync(string accountId, string bookingId, int role);
+        Task<ServiceResponse<string>> ChangeStatusBookingAsync(string bookingId, int status);
+        Task<ServiceResponse<string>> ReportBookingAsync(BookingReportRequest request);
+        Task AutoCompleteBookingIfStillPending(string bookingId);
     }
 }
