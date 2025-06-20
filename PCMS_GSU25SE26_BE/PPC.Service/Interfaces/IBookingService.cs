@@ -1,5 +1,4 @@
-﻿using PPC.Service.ModelRequest;
-using PPC.Service.ModelRequest.BookingRequest;
+﻿using PPC.Service.ModelRequest.BookingRequest;
 using PPC.Service.ModelRequest.CategoryRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.BookingResponse;

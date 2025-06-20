@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
+using PPC.Service.ModelRequest;
+using PPC.Service.ModelRequest.AccountRequest;
 using PPC.Service.ModelRequest.WorkScheduleRequest;
 
 namespace PPC.Controller.Controllers
@@ -27,6 +29,17 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize(Roles = "1")]
+        [HttpGet("paging")]
+        public async Task<IActionResult> GetPaging([FromQuery] PagingRequest request)
+        {
+            var response = await _counselorService.GetAllPagingAsync(request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
         [AllowAnonymous]
         [HttpGet("active-with-sub")]
         public async Task<IActionResult> GetActiveCounselorsWithSub()
@@ -46,6 +59,20 @@ namespace PPC.Controller.Controllers
                 return BadRequest(ModelState);
 
             var response = await _counselorService.GetAvailableScheduleAsync(request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "1")] 
+        [HttpPut("status")]
+        public async Task<IActionResult> UpdateStatus([FromBody] CounselorStatusUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _counselorService.UpdateStatusAsync(request);
             if (response.Success)
                 return Ok(response);
 

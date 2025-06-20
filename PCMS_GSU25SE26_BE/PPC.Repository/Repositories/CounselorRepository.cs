@@ -24,5 +24,19 @@ namespace PPC.Repository.Repositories
                 .OrderBy(c => c.Fullname)
                 .ToListAsync();
         }
+
+        public async Task<(List<Counselor>, int)> GetAllPagingAsync(int pageNumber, int pageSize)
+        {
+            var query = _context.Counselors.AsQueryable();
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(c => c.Fullname)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
     }
 }

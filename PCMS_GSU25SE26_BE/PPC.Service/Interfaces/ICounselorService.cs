@@ -1,4 +1,7 @@
-﻿using PPC.Service.ModelRequest.WorkScheduleRequest;
+﻿using PPC.DAO.Models;
+using PPC.Service.ModelRequest;
+using PPC.Service.ModelRequest.AccountRequest;
+using PPC.Service.ModelRequest.WorkScheduleRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.CounselorResponse;
 using PPC.Service.ModelResponse.WorkScheduleResponse;
@@ -16,6 +19,9 @@ namespace PPC.Service.Interfaces
         Task CheckAndUpdateCounselorStatusAsync(string counselorId);
         Task<ServiceResponse<List<CounselorWithSubDto>>> GetActiveCounselorsWithSubAsync();
         Task<ServiceResponse<AvailableScheduleOverviewDto>> GetAvailableScheduleAsync(GetAvailableScheduleRequest request);
+        Task<ServiceResponse<PagingResponse<CounselorDto>>> GetAllPagingAsync(PagingRequest request);
+        Task<ServiceResponse<string>> UpdateStatusAsync(CounselorStatusUpdateRequest request);
+
 
     }
 }

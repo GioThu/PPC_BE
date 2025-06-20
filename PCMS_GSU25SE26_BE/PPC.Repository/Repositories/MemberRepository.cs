@@ -16,13 +16,18 @@ namespace PPC.Repository.Repositories
         {
         }
 
-        public async Task<List<Member>> GetAllWithMemberShipsAsync(string memberId)
+        public async Task<(List<Member>, int)> GetAllPagingAsync(int pageNumber, int pageSize)
         {
-            return await _context.Members
-                .Where(m => m.Id == memberId)
-                .Include(m => m.MemberMemberShips)
-                    .ThenInclude(mms => mms.MemberShip)
+            var query = _context.Members.AsQueryable(); // Lấy tất cả, không lọc status
+            var total = await query.CountAsync();
+
+            var members = await query
+                .OrderBy(m => m.Fullname)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return (members, total);
         }
     }
 }

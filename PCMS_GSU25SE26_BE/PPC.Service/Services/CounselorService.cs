@@ -3,6 +3,8 @@ using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
+using PPC.Service.ModelRequest;
+using PPC.Service.ModelRequest.AccountRequest;
 using PPC.Service.ModelRequest.WorkScheduleRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.CategoryResponse;
@@ -76,97 +78,6 @@ namespace PPC.Service.Services
             return ServiceResponse<List<CounselorWithSubDto>>.SuccessResponse(result);
         }
 
-        //public async Task<ServiceResponse<AvailableScheduleOverviewDto>> GetAvailableScheduleAsync(GetAvailableScheduleRequest request)
-        //{
-        //    var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);
-        //    if (counselor == null)
-        //    {
-        //        return ServiceResponse<AvailableScheduleOverviewDto>.ErrorResponse("Counselor not found.");
-        //    }
-
-        //    var counselorDto = _mapper.Map<CounselorDto>(counselor);
-        //    var subCategories = await _counselorSubCategoryRepository
-        //        .GetApprovedSubCategoriesByCounselorAsync(request.CounselorId);
-        //    var subCategoryDtos = _mapper.Map<List<SubCategoryDto>>(subCategories);
-
-        //    var dailySchedules = new List<DailyAvailableSlotDto>();
-
-        //    for (int i = 0; i < 7; i++)
-        //    {
-        //        var currentDate = Utils.Utils.GetTimeNow().Date.AddDays(i);
-        //        var workSchedules = await _workScheduleRepo.GetByCounselorAndDateAsync(request.CounselorId, currentDate);
-        //        var bookings = await _bookingRepo.GetConfirmedBookingsByDateAsync(request.CounselorId, currentDate);
-
-        //        var bookingIntervals = bookings
-        //            .Where(b => b.TimeStart.HasValue && b.TimeEnd.HasValue)
-        //            .Select(b => new
-        //            {
-        //                Start = b.TimeStart.Value.TimeOfDay,
-        //                End = b.TimeEnd.Value.TimeOfDay + TimeSpan.FromMinutes(10)
-        //            })
-        //            .OrderBy(b => b.Start)
-        //            .ToList();
-
-        //        var availableSlots = new List<AvailableTimeSlotDto>();
-
-        //        foreach (var schedule in workSchedules)
-        //        {
-        //            if (!schedule.StartTime.HasValue || !schedule.EndTime.HasValue)
-        //                continue;
-
-        //            var currentStart = schedule.StartTime.Value.TimeOfDay;
-        //            var scheduleEnd = schedule.EndTime.Value.TimeOfDay;
-
-        //            foreach (var b in bookingIntervals)
-        //            {
-        //                if (b.End <= currentStart)
-        //                    continue;
-
-        //                if (b.Start >= scheduleEnd)
-        //                    break;
-
-        //                if (b.Start > currentStart)
-        //                {
-        //                    availableSlots.Add(new AvailableTimeSlotDto
-        //                    {
-        //                        Start = currentStart,
-        //                        End = b.Start < scheduleEnd ? b.Start : scheduleEnd
-        //                    });
-        //                }
-
-        //                currentStart = b.End > currentStart ? b.End : currentStart;
-        //            }
-
-        //            if (currentStart < scheduleEnd)
-        //            {
-        //                availableSlots.Add(new AvailableTimeSlotDto
-        //                {
-        //                    Start = currentStart,
-        //                    End = scheduleEnd
-        //                });
-        //            }
-        //        }
-
-        //        if (availableSlots.Any())
-        //        {
-        //            dailySchedules.Add(new DailyAvailableSlotDto
-        //            {
-        //                WorkDate = currentDate,
-        //                AvailableSlots = availableSlots.OrderBy(s => s.Start).ToList()
-        //            });
-        //        }
-        //    }
-
-        //    var overviewDto = new AvailableScheduleOverviewDto
-        //    {
-        //        CounselorId = request.CounselorId,
-        //        Counselor = counselorDto,
-        //        SubCategories = subCategoryDtos,
-        //        DailyAvailableSchedules = dailySchedules
-        //    };
-
-        //    return ServiceResponse<AvailableScheduleOverviewDto>.SuccessResponse(overviewDto);
-        //}
         public async Task<ServiceResponse<AvailableScheduleOverviewDto>> GetAvailableScheduleAsync(GetAvailableScheduleRequest request)
         {
             var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);
@@ -278,6 +189,30 @@ namespace PPC.Service.Services
             };
 
             return ServiceResponse<AvailableScheduleOverviewDto>.SuccessResponse(overviewDto);
+        }
+
+        public async Task<ServiceResponse<PagingResponse<CounselorDto>>> GetAllPagingAsync(PagingRequest request)
+        {
+            var (entities, totalCount) = await _counselorRepository.GetAllPagingAsync(request.PageNumber, request.PageSize);
+            var dtos = _mapper.Map<List<CounselorDto>>(entities);
+
+            var paging = new PagingResponse<CounselorDto>(dtos, totalCount, request.PageNumber, request.PageSize);
+            return ServiceResponse<PagingResponse<CounselorDto>>.SuccessResponse(paging);
+        }
+        public async Task<ServiceResponse<string>> UpdateStatusAsync(CounselorStatusUpdateRequest request)
+        {
+            var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);
+            if (counselor == null)
+                return ServiceResponse<string>.ErrorResponse("Counselor not found.");
+
+            counselor.Status = request.Status;
+
+            var result = await _counselorRepository.UpdateAsync(counselor);
+            if (result == 0)
+                return ServiceResponse<string>.ErrorResponse("Failed to update status.");
+
+            string action = request.Status == 0 ? "blocked" : "unblocked";
+            return ServiceResponse<string>.SuccessResponse($"Counselor {action} successfully.");
         }
     }
 }

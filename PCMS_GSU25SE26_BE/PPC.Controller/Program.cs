@@ -44,9 +44,7 @@ builder.Services.AddScoped<ICertificationService, CertificationService>();
 builder.Services.AddScoped<IMemberShipService, MemberShipService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
-
-
-
+builder.Services.AddScoped<IMemberService, MemberService>();
 
 
 builder.Services.AddScoped<IJwtService, JwtService>();
