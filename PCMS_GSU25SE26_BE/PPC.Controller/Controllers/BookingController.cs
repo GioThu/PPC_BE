@@ -263,9 +263,9 @@ namespace PPC.Controller.Controllers
 
         [Authorize(Roles = "1")] 
         [HttpGet("all-paging")]
-        public async Task<IActionResult> GetAllAdminPaging([FromBody] BookingPagingRequest request)
+        public async Task<IActionResult> GetAllAdminPaging([FromQuery] BookingPagingRequest request)
         {
-            var response = await _bookingService.GetAllAdminPagingAsync(request);
+            var response = await _bookingService.GetAllAdminPagingAsync(request);   
             if (response.Success)
                 return Ok(response);
 
