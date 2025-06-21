@@ -263,7 +263,7 @@ namespace PPC.Controller.Controllers
 
         [Authorize(Roles = "1")] 
         [HttpGet("all-paging")]
-        public async Task<IActionResult> GetAllAdminPaging([FromQuery] BookingPagingRequest request)
+        public async Task<IActionResult> GetAllAdminPaging([FromBody] BookingPagingRequest request)
         {
             var response = await _bookingService.GetAllAdminPagingAsync(request);
             if (response.Success)
@@ -274,7 +274,7 @@ namespace PPC.Controller.Controllers
 
         [Authorize(Roles = "1")]
         [HttpGet("change-status")]
-        public async Task<IActionResult> GetAllAdminPaging([FromQuery] ChangeBookingStatusRequest request)
+        public async Task<IActionResult> GetAllAdminPaging([FromBody] ChangeBookingStatusRequest request)
         {
             var response = await _bookingService.ChangeStatusBookingAsync(request.BookingId, request.Status);
             if (response.Success)
