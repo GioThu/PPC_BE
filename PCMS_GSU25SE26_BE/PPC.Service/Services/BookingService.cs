@@ -191,7 +191,6 @@ namespace PPC.Service.Services
             var pagingResponse = new PagingResponse<BookingDto>(bookingDtos, totalCount, pageNumber, pageSize);
             return ServiceResponse<PagingResponse<BookingDto>>.SuccessResponse(pagingResponse);
         }
-
         public async Task<ServiceResponse<PagingResponse<BookingDto>>> GetBookingsByMemberAsync(string memberId, int pageNumber, int pageSize)
         {
             if (pageNumber < 1) pageNumber = 1;

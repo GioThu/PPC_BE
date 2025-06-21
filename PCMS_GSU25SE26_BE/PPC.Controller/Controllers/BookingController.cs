@@ -262,7 +262,7 @@ namespace PPC.Controller.Controllers
         }
 
         [Authorize(Roles = "1")] 
-        [HttpGet("admin/paging")]
+        [HttpGet("all-paging")]
         public async Task<IActionResult> GetAllAdminPaging([FromQuery] BookingPagingRequest request)
         {
             var response = await _bookingService.GetAllAdminPagingAsync(request);
@@ -272,5 +272,15 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize(Roles = "1")]
+        [HttpGet("change-status")]
+        public async Task<IActionResult> GetAllAdminPaging([FromQuery] ChangeBookingStatusRequest request)
+        {
+            var response = await _bookingService.ChangeStatusBookingAsync(request.BookingId, request.Status);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }
