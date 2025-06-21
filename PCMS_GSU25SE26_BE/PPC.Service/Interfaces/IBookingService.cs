@@ -30,7 +30,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> CancelByCounselorAsync(CancelBookingByCounselorRequest request);
         Task<ServiceResponse<PagingResponse<BookingAdminResponse>>> GetAllAdminPagingAsync(BookingPagingRequest request);
         Task<ServiceResponse<string>> UpdateBookingNoteAsync(BookingNoteUpdateRequest request);
-
+        Task<ServiceResponse<string>> RateBookingAsync(BookingRatingRequest request);
 
     }
 }

@@ -419,6 +419,33 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Booking notes updated successfully.");
         }
+        public async Task<ServiceResponse<string>> RateBookingAsync(BookingRatingRequest request)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
+            if (booking == null)
+                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+
+            if (booking.Status == 1 || booking.Status == 3 || booking.Status == 4 || booking.Status == 6)
+                return ServiceResponse<string>.ErrorResponse("Only completed bookings can be rated.");
+
+
+            booking.Rating = request.Rating;
+            booking.Feedback = request.Feedback;
+            await _bookingRepository.UpdateAsync(booking);
+
+            // Cập nhật Counselor.Rating trung bình & số lượng đánh giá
+            var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
+            if (counselor == null)
+                return ServiceResponse<string>.ErrorResponse("Counselor not found.");
+
+            var (average, count) = await _bookingRepository.GetRatingStatsByCounselorIdAsync(counselor.Id);
+            counselor.Rating = average;
+            counselor.Reviews = count;
+
+            await _counselorRepository.UpdateAsync(counselor);
+
+            return ServiceResponse<string>.SuccessResponse("Rating submitted successfully.");
+        }
 
     }
 }

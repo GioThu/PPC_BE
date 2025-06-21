@@ -153,5 +153,16 @@ namespace PPC.Repository.Repositories
             return (paged, totalCount);
         }
 
+        public async Task<(double average, int count)> GetRatingStatsByCounselorIdAsync(string counselorId)
+        {
+            var query = _context.Bookings
+                .Where(b => b.CounselorId == counselorId && b.Rating.HasValue);
+
+            var count = await query.CountAsync();
+            var average = count > 0 ? await query.AverageAsync(b => b.Rating.Value) : 0;
+
+            return (average, count);
+        }
+
     }
 }

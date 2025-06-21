@@ -296,5 +296,19 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [Authorize(Roles = "3")] 
+        [HttpPut("rating")]
+        public async Task<IActionResult> RateBooking([FromBody] BookingRatingRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _bookingService.RateBookingAsync(request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }
