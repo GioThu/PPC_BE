@@ -282,5 +282,19 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [Authorize(Roles = "2")]
+        [HttpPut("update-note")]
+        public async Task<IActionResult> UpdateBookingNote([FromBody] BookingNoteUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _bookingService.UpdateBookingNoteAsync(request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

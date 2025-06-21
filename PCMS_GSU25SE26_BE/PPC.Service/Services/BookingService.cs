@@ -403,6 +403,22 @@ namespace PPC.Service.Services
             var result = new PagingResponse<BookingAdminResponse>(responses, total, request.PageNumber, request.PageSize);
             return ServiceResponse<PagingResponse<BookingAdminResponse>>.SuccessResponse(result);
         }
+        public async Task<ServiceResponse<string>> UpdateBookingNoteAsync(BookingNoteUpdateRequest request)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
+            if (booking == null)
+                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+
+            booking.ProblemSummary = request.ProblemSummary;
+            booking.ProblemAnalysis = request.ProblemAnalysis;
+            booking.Guides = request.Guides;
+
+            var result = await _bookingRepository.UpdateAsync(booking);
+            if (result == 0)
+                return ServiceResponse<string>.ErrorResponse("Failed to update booking notes.");
+
+            return ServiceResponse<string>.SuccessResponse("Booking notes updated successfully.");
+        }
 
     }
 }
