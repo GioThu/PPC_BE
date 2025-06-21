@@ -273,7 +273,7 @@ namespace PPC.Controller.Controllers
         }
 
         [Authorize(Roles = "1")]
-        [HttpGet("change-status")]
+        [HttpPut("change-status")]
         public async Task<IActionResult> GetAllAdminPaging([FromBody] ChangeBookingStatusRequest request)
         {
             var response = await _bookingService.ChangeStatusBookingAsync(request.BookingId, request.Status);
