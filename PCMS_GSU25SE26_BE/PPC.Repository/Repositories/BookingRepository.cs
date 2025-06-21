@@ -55,30 +55,103 @@ namespace PPC.Repository.Repositories
         public async Task<List<Booking>> GetBookingsByMemberIdAsync(string memberId)
         {
             return await _context.Bookings
-                .Where(b => b.MemberId == memberId || b.Member2Id == memberId) 
-                .Include(b => b.BookingSubCategories)  
-                .ThenInclude(bsc => bsc.SubCategory)  
-                .OrderByDescending(b => b.TimeStart)
-                .ToListAsync();
+                .Where(b => b.MemberId == memberId || b.Member2Id == memberId)
+                .Include(b => b.Member)
+        .Include(b => b.Member2)
+        .Include(b => b.Counselor)
+        .Include(b => b.BookingSubCategories)
+            .ThenInclude(bsc => bsc.SubCategory)
+        .OrderByDescending(b => b.TimeStart)
+        .ToListAsync();
         }
 
         public async Task<List<Booking>> GetBookingsByCounselorIdAsync(string counselorId)
         {
             return await _context.Bookings
-                .Where(b => b.CounselorId == counselorId)
-                .Include(b => b.BookingSubCategories) 
-                .ThenInclude(bsc => bsc.SubCategory)  
-                .OrderByDescending(b => b.TimeStart)
-                .ToListAsync();
+        .Where(b => b.CounselorId == counselorId)
+        .Include(b => b.Member)
+        .Include(b => b.Member2)
+        .Include(b => b.Counselor)
+        .Include(b => b.BookingSubCategories)
+            .ThenInclude(bsc => bsc.SubCategory)
+        .OrderByDescending(b => b.TimeStart)
+        .ToListAsync();
         }
 
         public async Task<Booking> GetDtoByIdAsync(string bookingId)
         {
             return await _context.Bookings
-                .Where(b => b.Id == bookingId)
+       .Include(b => b.Member)
+       .Include(b => b.Member2)
+       .Include(b => b.Counselor)
+       .Include(b => b.BookingSubCategories)
+           .ThenInclude(bsc => bsc.SubCategory)
+       .FirstOrDefaultAsync(b => b.Id == bookingId);
+        }
+
+        public async Task<(List<Booking>, int)> GetAllPagingIncludeAsync(int page, int size, int? status)
+        {
+            var query = _context.Bookings
+                .Include(b => b.Member)
+                .Include(b => b.Member2)
+                .Include(b => b.Counselor)
+                .AsQueryable();
+
+            if (status.HasValue)
+                query = query.Where(b => b.Status == status);
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(b => b.CreateAt)
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+
+            return (items, total);
+        }
+
+        public async Task<(List<Booking>, int)> GetBookingsByCounselorPagingAsync(string counselorId, int pageNumber, int pageSize)
+        {
+            var query = _context.Bookings
+                .Where(b => b.CounselorId == counselorId)
+                .Include(b => b.Member)
+                .Include(b => b.Member2)
+                .Include(b => b.Counselor)
                 .Include(b => b.BookingSubCategories)
                     .ThenInclude(bsc => bsc.SubCategory)
-                .FirstOrDefaultAsync();
+                .OrderByDescending(b => b.TimeStart);
+
+            var totalCount = await query.CountAsync();
+
+            var paged = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (paged, totalCount);
         }
+
+        public async Task<(List<Booking>, int)> GetBookingsByMemberPagingAsync(string memberId, int pageNumber, int pageSize)
+        {
+            var query = _context.Bookings
+                .Where(b => b.MemberId == memberId || b.Member2Id == memberId)
+                .Include(b => b.Member)
+                .Include(b => b.Member2)
+                .Include(b => b.Counselor)
+                .Include(b => b.BookingSubCategories)
+                    .ThenInclude(bsc => bsc.SubCategory)
+                .OrderByDescending(b => b.TimeStart);
+
+            var totalCount = await query.CountAsync();
+
+            var paged = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (paged, totalCount);
+        }
+
     }
 }

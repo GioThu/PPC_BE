@@ -33,6 +33,8 @@ namespace PPC.Service.Mappers
                 .ForMember(dest => dest.Member2, opt => opt.MapFrom(src => src.Member2))    
                 .ForMember(dest => dest.Counselor, opt => opt.MapFrom(src => src.Counselor))  
                 .ForMember(dest => dest.SubCategories, opt => opt.MapFrom(src => src.BookingSubCategories.Select(bsc => bsc.SubCategory)));
+
+            CreateMap<Booking, BookingAdminResponse>();
         }
     }
 }

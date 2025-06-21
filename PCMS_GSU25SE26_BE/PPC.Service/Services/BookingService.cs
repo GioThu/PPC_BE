@@ -164,160 +164,52 @@ namespace PPC.Service.Services
         {
             var bookings = await _bookingRepository.GetBookingsByCounselorIdAsync(counselorId);
             if (bookings == null || !bookings.Any())
-            {
                 return ServiceResponse<List<BookingDto>>.ErrorResponse("No bookings found.");
-            }
 
-            var bookingDtos = new List<BookingDto>();
-
-            foreach (var booking in bookings)
-            {
-                var dto = _mapper.Map<BookingDto>(booking);
-
-                var member = await _memberRepository.GetByIdAsync(booking.MemberId);
-                dto.Member = _mapper.Map<MemberDto>(member);
-
-                if (!string.IsNullOrEmpty(booking.Member2Id))
-                {
-                    var member2 = await _memberRepository.GetByIdAsync(booking.Member2Id);
-                    dto.Member2 = _mapper.Map<MemberDto>(member2);
-                }
-
-                var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
-                dto.Counselor = _mapper.Map<CounselorDto>(counselor);
-
-                bookingDtos.Add(dto);
-            }
-
+            var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
             return ServiceResponse<List<BookingDto>>.SuccessResponse(bookingDtos);
         }
         public async Task<ServiceResponse<List<BookingDto>>> GetBookingsByMemberAsync(string memberId)
         {
             var bookings = await _bookingRepository.GetBookingsByMemberIdAsync(memberId);
             if (bookings == null || !bookings.Any())
-            {
                 return ServiceResponse<List<BookingDto>>.ErrorResponse("No bookings found.");
-            }
 
-            var bookingDtos = new List<BookingDto>();
-
-            foreach (var booking in bookings)
-            {
-                var bookingDto = _mapper.Map<BookingDto>(booking);
-
-                var member = await _memberRepository.GetByIdAsync(booking.MemberId);
-                if (member == null)
-                    continue;
-
-                bookingDto.Member = _mapper.Map<MemberDto>(member);
-
-                var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
-                if (counselor == null)
-                    continue;
-
-                bookingDto.Counselor = _mapper.Map<CounselorDto>(counselor);
-
-                bookingDtos.Add(bookingDto);
-            }
-
+            var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
             return ServiceResponse<List<BookingDto>>.SuccessResponse(bookingDtos);
         }
         public async Task<ServiceResponse<PagingResponse<BookingDto>>> GetBookingsByCounselorAsync(string counselorId, int pageNumber, int pageSize)
         {
             if (pageNumber < 1) pageNumber = 1;
-            if (pageSize < 1) pageSize = 10;  
+            if (pageSize < 1) pageSize = 10;
 
-            var bookings = await _bookingRepository.GetBookingsByCounselorIdAsync(counselorId);
-            var totalCount = bookings.Count();  
+            var (bookings, totalCount) = await _bookingRepository
+                .GetBookingsByCounselorPagingAsync(counselorId, pageNumber, pageSize);
 
-            var pagedBookings = bookings
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            var bookingDtos = new List<BookingDto>();
-
-            foreach (var booking in pagedBookings)
-            {
-                var dto = _mapper.Map<BookingDto>(booking);
-
-                var member = await _memberRepository.GetByIdAsync(booking.MemberId);
-                dto.Member = _mapper.Map<MemberDto>(member);
-
-                if (!string.IsNullOrEmpty(booking.Member2Id))
-                {
-                    var member2 = await _memberRepository.GetByIdAsync(booking.Member2Id);
-                    dto.Member2 = _mapper.Map<MemberDto>(member2);
-                }
-
-                var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
-                dto.Counselor = _mapper.Map<CounselorDto>(counselor);
-
-                bookingDtos.Add(dto);
-            }
+            var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
 
             var pagingResponse = new PagingResponse<BookingDto>(bookingDtos, totalCount, pageNumber, pageSize);
-
             return ServiceResponse<PagingResponse<BookingDto>>.SuccessResponse(pagingResponse);
         }
+
         public async Task<ServiceResponse<PagingResponse<BookingDto>>> GetBookingsByMemberAsync(string memberId, int pageNumber, int pageSize)
         {
             if (pageNumber < 1) pageNumber = 1;
-            if (pageSize < 1) pageSize = 10;  
+            if (pageSize < 1) pageSize = 10;
 
-            var bookings = await _bookingRepository.GetBookingsByMemberIdAsync(memberId);
-            var totalCount = bookings.Count();  
+            var (bookings, totalCount) = await _bookingRepository.GetBookingsByMemberPagingAsync(memberId, pageNumber, pageSize);
+            var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
 
-            var pagedBookings = bookings
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            var bookingDtos = new List<BookingDto>();
-
-            foreach (var booking in pagedBookings)
-            {
-                var bookingDto = _mapper.Map<BookingDto>(booking);
-
-                var member = await _memberRepository.GetByIdAsync(booking.MemberId);
-                if (member == null) continue;
-
-                bookingDto.Member = _mapper.Map<MemberDto>(member);
-
-                var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
-                if (counselor == null) continue;
-
-                bookingDto.Counselor = _mapper.Map<CounselorDto>(counselor);
-
-                bookingDtos.Add(bookingDto);
-            }
-
-            var pagingResponse = new PagingResponse<BookingDto>(bookingDtos, totalCount, pageNumber, pageSize);
-
-            return ServiceResponse<PagingResponse<BookingDto>>.SuccessResponse(pagingResponse);
+            var paging = new PagingResponse<BookingDto>(bookingDtos, totalCount, pageNumber, pageSize);
+            return ServiceResponse<PagingResponse<BookingDto>>.SuccessResponse(paging);
         }
         public async Task<ServiceResponse<BookingDto>> GetBookingByIdAsync(string bookingId)
         {
             var booking = await _bookingRepository.GetDtoByIdAsync(bookingId);
             if (booking == null)
-            {
                 return ServiceResponse<BookingDto>.ErrorResponse("Booking not found.");
-            }
 
             var bookingDto = _mapper.Map<BookingDto>(booking);
-
-            var member = await _memberRepository.GetByIdAsync(booking.MemberId);
-            bookingDto.Member = _mapper.Map<MemberDto>(member);
-
-            if (!string.IsNullOrEmpty(booking.Member2Id))
-            {
-                var member2 = await _memberRepository.GetByIdAsync(booking.Member2Id);
-                bookingDto.Member2 = _mapper.Map<MemberDto>(member2);
-            }
-
-            var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
-            bookingDto.Counselor = _mapper.Map<CounselorDto>(counselor);
-
             return ServiceResponse<BookingDto>.SuccessResponse(bookingDto);
         }
         public async Task<ServiceResponse<TokenLivekit>> GetLiveKitToken(string accountId, string bookingId, int role)
@@ -436,18 +328,27 @@ namespace PPC.Service.Services
             if (booking == null)
                 return ServiceResponse<string>.ErrorResponse("Booking not found.");
 
+            if (booking.Status != 1)
+                return ServiceResponse<string>.ErrorResponse("Buổi đặt lịch này không còn hoạt động");
+
+
             booking.Status = status;
 
             var result = await _bookingRepository.UpdateAsync(booking);
             if (result == 0)
                 return ServiceResponse<string>.ErrorResponse("Update failed.");
 
-            if (status == 2)
+            if (booking.Status == 2)
             {
                 BackgroundJob.Schedule<IBookingService>(
                     x => x.AutoCompleteBookingIfStillPending(booking.Id),
                     TimeSpan.FromDays(1)
                 );
+            }
+
+            if (booking.Status == 4)
+            {
+                return ServiceResponse<string>.SuccessResponse("Booking ended successfully.");
             }
 
             return ServiceResponse<string>.SuccessResponse("Booking ended successfully.");
@@ -476,6 +377,32 @@ namespace PPC.Service.Services
                 booking.Status = 7;
                 await _bookingRepository.UpdateAsync(booking);
             }
+        }
+        public async Task<ServiceResponse<string>> CancelByCounselorAsync(CancelBookingByCounselorRequest request)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
+            if (booking == null)
+                return ServiceResponse<string>.ErrorResponse("Booking not found");
+
+            if (booking.Status != 2)
+                return ServiceResponse<string>.ErrorResponse("Không thể hủy booking này");
+
+            booking.CancelReason = request.CancelReason;
+            booking.Status = 6;
+
+            var result = await _bookingRepository.UpdateAsync(booking);
+            if (result == 0)
+                return ServiceResponse<string>.ErrorResponse("Failed to cancel booking.");
+
+            return ServiceResponse<string>.SuccessResponse("Booking cancelled by counselor.");
+        }
+        public async Task<ServiceResponse<PagingResponse<BookingAdminResponse>>> GetAllAdminPagingAsync(BookingPagingRequest request)
+        {
+            var (bookings, total) = await _bookingRepository.GetAllPagingIncludeAsync(request.PageNumber, request.PageSize, request.Status);
+            var responses = _mapper.Map<List<BookingAdminResponse>>(bookings);
+
+            var result = new PagingResponse<BookingAdminResponse>(responses, total, request.PageNumber, request.PageSize);
+            return ServiceResponse<PagingResponse<BookingAdminResponse>>.SuccessResponse(result);
         }
 
     }

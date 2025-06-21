@@ -27,5 +27,10 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> ChangeStatusBookingAsync(string bookingId, int status);
         Task<ServiceResponse<string>> ReportBookingAsync(BookingReportRequest request);
         Task AutoCompleteBookingIfStillPending(string bookingId);
+        Task<ServiceResponse<string>> CancelByCounselorAsync(CancelBookingByCounselorRequest request);
+
+        Task<ServiceResponse<PagingResponse<BookingAdminResponse>>> GetAllAdminPagingAsync(BookingPagingRequest request);
+
+
     }
 }

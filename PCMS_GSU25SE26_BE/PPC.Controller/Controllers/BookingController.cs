@@ -185,32 +185,31 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        //[HttpPost("livekit-webhook")]
+        //public async Task<IActionResult> Webhook()
+        //{
+        //    try
+        //    {
+        //        using var reader = new StreamReader(Request.Body);
+        //        var rawBody = await reader.ReadToEndAsync();
 
-        [HttpPost("livekit-webhook")]
-        public async Task<IActionResult> Webhook()
-        {
-            try
-            {
-                using var reader = new StreamReader(Request.Body);
-                var rawBody = await reader.ReadToEndAsync();
+        //        var authHeader = Request.Headers["Authorization"];
 
-                var authHeader = Request.Headers["Authorization"];
+        //        if (string.IsNullOrEmpty(authHeader))
+        //        {
+        //            return Unauthorized("Authorization header is missing.");
+        //        }
 
-                if (string.IsNullOrEmpty(authHeader))
-                {
-                    return Unauthorized("Authorization header is missing.");
-                }
+        //        var success = await _livekitService.HandleWebhookAsync(rawBody, authHeader);
 
-                var success = await _livekitService.HandleWebhookAsync(rawBody, authHeader);
-
-                return success ? Ok() : Unauthorized("Invalid webhook token or payload.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error handling webhook: {ex.Message}");
-                return StatusCode(500, "Internal Server Error");
-            }
-        }
+        //        return success ? Ok() : Unauthorized("Invalid webhook token or payload.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error handling webhook: {ex.Message}");
+        //        return StatusCode(500, "Internal Server Error");
+        //    }
+        //}
 
         [Authorize(Roles = "2")]
         [HttpPut("{bookingId}/finish")]
@@ -235,10 +234,13 @@ namespace PPC.Controller.Controllers
         }
 
         [Authorize(Roles = "2")]
-        [HttpPut("{bookingId}/counselor-cancel")]
-        public async Task<IActionResult> CounselorCancelBooking(string bookingId)
+        [HttpPut("counselor-cancel")]
+        public async Task<IActionResult> CancelByCounselor([FromBody] CancelBookingByCounselorRequest request)
         {
-            var response = await _bookingService.ChangeStatusBookingAsync(bookingId, 6);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _bookingService.CancelByCounselorAsync(request);
             if (response.Success)
                 return Ok(response);
 
@@ -253,6 +255,17 @@ namespace PPC.Controller.Controllers
                 return BadRequest("BookingId and ReportMessage are required.");
 
             var response = await _bookingService.ReportBookingAsync(request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "1")] 
+        [HttpGet("admin/paging")]
+        public async Task<IActionResult> GetAllAdminPaging([FromQuery] BookingPagingRequest request)
+        {
+            var response = await _bookingService.GetAllAdminPagingAsync(request);
             if (response.Success)
                 return Ok(response);
 
