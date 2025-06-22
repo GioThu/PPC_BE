@@ -172,7 +172,6 @@ public partial class CCPContext : DbContext
                 .HasColumnName("createAt");
             entity.Property(e => e.Feedback)
                 .HasMaxLength(2000)
-                .IsUnicode(false)
                 .HasColumnName("feedback");
             entity.Property(e => e.Guides)
                 .HasMaxLength(2000)

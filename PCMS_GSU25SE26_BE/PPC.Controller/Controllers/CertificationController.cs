@@ -108,9 +108,9 @@ namespace PPC.Controller.Controllers
 
         [Authorize(Roles = "1")]
         [HttpGet("all-paging")]
-        public async Task<IActionResult> GetAllCertifications([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAllCertifications([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] int? status = null)
         {
-            var response = await _certificationService.GetAllCertificationsAsync(pageNumber, pageSize);
+            var response = await _certificationService.GetAllCertificationsAsync(pageNumber, pageSize, status);
 
             if (response.Success)
             {

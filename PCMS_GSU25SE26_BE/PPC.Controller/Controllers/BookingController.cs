@@ -58,13 +58,16 @@ namespace PPC.Controller.Controllers
 
         [Authorize(Roles = "2")]
         [HttpGet("my-bookings-paging")]
-        public async Task<IActionResult> GetMyBookingsForCounselorPaging([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetMyBookingsForCounselorPaging(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] int? status = null)
         {
             var counselorId = User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
             if (string.IsNullOrEmpty(counselorId))
                 return Unauthorized("CounselorId not found in token.");
 
-            var response = await _bookingService.GetBookingsByCounselorAsync(counselorId, pageNumber, pageSize);
+            var response = await _bookingService.GetBookingsByCounselorAsync(counselorId, pageNumber, pageSize, status);
             if (response.Success)
                 return Ok(response);
 

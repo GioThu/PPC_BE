@@ -38,6 +38,25 @@ namespace PPC.Repository.Repositories
                 .Include(c => c.Counselor)  
                 .FirstOrDefaultAsync(); 
         }
+        public async Task<(List<Certification>, int)> GetPagedCertificationsAsync(int pageNumber, int pageSize, int? status)
+        {
+            var query = _context.Certifications
+                .Include(c => c.Counselor)
+                .AsQueryable();
+
+            if (status.HasValue)
+                query = query.Where(c => c.Counselor.Status == status.Value);
+
+            var totalCount = await query.CountAsync();
+
+            var pagedData = await query
+                .OrderByDescending(c => c.Id) 
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (pagedData, totalCount);
+        }
 
 
     }

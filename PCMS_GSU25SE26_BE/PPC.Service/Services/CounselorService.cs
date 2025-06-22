@@ -193,12 +193,15 @@ namespace PPC.Service.Services
 
         public async Task<ServiceResponse<PagingResponse<CounselorDto>>> GetAllPagingAsync(PagingRequest request)
         {
-            var (entities, totalCount) = await _counselorRepository.GetAllPagingAsync(request.PageNumber, request.PageSize);
+            var (entities, totalCount) = await _counselorRepository.GetAllPagingAsync(
+                request.PageNumber, request.PageSize, request.Status);
+
             var dtos = _mapper.Map<List<CounselorDto>>(entities);
 
             var paging = new PagingResponse<CounselorDto>(dtos, totalCount, request.PageNumber, request.PageSize);
             return ServiceResponse<PagingResponse<CounselorDto>>.SuccessResponse(paging);
         }
+
         public async Task<ServiceResponse<string>> UpdateStatusAsync(CounselorStatusUpdateRequest request)
         {
             var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);

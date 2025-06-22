@@ -190,5 +190,31 @@ namespace PPC.Repository.Repositories
             return (paged, totalCount);
         }
 
+        public async Task<(List<Booking>, int)> GetBookingsByCounselorPagingAsync(string counselorId, int pageNumber, int pageSize, int? status)
+        {
+            var query = _context.Bookings
+                .Where(b => b.CounselorId == counselorId);
+
+            if (status.HasValue)
+                query = query.Where(b => b.Status == status);
+
+            query = query
+                .Include(b => b.Member)
+                .Include(b => b.Member2)
+                .Include(b => b.Counselor)
+                .Include(b => b.BookingSubCategories)
+                    .ThenInclude(bsc => bsc.SubCategory)
+                .OrderByDescending(b => b.TimeStart);
+
+            var totalCount = await query.CountAsync();
+
+            var paged = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (paged, totalCount);
+        }
+
     }
 }

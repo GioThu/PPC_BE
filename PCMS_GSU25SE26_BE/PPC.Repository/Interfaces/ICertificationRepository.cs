@@ -13,5 +13,7 @@ namespace PPC.Repository.Interfaces
         Task<List<Certification>> GetByCounselorIdAsync(string counselorId);
         Task<List<Certification>> GetAllCertificationsAsync();
         Task<Certification> GetCertificationByIdAsync(string certificationId);
+        Task<(List<Certification> Certifications, int TotalCount)> GetPagedCertificationsAsync(int pageNumber, int pageSize, int? status);
+
     }
 }

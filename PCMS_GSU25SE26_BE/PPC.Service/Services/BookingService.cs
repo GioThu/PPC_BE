@@ -2,20 +2,13 @@
 using Hangfire;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
-using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.BookingRequest;
 using PPC.Service.ModelRequest.RoomRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.BookingResponse;
-using PPC.Service.ModelResponse.CounselorResponse;
-using PPC.Service.ModelResponse.MemberResponse;
 using PPC.Service.ModelResponse.RoomResponse;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace PPC.Service.Services
 {
@@ -178,13 +171,13 @@ namespace PPC.Service.Services
             var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
             return ServiceResponse<List<BookingDto>>.SuccessResponse(bookingDtos);
         }
-        public async Task<ServiceResponse<PagingResponse<BookingDto>>> GetBookingsByCounselorAsync(string counselorId, int pageNumber, int pageSize)
+        public async Task<ServiceResponse<PagingResponse<BookingDto>>> GetBookingsByCounselorAsync(string counselorId, int pageNumber, int pageSize, int? status)
         {
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
 
             var (bookings, totalCount) = await _bookingRepository
-                .GetBookingsByCounselorPagingAsync(counselorId, pageNumber, pageSize);
+                .GetBookingsByCounselorPagingAsync(counselorId, pageNumber, pageSize, status);
 
             var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
 

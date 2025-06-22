@@ -18,7 +18,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<List<CertificationWithSubDto>>> GetAllCertificationsAsync();
         Task<ServiceResponse<string>> UpdateCertificationAsync(string counselorId, UpdateCertificationRequest request);
         Task<ServiceResponse<CertificationWithSubDto>> GetCertificationByIdAsync(string certificationId);
-        Task<ServiceResponse<PagingResponse<CertificationWithSubDto>>> GetAllCertificationsAsync(int pageNumber, int pageSize);
+        Task<ServiceResponse<PagingResponse<CertificationWithSubDto>>> GetAllCertificationsAsync(int pageNumber, int pageSize, int? status);
         Task<bool> IsCertificationAssignedToCounselorAsync(string certificationId, string counselorId);
     }
 }

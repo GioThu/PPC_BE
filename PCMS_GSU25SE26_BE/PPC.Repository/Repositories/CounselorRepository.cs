@@ -25,18 +25,24 @@ namespace PPC.Repository.Repositories
                 .ToListAsync();
         }
 
-        public async Task<(List<Counselor>, int)> GetAllPagingAsync(int pageNumber, int pageSize)
+        public async Task<(List<Counselor>, int)> GetAllPagingAsync(int pageNumber, int pageSize, int? status)
         {
             var query = _context.Counselors.AsQueryable();
+
+            if (status.HasValue)
+            {
+                query = query.Where(c => c.Status == status.Value);
+            }
+
             var totalCount = await query.CountAsync();
 
-            var items = await query
-                .OrderBy(c => c.Fullname)
+            var entities = await query
+                .OrderByDescending(c => c.Id)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            return (items, totalCount);
+            return (entities, totalCount);
         }
     }
 }

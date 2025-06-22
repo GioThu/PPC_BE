@@ -11,6 +11,6 @@ namespace PPC.Repository.Interfaces
     public interface ICounselorRepository : IGenericRepository<Counselor>
     {
         Task<List<Counselor>> GetActiveWithApprovedSubCategoriesAsync();
-        Task<(List<Counselor>, int)> GetAllPagingAsync(int pageNumber, int pageSize);
+        Task<(List<Counselor>, int)> GetAllPagingAsync(int pageNumber, int pageSize, int? status);
     }
 }

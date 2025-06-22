@@ -26,7 +26,7 @@ namespace PPC.Service.Services
 
         public async Task<ServiceResponse<PagingResponse<MemberDto>>> GetAllPagingAsync(PagingRequest request)
         {
-            var (members, total) = await _memberRepository.GetAllPagingAsync(request.PageNumber, request.PageSize);
+            var (members, total) = await _memberRepository.GetAllPagingAsync(request.PageNumber, request.PageSize, request.Status);
             var dtos = _mapper.Map<List<MemberDto>>(members);
             var paging = new PagingResponse<MemberDto>(dtos, total, request.PageNumber, request.PageSize);
 

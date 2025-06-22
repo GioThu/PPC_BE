@@ -252,13 +252,21 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Certification updated and sent for re-approval.");
         }
-        public async Task<ServiceResponse<PagingResponse<CertificationWithSubDto>>> GetAllCertificationsAsync(int pageNumber, int pageSize)
+        public async Task<ServiceResponse<PagingResponse<CertificationWithSubDto>>> GetAllCertificationsAsync(int pageNumber, int pageSize, int? status)
         {
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10; 
 
             var certifications = await _certRepo.GetAllCertificationsAsync();
-            var totalCount = certifications.Count();  
+
+            if (status.HasValue)
+            {
+                certifications = certifications
+                    .Where(c => c.Counselor != null && c.Counselor.Status == status.Value)
+                    .ToList();
+            }
+
+            var totalCount = certifications.Count();
 
             // Áp dụng phân trang
             var certificationsPaged = certifications
