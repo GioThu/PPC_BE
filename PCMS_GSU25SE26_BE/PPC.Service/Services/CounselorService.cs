@@ -66,9 +66,11 @@ namespace PPC.Service.Services
             var result = counselors.Select(c =>
             {
                 var dto = _mapper.Map<CounselorWithSubDto>(c);
+
                 var subCategories = c.CounselorSubCategories
                     .Where(csc => csc.Status == 1 && csc.SubCategory != null)
-                    .Select(csc => _mapper.Map<SubCategoryDto>(csc.SubCategory))
+                    .GroupBy(csc => csc.SubCategory.Id) 
+                    .Select(g => _mapper.Map<SubCategoryDto>(g.First().SubCategory))
                     .ToList();
 
                 dto.SubCategories = subCategories;
@@ -87,19 +89,25 @@ namespace PPC.Service.Services
             }
 
             var counselorDto = _mapper.Map<CounselorDto>(counselor);
+
+            // Lấy và lọc sub categories không trùng
             var subCategories = await _counselorSubCategoryRepository
                 .GetApprovedSubCategoriesByCounselorAsync(request.CounselorId);
-            var subCategoryDtos = _mapper.Map<List<SubCategoryDto>>(subCategories);
 
-            // Lấy dữ liệu cho 7 ngày tiếp theo
+            var subCategoryDtos = subCategories
+                .GroupBy(sc => sc.Id)
+                .Select(g => _mapper.Map<SubCategoryDto>(g.First()))
+                .ToList();
+
+            // Tính ngày bắt đầu và kết thúc (7 ngày tới)
             var startDate = Utils.Utils.GetTimeNow().Date;
             var endDate = startDate.AddDays(6);
 
+            // Lấy lịch làm việc và lịch đã đặt trong khoảng 7 ngày
             var workSchedules = await _workScheduleRepo.GetByCounselorBetweenDatesAsync(request.CounselorId, startDate, endDate);
             var bookings = await _bookingRepo.GetConfirmedBookingsBetweenDatesAsync(request.CounselorId, startDate, endDate);
 
-
-
+            // Ánh xạ dữ liệu theo ngày
             var workScheduleMap = workSchedules
                 .Where(ws => ws.WorkDate.HasValue)
                 .GroupBy(ws => ws.WorkDate.Value.Date)
@@ -112,29 +120,32 @@ namespace PPC.Service.Services
 
             var dailySchedules = new List<DailyAvailableSlotDto>();
 
+            // Duyệt 7 ngày
             for (int i = 0; i < 7; i++)
             {
                 var currentDate = startDate.AddDays(i);
 
-                var daySchedules = workScheduleMap.ContainsKey(currentDate)
-                    ? workScheduleMap[currentDate]
+                var daySchedules = workScheduleMap.TryGetValue(currentDate, out var wsList)
+                    ? wsList
                     : new List<WorkSchedule>();
 
-                var dayBookings = bookingMap.ContainsKey(currentDate)
-                    ? bookingMap[currentDate]
+                var dayBookings = bookingMap.TryGetValue(currentDate, out var bkList)
+                    ? bkList
                     : new List<Booking>();
 
+                // Chuyển danh sách booking thành khoảng thời gian
                 var bookingIntervals = dayBookings
                     .Select(b => new
                     {
-                        Start = b.TimeStart.Value.TimeOfDay,
-                        End = b.TimeEnd.Value.TimeOfDay + TimeSpan.FromMinutes(10)
+                        Start = b.TimeStart!.Value.TimeOfDay,
+                        End = b.TimeEnd!.Value.TimeOfDay + TimeSpan.FromMinutes(10) // thêm buffer
                     })
                     .OrderBy(b => b.Start)
                     .ToList();
 
                 var availableSlots = new List<AvailableTimeSlotDto>();
 
+                // Duyệt từng khung làm việc trong ngày
                 foreach (var schedule in daySchedules)
                 {
                     if (!schedule.StartTime.HasValue || !schedule.EndTime.HasValue)
