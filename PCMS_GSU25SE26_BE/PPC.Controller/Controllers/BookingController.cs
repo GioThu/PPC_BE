@@ -88,13 +88,13 @@ namespace PPC.Controller.Controllers
 
         [Authorize(Roles = "3")]
         [HttpGet("my-bookings-paging/member")]
-        public async Task<IActionResult> GetMyBookingsForMemberPaging([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetMyBookingsForMemberPaging([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] int? status = null)
         {
             var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
             if (string.IsNullOrEmpty(memberId))
                 return Unauthorized("MemberId not found in token.");
 
-            var response = await _bookingService.GetBookingsByMemberAsync(memberId, pageNumber, pageSize);
+            var response = await _bookingService.GetBookingsByMemberAsync(memberId, pageNumber, pageSize, status);
             if (response.Success)
                 return Ok(response);
 

@@ -191,12 +191,12 @@ namespace PPC.Service.Services
             var pagingResponse = new PagingResponse<BookingDto>(bookingDtos, totalCount, pageNumber, pageSize);
             return ServiceResponse<PagingResponse<BookingDto>>.SuccessResponse(pagingResponse);
         }
-        public async Task<ServiceResponse<PagingResponse<BookingDto>>> GetBookingsByMemberAsync(string memberId, int pageNumber, int pageSize)
+        public async Task<ServiceResponse<PagingResponse<BookingDto>>> GetBookingsByMemberAsync(string memberId, int pageNumber, int pageSize, int? status)
         {
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
 
-            var (bookings, totalCount) = await _bookingRepository.GetBookingsByMemberPagingAsync(memberId, pageNumber, pageSize);
+            var (bookings, totalCount) = await _bookingRepository.GetBookingsByMemberPagingAsync(memberId, pageNumber, pageSize, status);
             var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
 
             var paging = new PagingResponse<BookingDto>(bookingDtos, totalCount, pageNumber, pageSize);
@@ -446,6 +446,5 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Rating submitted successfully.");
         }
-
     }
 }
