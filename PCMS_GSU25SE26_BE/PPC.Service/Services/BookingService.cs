@@ -82,7 +82,7 @@ namespace PPC.Service.Services
             var basePrice = (counselor.Price > 0 ? counselor.Price : 0) * (durationMinutes / 60.0);
             
             var discount = await _memberShipService.GetMaxBookingDiscountByMemberAsync(memberId);
-            var finalPrice = basePrice * (1 - discount / 100.0);
+            var finalPrice = Math.Round(basePrice * (1 - discount / 100.0), 0); 
 
             if ((wallet.Remaining ?? 0) < finalPrice)
                 return ServiceResponse<BookingResultDto>.ErrorResponse("Not enough balance");
@@ -438,6 +438,25 @@ namespace PPC.Service.Services
             await _counselorRepository.UpdateAsync(counselor);
 
             return ServiceResponse<string>.SuccessResponse("Rating submitted successfully.");
+        }
+        public async Task<ServiceResponse<List<BookingRatingFeedbackDto>>> GetRatingFeedbackByCounselorAsync(string counselorId)
+        {
+            var bookings = await _bookingRepository.GetRatedBookingsByCounselorAsync(counselorId);
+
+            var result = bookings.Select(b => new BookingRatingFeedbackDto
+            {
+                Rating = b.Rating.Value,
+                Feedback = b.Feedback,
+                TimeEnd = b.TimeEnd,
+                MemberFullName = b.Member?.Fullname ?? "Ẩn danh"
+            }).ToList();
+
+            return ServiceResponse<List<BookingRatingFeedbackDto>>.SuccessResponse(result);
+        }
+        public async Task<ServiceResponse<int>> GetMaxBookingDiscountByMemberWrappedAsync(string memberId)
+        {
+            var discount = await _memberShipService.GetMaxBookingDiscountByMemberAsync(memberId); // hàm gốc
+            return ServiceResponse<int>.SuccessResponse(discount);
         }
     }
 }

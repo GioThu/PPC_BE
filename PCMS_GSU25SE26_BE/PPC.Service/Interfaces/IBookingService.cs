@@ -31,6 +31,9 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<PagingResponse<BookingAdminResponse>>> GetAllAdminPagingAsync(BookingPagingRequest request);
         Task<ServiceResponse<string>> UpdateBookingNoteAsync(BookingNoteUpdateRequest request);
         Task<ServiceResponse<string>> RateBookingAsync(BookingRatingRequest request);
+        Task<ServiceResponse<List<BookingRatingFeedbackDto>>> GetRatingFeedbackByCounselorAsync(string counselorId);
+        Task<ServiceResponse<int>> GetMaxBookingDiscountByMemberWrappedAsync(string memberId);
+
 
     }
 }

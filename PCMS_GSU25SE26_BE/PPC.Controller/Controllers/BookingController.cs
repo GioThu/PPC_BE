@@ -313,5 +313,27 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpGet("feedbacks/{counselorId}")]
+        public async Task<IActionResult> GetFeedbacksForCounselor(string counselorId)
+        {
+            var result = await _bookingService.GetRatingFeedbackByCounselorAsync(counselorId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [Authorize(Roles = "3")]
+        [HttpGet("my-booking-discount")]
+        public async Task<IActionResult> GetMyBookingDiscount()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _bookingService.GetMaxBookingDiscountByMemberWrappedAsync(memberId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

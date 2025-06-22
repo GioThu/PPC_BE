@@ -216,5 +216,14 @@ namespace PPC.Repository.Repositories
             return (paged, totalCount);
         }
 
+        public async Task<List<Booking>> GetRatedBookingsByCounselorAsync(string counselorId)
+        {
+            return await _context.Bookings
+                .Where(b => b.CounselorId == counselorId && b.Rating.HasValue && b.Status == 7) // hoặc Status nào bạn xác định là đã hoàn tất
+                .Include(b => b.Member)
+                .OrderByDescending(b => b.TimeEnd)
+                .ToListAsync();
+        }
+
     }
 }
