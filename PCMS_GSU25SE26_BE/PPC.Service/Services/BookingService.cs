@@ -376,7 +376,7 @@ namespace PPC.Service.Services
             if (booking == null)
                 return ServiceResponse<string>.ErrorResponse("Booking not found");
 
-            if (booking.Status != 2)
+            if (booking.Status != 1)
                 return ServiceResponse<string>.ErrorResponse("Không thể hủy booking này");
 
             booking.CancelReason = request.CancelReason;
