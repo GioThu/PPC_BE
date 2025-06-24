@@ -28,7 +28,8 @@ builder.Services.AddScoped<IMemberShipRepository, MemberShipRepository>();
 builder.Services.AddScoped<IMemberMemberShipRepository, MemberMemberShipRepository>();
 builder.Services.AddScoped<ISysTransactionRepository, SysTransactionRepository>();
 builder.Services.AddScoped<IBookingSubCategoryRepository, BookingSubCategoryRepository>();
-
+builder.Services.AddScoped<ISurveyRepository, SurveyRepository>();
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 
 
 
@@ -45,6 +46,8 @@ builder.Services.AddScoped<IMemberShipService, MemberShipService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<ISurveyService, SurveyService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
 
 
 builder.Services.AddScoped<IJwtService, JwtService>();

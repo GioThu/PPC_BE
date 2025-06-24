@@ -455,7 +455,7 @@ namespace PPC.Service.Services
         }
         public async Task<ServiceResponse<int>> GetMaxBookingDiscountByMemberWrappedAsync(string memberId)
         {
-            var discount = await _memberShipService.GetMaxBookingDiscountByMemberAsync(memberId); // hàm gốc
+            var discount = await _memberShipService.GetMaxBookingDiscountByMemberAsync(memberId); 
             return ServiceResponse<int>.SuccessResponse(discount);
         }
     }

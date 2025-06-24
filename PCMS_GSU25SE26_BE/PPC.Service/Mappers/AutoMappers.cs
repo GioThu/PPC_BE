@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using PPC.DAO.Models;
+using PPC.Service.ModelRequest.SurveyRequest;
 using PPC.Service.ModelResponse.BookingResponse;
 using PPC.Service.ModelResponse.CategoryResponse;
 using PPC.Service.ModelResponse.CirtificationResponse;
 using PPC.Service.ModelResponse.CounselorResponse;
 using PPC.Service.ModelResponse.MemberResponse;
+using PPC.Service.ModelResponse.SurveyResponse;
 using PPC.Service.ModelResponse.WorkScheduleResponse;
 using System;
 using System.Collections.Generic;
@@ -27,6 +29,10 @@ namespace PPC.Service.Mappers
             CreateMap<SubCategory, SubCategoryDto>();
             CreateMap<Certification, CertificationWithSubDto>();
             CreateMap<Counselor, CounselorWithSubDto>();
+            CreateMap<Survey, SurveyDto>();
+            CreateMap<Question, SurveyQuestionDto>();
+            CreateMap<Answer, SurveyAnswerDto>();
+
 
             CreateMap<Booking, BookingDto>()
                 .ForMember(dest => dest.Member, opt => opt.MapFrom(src => src.Member))      
