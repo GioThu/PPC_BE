@@ -35,5 +35,10 @@ namespace PPC.Repository.Repositories
 
             return (members, totalCount);
         }
+
+        public async Task<Member> GetByAccountIdAsync(string accountId)
+        {
+            return await _context.Members.FirstOrDefaultAsync(m => m.AccountId == accountId);
+        }
     }
 }

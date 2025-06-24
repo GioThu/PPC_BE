@@ -78,5 +78,14 @@ namespace PPC.Repository.Repositories
                 .Where(a => a.Email == email && a.Password == password && a.Role == 1 && a.Status == 1)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<double?> GetRemainingBalanceByAccountIdAsync(string accountId)
+        {
+            var account = await _context.Accounts
+                .Include(a => a.Wallet)
+                .FirstOrDefaultAsync(a => a.Id == accountId);
+
+            return account?.Wallet?.Remaining;
+        }
     }
 }

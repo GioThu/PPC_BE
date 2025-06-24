@@ -5,6 +5,7 @@ using PPC.Service.Interfaces;
 using PPC.Service.Mappers;
 using PPC.Service.ModelRequest.SurveyRequest;
 using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.SurveyResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,6 +75,14 @@ namespace PPC.Service.Services
             return result
                 ? ServiceResponse<string>.SuccessResponse("Deleted successfully.")
                 : ServiceResponse<string>.ErrorResponse("Question not found.");
+        }
+
+        public async Task<ServiceResponse<List<SurveyQuestionDto>>> GetRandomQuestionsAsync(string surveyId, int count)
+        {
+            var questions = await _questionRepository.GetRandomBalancedQuestionsAsync(surveyId, count);
+            var dtoList = _mapper.Map<List<SurveyQuestionDto>>(questions);
+
+            return ServiceResponse<List<SurveyQuestionDto>>.SuccessResponse(dtoList);
         }
     }
 }

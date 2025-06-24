@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using PPC.DAO.Models;
-using PPC.Service.ModelRequest.SurveyRequest;
 using PPC.Service.ModelResponse.BookingResponse;
 using PPC.Service.ModelResponse.CategoryResponse;
 using PPC.Service.ModelResponse.CirtificationResponse;

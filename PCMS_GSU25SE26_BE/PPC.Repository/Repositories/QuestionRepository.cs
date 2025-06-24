@@ -69,5 +69,89 @@ namespace PPC.Repository.Repositories
             _context.Questions.Update(question);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<Question>> GetRandomBalancedQuestionsAsync(string surveyId, int count)
+        {
+            Dictionary<string, List<string>> tagMap = new()
+            {
+                ["SV001"] = new() { "I", "E", "N", "S", "T", "F", "J", "P" },
+                ["SV002"] = new() { "Dominance", "Influence", "Steadiness", "Conscientiousness" },
+                ["SV003"] = new() { "Words of Affirmation", "Acts of Service", "Receiving Gifts", "Quality Time", "Physical Touch" },
+                ["SV004"] = new() { "Openness", "Conscientiousness", "Extraversion", "Agreeableness", "Neuroticism" }
+            };
+
+            if (!tagMap.ContainsKey(surveyId)) return new List<Question>();
+
+            var tags = tagMap[surveyId];
+
+            // Lấy toàn bộ câu hỏi hợp lệ
+            var allQuestions = await _context.Questions
+                .Include(q => q.Answers)
+                .Where(q => q.SurveyId == surveyId && q.Status == 1 &&
+                            q.Answers.Any(a => tags.Contains(a.Tag) && a.Score.HasValue))
+                .ToListAsync();
+
+            if (allQuestions.Count <= count)
+                return allQuestions.OrderBy(_ => Guid.NewGuid()).ToList();
+
+            // Chuẩn bị
+            var result = new List<Question>();
+            var usedIds = new HashSet<string>();
+            var tagScoreTotals = tags.ToDictionary(t => t, t => 0);
+            int idealScorePerTag = (int)Math.Round((double)(count * 2) / tags.Count); // ví dụ 25 câu * 2 điểm = 50 → 6.25/tag
+
+            var shuffled = allQuestions.OrderBy(_ => Guid.NewGuid()).ToList();
+
+            foreach (var q in shuffled)
+            {
+                if (result.Count >= count) break;
+                if (usedIds.Contains(q.Id)) continue;
+
+                // Chuẩn bị cộng điểm giả định
+                var tempTagScores = new Dictionary<string, int>(tagScoreTotals);
+                bool isAcceptable = false;
+
+                foreach (var ans in q.Answers)
+                {
+                    if (tags.Contains(ans.Tag) && ans.Score.HasValue)
+                    {
+                        var currentScore = tempTagScores[ans.Tag];
+                        tempTagScores[ans.Tag] = currentScore + ans.Score.Value;
+                    }
+                }
+
+                // Kiểm tra sau khi cộng, không tag nào vượt ngưỡng
+                isAcceptable = tempTagScores.All(kvp => kvp.Value <= idealScorePerTag + 1);
+
+                if (!isAcceptable) continue;
+
+                // Chấp nhận câu hỏi này
+                result.Add(q);
+                usedIds.Add(q.Id);
+
+                foreach (var ans in q.Answers)
+                {
+                    if (tags.Contains(ans.Tag) && ans.Score.HasValue)
+                    {
+                        tagScoreTotals[ans.Tag] += ans.Score.Value;
+                    }
+                }
+            }
+
+            // Nếu chưa đủ, bù thêm câu ngẫu nhiên
+            if (result.Count < count)
+            {
+                var remaining = allQuestions
+                    .Where(q => !usedIds.Contains(q.Id))
+                    .OrderBy(_ => Guid.NewGuid())
+                    .Take(count - result.Count)
+                    .ToList();
+
+                result.AddRange(remaining);
+            }
+
+            return result.OrderBy(_ => Guid.NewGuid()).Take(count).ToList();
+        }
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using PPC.Service.ModelRequest.SurveyRequest;
 using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.SurveyResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +16,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<PagingResponse<SurveyQuestionDto>>> GetPagingAsync(PagingSurveyQuestionRequest request);
         Task<ServiceResponse<string>> UpdateAsync(string questionId, SurveyQuestionUpdateRequest request);
         Task<ServiceResponse<string>> DeleteAsync(string questionId);
+        Task<ServiceResponse<List<SurveyQuestionDto>>> GetRandomQuestionsAsync(string surveyId, int count);
+
     }
 }

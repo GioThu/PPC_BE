@@ -15,5 +15,7 @@ namespace PPC.Repository.Interfaces
         Task<bool> DeleteWithAnswersAsync(string questionId);
         Task<Question> GetQuestionWithAnswersAsync(string questionId);
         Task UpdateQuestionAndAnswersAsync(Question question, List<Answer> newAnswers);
+
+        Task<List<Question>> GetRandomBalancedQuestionsAsync(string surveyId, int count);
     }
 }

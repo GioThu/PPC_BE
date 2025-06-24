@@ -55,6 +55,8 @@ namespace PPC.Controller.Controllers
             var result = await _questionService.DeleteAsync(id);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
+
     }
 }
 

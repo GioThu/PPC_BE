@@ -41,5 +41,38 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [Authorize(Roles = "3")]
+        [HttpGet("my-profile")]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
+            if (string.IsNullOrEmpty(accountId))
+                return Unauthorized("AccountId not found in token.");
+
+            var response = await _memberService.GetMyProfileAsync(accountId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "3")]
+        [HttpPut("my-profile")]
+        public async Task<IActionResult> UpdateMyProfile([FromBody] MemberProfileUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
+            if (string.IsNullOrEmpty(accountId))
+                return Unauthorized("AccountId not found in token.");
+
+            var response = await _memberService.UpdateMyProfileAsync(accountId, request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

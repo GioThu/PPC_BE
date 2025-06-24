@@ -11,5 +11,6 @@ namespace PPC.Repository.Interfaces
     public interface IMemberRepository : IGenericRepository<Member>
     {
         Task<(List<Member>, int)> GetAllPagingAsync(int pageNumber, int pageSize, int? status);
+        Task<Member> GetByAccountIdAsync(string accountId);
     }
 }

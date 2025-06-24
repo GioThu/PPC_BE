@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.AccountRequest;
 using PPC.Service.Services;
+using System.Data;
 
 namespace PPC.Controller.Controllers
 {
@@ -112,6 +113,21 @@ namespace PPC.Controller.Controllers
                 return Unauthorized("CounselorId not found in token.");
 
             var response = await _accountService.CounselorEditMyProfileAsync(counselorId, request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "2,3")]
+        [HttpGet("wallet-balance")]
+        public async Task<IActionResult> GetWalletBalance()
+        {
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
+            if (string.IsNullOrEmpty(accountId))
+                return Unauthorized("AccountId not found in token.");
+
+            var response = await _accountService.GetWalletBalanceAsync(accountId);
             if (response.Success)
                 return Ok(response);
 

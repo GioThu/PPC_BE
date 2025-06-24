@@ -203,5 +203,16 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Profile updated successfully.");
         }
+
+        public async Task<ServiceResponse<WalletBalanceDto>> GetWalletBalanceAsync(string accountId)
+        {
+            var remaining = await _accountRepository.GetRemainingBalanceByAccountIdAsync(accountId);
+
+            if (remaining == null)
+                return ServiceResponse<WalletBalanceDto>.ErrorResponse("Wallet not found or no balance data.");
+
+            return ServiceResponse<WalletBalanceDto>.SuccessResponse(new WalletBalanceDto { Remaining = remaining });
+        }
+
     }
 }

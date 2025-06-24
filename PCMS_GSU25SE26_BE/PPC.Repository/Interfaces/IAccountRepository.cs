@@ -14,6 +14,8 @@ namespace PPC.Repository.Interfaces
         Task<Account> MemberLogin(string email, string password);
         Task<bool> IsEmailExistAsync(string email);
         Task<Account> AdminLogin(string email, string password);
+        Task<double?> GetRemainingBalanceByAccountIdAsync(string accountId);
+
 
     }
 }

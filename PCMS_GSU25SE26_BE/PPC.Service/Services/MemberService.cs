@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using PPC.Repository.Interfaces;
 using PPC.Service.Interfaces;
+using PPC.Service.Mappers;
 using PPC.Service.ModelRequest;
 using PPC.Service.ModelRequest.AccountRequest;
 using PPC.Service.ModelResponse;
@@ -47,6 +48,33 @@ namespace PPC.Service.Services
 
             var action = request.Status == 0 ? "blocked" : "unblocked";
             return ServiceResponse<string>.SuccessResponse($"Member {action} successfully.");
+        }
+
+        public async Task<ServiceResponse<MemberProfileDto>> GetMyProfileAsync(string accountId)
+        {
+            var member = await _memberRepository.GetByAccountIdAsync(accountId);
+            if (member == null)
+                return ServiceResponse<MemberProfileDto>.ErrorResponse("Member not found.");
+
+            return ServiceResponse<MemberProfileDto>.SuccessResponse(member.ToMemberProfileDto());
+        }
+
+        public async Task<ServiceResponse<string>> UpdateMyProfileAsync(string accountId, MemberProfileUpdateRequest request)
+        {
+            var member = await _memberRepository.GetByAccountIdAsync(accountId);
+            if (member == null)
+                return ServiceResponse<string>.ErrorResponse("Member not found.");
+
+            // ❌ Không dùng mapper – update thủ công
+            member.Fullname = request.Fullname;
+            member.Avatar = request.Avatar;
+            member.Phone = request.Phone;
+            member.Dob = request.Dob;
+            member.Gender = request.Gender;
+
+            await _memberRepository.UpdateAsync(member);
+
+            return ServiceResponse<string>.SuccessResponse("Profile updated successfully.");
         }
     }
 }
