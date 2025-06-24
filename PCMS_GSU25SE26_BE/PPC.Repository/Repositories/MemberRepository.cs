@@ -40,5 +40,13 @@ namespace PPC.Repository.Repositories
         {
             return await _context.Members.FirstOrDefaultAsync(m => m.AccountId == accountId);
         }
+
+        public async Task<Member> GetByIdWithWalletAsync(string memberId)
+        {
+            return await _context.Members
+                .Include(m => m.Account)
+                    .ThenInclude(a => a.Wallet)
+                .FirstOrDefaultAsync(m => m.Id == memberId);
+        }
     }
 }

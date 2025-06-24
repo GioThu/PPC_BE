@@ -17,7 +17,7 @@ namespace PPC.Service.Mappers
                 Id = Utils.Utils.GenerateIdModel("Counselor"),
                 AccountId = accountId,
                 Fullname = fullname,
-                Avatar = "https://trilieutaman.vn/wp-content/uploads/2025/02/TAM-AN-WEB-BAI-1.png",
+                Avatar = "https://hoseiki.vn/wp-content/uploads/2025/03/avatar-mac-dinh-4.jpg",
                 Description = "Một Counselor tuyệt vời",
                 YearOfJob = 0,
                 Price = 0,

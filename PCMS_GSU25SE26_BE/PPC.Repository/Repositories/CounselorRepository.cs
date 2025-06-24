@@ -44,5 +44,13 @@ namespace PPC.Repository.Repositories
 
             return (entities, totalCount);
         }
+
+        public async Task<Counselor> GetByIdWithWalletAsync(string counselorId)
+        {
+            return await _context.Counselors
+                .Include(c => c.Account)
+                    .ThenInclude(a => a.Wallet)
+                .FirstOrDefaultAsync(c => c.Id == counselorId);
+        }
     }
 }

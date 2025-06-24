@@ -12,5 +12,6 @@ namespace PPC.Repository.Interfaces
     {
         Task<(List<Member>, int)> GetAllPagingAsync(int pageNumber, int pageSize, int? status);
         Task<Member> GetByAccountIdAsync(string accountId);
+        Task<Member> GetByIdWithWalletAsync(string memberId);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Hangfire;
+using Microsoft.Identity.Client;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Service.Interfaces;
@@ -8,6 +9,7 @@ using PPC.Service.ModelRequest.RoomRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.BookingResponse;
 using PPC.Service.ModelResponse.RoomResponse;
+using static Livekit.Server.Sdk.Dotnet.IngressState.Types;
 
 
 namespace PPC.Service.Services
@@ -320,15 +322,81 @@ namespace PPC.Service.Services
             if (booking == null)
                 return ServiceResponse<string>.ErrorResponse("Booking not found.");
 
-            if (booking.Status != 1)
-                return ServiceResponse<string>.ErrorResponse("Buổi đặt lịch này không còn hoạt động");
+            if (status == 2)
+            {
+                if (booking.Status != 1)
+                    return ServiceResponse<string>.ErrorResponse("Buổi đặt lịch này không còn hoạt động.");
 
+                booking.Status = status;
+            }
 
-            booking.Status = status;
+            else if (status == 4)
+            {
+                if (booking.Status != 1)
+                    return ServiceResponse<string>.ErrorResponse("Buổi đặt lịch này không còn hoạt động.");
 
-            var result = await _bookingRepository.UpdateAsync(booking);
-            if (result == 0)
-                return ServiceResponse<string>.ErrorResponse("Update failed.");
+                var member = await _memberRepository.GetByIdWithWalletAsync(booking.MemberId);
+                if (member?.Account?.Wallet == null)
+                    return ServiceResponse<string>.ErrorResponse("Member or wallet not found.");
+
+                member.Account.Wallet.Remaining += booking.Price / 2;
+                await _walletRepository.UpdateAsync(member.Account.Wallet);
+
+                await _sysTransactionRepository.CreateAsync(new SysTransaction
+                {
+                    Id = Utils.Utils.GenerateIdModel("SysTransaction"),
+                    TransactionType = "2",
+                    DocNo = booking.Id,
+                    CreateBy = member.Account.Id,
+                    CreateDate = Utils.Utils.GetTimeNow()
+                });
+
+                booking.Status = status;
+            }
+
+            else if (status == 6)
+            {
+                var member = await _memberRepository.GetByIdWithWalletAsync(booking.MemberId);
+                if (member?.Account?.Wallet == null)
+                    return ServiceResponse<string>.ErrorResponse("Member or wallet not found.");
+
+                member.Account.Wallet.Remaining += booking.Price;
+                await _walletRepository.UpdateAsync(member.Account.Wallet);
+
+                await _sysTransactionRepository.CreateAsync(new SysTransaction
+                {
+                    Id = Utils.Utils.GenerateIdModel("SysTransaction"),
+                    TransactionType = "3",
+                    DocNo = booking.Id,
+                    CreateBy = member.Account.Id,
+                    CreateDate = Utils.Utils.GetTimeNow()
+                });
+
+                booking.Status = status;
+            }
+
+            else if (status == 7)
+            {
+                var counselor = await _counselorRepository.GetByIdWithWalletAsync(booking.CounselorId);
+                if (counselor?.Account?.Wallet == null)
+                    return ServiceResponse<string>.ErrorResponse("Counselor or wallet not found.");
+
+                counselor.Account.Wallet.Remaining += booking.Price * 7 / 10;
+                await _walletRepository.UpdateAsync(counselor.Account.Wallet);
+
+                await _sysTransactionRepository.CreateAsync(new SysTransaction
+                {
+                    Id = Utils.Utils.GenerateIdModel("SysTransaction"),
+                    TransactionType = "7",
+                    DocNo = booking.Id,
+                    CreateBy = counselor.Account.Id,
+                    CreateDate = Utils.Utils.GetTimeNow()
+                });
+
+                booking.Status = status;
+            }
+
+            await _bookingRepository.UpdateAsync(booking);
 
             if (booking.Status == 2)
             {
@@ -336,15 +404,18 @@ namespace PPC.Service.Services
                     x => x.AutoCompleteBookingIfStillPending(booking.Id),
                     TimeSpan.FromDays(1)
                 );
+                return ServiceResponse<string>.SuccessResponse("Booking ended.");
             }
 
-            if (booking.Status == 4)
+            return booking.Status switch
             {
-                return ServiceResponse<string>.SuccessResponse("Booking ended successfully.");
-            }
-
-            return ServiceResponse<string>.SuccessResponse("Booking ended successfully.");
+                4 => ServiceResponse<string>.SuccessResponse("Booking cancelled successfully."),
+                6 => ServiceResponse<string>.SuccessResponse("Booking refunded successfully."),
+                7 => ServiceResponse<string>.SuccessResponse("Booking completed successfully."),
+                _ => ServiceResponse<string>.SuccessResponse("Booking status updated successfully.")
+            };
         }
+
         public async Task<ServiceResponse<string>> ReportBookingAsync(BookingReportRequest request)
         {
             var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
@@ -364,11 +435,29 @@ namespace PPC.Service.Services
         public async Task AutoCompleteBookingIfStillPending(string bookingId)
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
-            if (booking != null && booking.Status == 2)
+            if (booking == null || booking.Status != 2)
+                return;
+
+            var counselor = await _counselorRepository.GetByIdWithWalletAsync(booking.CounselorId);
+            if (counselor?.Account?.Wallet == null)
+                return; 
+
+            var amountToAdd = booking.Price * 7 / 10;
+            counselor.Account.Wallet.Remaining += amountToAdd;
+            await _walletRepository.UpdateAsync(counselor.Account.Wallet);
+
+            var transaction = new SysTransaction
             {
-                booking.Status = 7;
-                await _bookingRepository.UpdateAsync(booking);
-            }
+                Id = Utils.Utils.GenerateIdModel("SysTransaction"),
+                TransactionType = "7",
+                DocNo = booking.Id,
+                CreateBy = counselor.Account.Id,
+                CreateDate = Utils.Utils.GetTimeNow()
+            };
+            await _sysTransactionRepository.CreateAsync(transaction);
+
+            booking.Status = 7;
+            await _bookingRepository.UpdateAsync(booking);
         }
         public async Task<ServiceResponse<string>> CancelByCounselorAsync(CancelBookingByCounselorRequest request)
         {
@@ -382,6 +471,26 @@ namespace PPC.Service.Services
             booking.CancelReason = request.CancelReason;
             booking.Status = 6;
 
+            var member = await _memberRepository.GetByIdWithWalletAsync(booking.MemberId);
+            if (member?.Account?.Wallet == null)
+                return ServiceResponse<string>.ErrorResponse("Member's wallet not found");
+
+            member.Account.Wallet.Remaining += booking.Price;
+            var walletUpdateResult = await _walletRepository.UpdateAsync(member.Account.Wallet);
+            if (walletUpdateResult == 0)
+                return ServiceResponse<string>.ErrorResponse("Failed to refund member wallet");
+
+            var transaction = new SysTransaction
+            {
+                Id = Utils.Utils.GenerateIdModel("SysTransaction"),
+                TransactionType = "3", 
+                DocNo = booking.Id,
+                CreateBy = member.Account.Id,
+                CreateDate = Utils.Utils.GetTimeNow()
+            };
+            await _sysTransactionRepository.CreateAsync(transaction);
+
+            // Cập nhật trạng thái booking
             var result = await _bookingRepository.UpdateAsync(booking);
             if (result == 0)
                 return ServiceResponse<string>.ErrorResponse("Failed to cancel booking.");

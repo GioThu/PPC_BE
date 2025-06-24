@@ -12,5 +12,8 @@ namespace PPC.Repository.Interfaces
     {
         Task<List<Counselor>> GetActiveWithApprovedSubCategoriesAsync();
         Task<(List<Counselor>, int)> GetAllPagingAsync(int pageNumber, int pageSize, int? status);
+
+        Task<Counselor> GetByIdWithWalletAsync(string counselorId);
+
     }
 }
