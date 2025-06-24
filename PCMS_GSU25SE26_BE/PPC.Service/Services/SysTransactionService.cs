@@ -85,6 +85,16 @@ namespace PPC.Service.Services
                         }
                         break;
 
+                    case "7":
+                        var booking7 = await _bookingRepository.GetByIdWithMember(trans.DocNo);
+                        if (booking7 != null && booking7.TimeStart.HasValue && booking7.TimeEnd.HasValue)
+                        {
+                            var durationMinutes = (int)(booking7.TimeEnd.Value - booking7.TimeStart.Value).TotalMinutes;
+                            description = $"Bạn đã hoàn thành buổi booking với {booking7.Member.Fullname} trong thời gian {durationMinutes} phút";
+                            amount = (booking7.Price * 7 / 10) ?? 0;
+                        }
+                        break;
+
                     default:
                         description = "(Unknown transaction type)";
                         break;

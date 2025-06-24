@@ -23,6 +23,7 @@ namespace PPC.Repository.Interfaces
         Task<(double average, int count)> GetRatingStatsByCounselorIdAsync(string counselorId);
         Task<(List<Booking>, int)> GetBookingsByCounselorPagingAsync(string counselorId, int pageNumber, int pageSize, int? status);
         Task<List<Booking>> GetRatedBookingsByCounselorAsync(string counselorId);
+        Task<Booking> GetByIdWithMember(string bookingId);
 
 
     }

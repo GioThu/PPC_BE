@@ -221,5 +221,12 @@ namespace PPC.Repository.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Booking> GetByIdWithMember(string bookingId)
+        {
+            return await _context.Bookings
+                .Include(b => b.Member)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+        }
+
     }
 }
