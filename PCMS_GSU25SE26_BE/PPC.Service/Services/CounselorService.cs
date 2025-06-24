@@ -90,7 +90,6 @@ namespace PPC.Service.Services
 
             var counselorDto = _mapper.Map<CounselorDto>(counselor);
 
-            // Lấy và lọc sub categories không trùng
             var subCategories = await _counselorSubCategoryRepository
                 .GetApprovedSubCategoriesByCounselorAsync(request.CounselorId);
 
@@ -99,15 +98,12 @@ namespace PPC.Service.Services
                 .Select(g => _mapper.Map<SubCategoryDto>(g.First()))
                 .ToList();
 
-            // Tính ngày bắt đầu và kết thúc (7 ngày tới)
             var startDate = Utils.Utils.GetTimeNow().Date;
             var endDate = startDate.AddDays(6);
 
-            // Lấy lịch làm việc và lịch đã đặt trong khoảng 7 ngày
             var workSchedules = await _workScheduleRepo.GetByCounselorBetweenDatesAsync(request.CounselorId, startDate, endDate);
             var bookings = await _bookingRepo.GetConfirmedBookingsBetweenDatesAsync(request.CounselorId, startDate, endDate);
 
-            // Ánh xạ dữ liệu theo ngày
             var workScheduleMap = workSchedules
                 .Where(ws => ws.WorkDate.HasValue)
                 .GroupBy(ws => ws.WorkDate.Value.Date)
@@ -120,7 +116,6 @@ namespace PPC.Service.Services
 
             var dailySchedules = new List<DailyAvailableSlotDto>();
 
-            // Duyệt 7 ngày
             for (int i = 0; i < 7; i++)
             {
                 var currentDate = startDate.AddDays(i);
@@ -133,7 +128,6 @@ namespace PPC.Service.Services
                     ? bkList
                     : new List<Booking>();
 
-                // Chuyển danh sách booking thành khoảng thời gian
                 var bookingIntervals = dayBookings
                     .Select(b => new
                     {
@@ -145,7 +139,6 @@ namespace PPC.Service.Services
 
                 var availableSlots = new List<AvailableTimeSlotDto>();
 
-                // Duyệt từng khung làm việc trong ngày
                 foreach (var schedule in daySchedules)
                 {
                     if (!schedule.StartTime.HasValue || !schedule.EndTime.HasValue)
@@ -183,11 +176,22 @@ namespace PPC.Service.Services
 
                 if (availableSlots.Any())
                 {
-                    dailySchedules.Add(new DailyAvailableSlotDto
+                    if (currentDate == startDate)
                     {
-                        WorkDate = currentDate,
-                        AvailableSlots = availableSlots.OrderBy(s => s.Start).ToList()
-                    });
+                        var now = Utils.Utils.GetTimeNow().TimeOfDay;
+                        availableSlots = availableSlots
+                            .Where(slot => slot.End > now)
+                            .ToList();
+                    }
+
+                    if (availableSlots.Any())
+                    {
+                        dailySchedules.Add(new DailyAvailableSlotDto
+                        {
+                            WorkDate = currentDate,
+                            AvailableSlots = availableSlots.OrderBy(s => s.Start).ToList()
+                        });
+                    }
                 }
             }
 

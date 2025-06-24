@@ -145,6 +145,14 @@ namespace PPC.Service.Services
                 CreateDate = Utils.Utils.GetTimeNow()
             };
             await _sysTransactionRepository.CreateAsync(transaction);
+            var delay = booking.TimeEnd.Value - Utils.Utils.GetTimeNow();
+            if (delay.TotalSeconds > 0)
+            {
+                BackgroundJob.Schedule<IBookingService>(
+                    x => x.AutoMarkBookingAsFinished(booking.Id),
+                    delay
+            );
+            }
 
             return ServiceResponse<BookingResultDto>.SuccessResponse(new BookingResultDto
             {
@@ -458,6 +466,17 @@ namespace PPC.Service.Services
 
             booking.Status = 7;
             await _bookingRepository.UpdateAsync(booking);
+        }
+        public async Task AutoMarkBookingAsFinished(string bookingId)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null)
+                return;
+            if (booking.Status == 1)
+            {
+                booking.Status = 2; 
+                await _bookingRepository.UpdateAsync(booking);
+            }
         }
         public async Task<ServiceResponse<string>> CancelByCounselorAsync(CancelBookingByCounselorRequest request)
         {
