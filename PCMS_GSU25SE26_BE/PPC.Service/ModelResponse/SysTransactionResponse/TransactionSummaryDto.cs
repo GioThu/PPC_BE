@@ -12,7 +12,7 @@ namespace PPC.Service.ModelResponse.SysTransactionResponse
         public string TransactionType { get; set; }
         public string DocNo { get; set; }
         public Double Amount { get; set; }
-        public string CreateBy { get; set; }
+        public DateTime? CreateDate { get; set; }
         public string Description { get; set; } 
     }
 }

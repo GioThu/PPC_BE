@@ -54,5 +54,12 @@ namespace PPC.Repository.Repositories
                 .ToListAsync();
         }
 
+        public async Task<MemberMemberShip> GetByIdWithMemberShipAsync(string id)
+        {
+            return await _context.MemberMemberShips
+                .Include(m => m.MemberShip)
+                .FirstOrDefaultAsync(m => m.Id == id);
+        }
+
     }
 }

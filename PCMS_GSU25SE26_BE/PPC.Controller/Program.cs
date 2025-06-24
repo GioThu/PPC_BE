@@ -48,6 +48,8 @@ builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<ISysTransactionService, SysTransactionService>();
+
 
 
 builder.Services.AddScoped<IJwtService, JwtService>();

@@ -13,6 +13,8 @@ namespace PPC.Repository.Interfaces
         Task<bool> MemberHasActiveMemberShipAsync(string memberId, string memberShipId);
         Task<DateTime?> GetMemberShipExpireDateAsync(string memberId, string memberShipId);
         Task<List<MemberMemberShip>> GetActiveMemberShipsByMemberIdAsync(string memberId);
+        Task<MemberMemberShip> GetByIdWithMemberShipAsync(string id);
+
 
     }
 }

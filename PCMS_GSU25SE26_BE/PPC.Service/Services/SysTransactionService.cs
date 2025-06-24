@@ -17,11 +17,14 @@ namespace PPC.Service.Services
     {
         private readonly ISysTransactionRepository _sysTransactionRepository;
         private readonly IBookingRepository _bookingRepository;
+        private readonly IMemberMemberShipRepository _memberMemberShipRepository;
 
-        public SysTransactionService(ISysTransactionRepository sysTransactionRepository, IBookingRepository bookingRepository)
+
+        public SysTransactionService(ISysTransactionRepository sysTransactionRepository, IBookingRepository bookingRepository, IMemberMemberShipRepository memberMemberShipRepository)
         {
             _sysTransactionRepository = sysTransactionRepository;
             _bookingRepository = bookingRepository;
+            _memberMemberShipRepository = memberMemberShipRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateTransactionAsync(SysTransactionCreateRequest request)
@@ -56,7 +59,34 @@ namespace PPC.Service.Services
                         if (booking != null)
                         {
                             description = $"Bạn đã booking tư vấn {booking.Counselor.Fullname} vào {booking.TimeStart?.ToString("dd/MM/yyyy HH:mm")}";
-                            amount = booking.Price ?? 0;
+                            amount = - booking.Price ?? 0;
+                        }
+                        break;
+
+                    case "2":
+                        var booking2 = await _bookingRepository.GetByIdWithCounselor(trans.DocNo);
+                        if (booking2 != null)
+                        {
+                            description = $"Bạn đã hủy booking tư vấn {booking2.Counselor.Fullname} vào {booking2.TimeStart?.ToString("dd/MM/yyyy HH:mm")}";
+                            amount = booking2.Price / 2 ?? 0;
+                        }
+                        break;
+
+                    case "7":
+                        var booking7 = await _bookingRepository.GetByIdWithCounselor(trans.DocNo);
+                        if (booking7 != null)
+                        {
+                            description = $"Bạn đã được hoàn tiền từ buổi booking tư vấn {booking7.Counselor.Fullname} vào {booking7.TimeStart?.ToString("dd/MM/yyyy HH:mm")}";
+                            amount = booking7.Price ?? 0;
+                        }
+                        break;
+
+                    case "5":
+                        var memberMemberShip = await _memberMemberShipRepository.GetByIdWithMemberShipAsync(trans.DocNo);
+                        if (memberMemberShip != null)
+                        {
+                            description = $"Bạn đã mua gói {memberMemberShip.MemberShip.MemberShipName}";
+                            amount = - memberMemberShip.Price ?? 0;
                         }
                         break;
 
@@ -70,7 +100,7 @@ namespace PPC.Service.Services
                     Id = trans.Id,
                     TransactionType = trans.TransactionType,
                     DocNo = trans.DocNo,
-                    CreateBy = trans.CreateBy,
+                    CreateDate = trans.CreateDate,
                     Description = description,
                     Amount = amount                  
                 });
