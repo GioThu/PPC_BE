@@ -12,6 +12,6 @@ namespace PPC.Service.Interfaces
     public interface ISysTransactionService
     {
         Task<ServiceResponse<string>> CreateTransactionAsync(SysTransactionCreateRequest request);
-        Task<ServiceResponse<List<TransactionSummaryDto>>> GetTransactionsByAccountAsync(string accountId);
+        Task<ServiceResponse<PagingResponse<TransactionSummaryDto>>> GetTransactionsByAccountAsync(string accountId, GetTransactionFilterRequest request);
     }
 }

@@ -35,19 +35,14 @@ namespace PPC.Service.Services
             return ServiceResponse<string>.SuccessResponse("Transaction created successfully.");
         }
 
-        public async Task<ServiceResponse<List<TransactionSummaryDto>>> GetTransactionsByAccountAsync(string accountId)
+        public async Task<ServiceResponse<PagingResponse<TransactionSummaryDto>>> GetTransactionsByAccountAsync(string accountId, GetTransactionFilterRequest request)
         {
-            var transactions = await _sysTransactionRepository
-                .GetAllAsync(); 
-
-            var filtered = transactions
-                .Where(t => t.CreateBy == accountId)
-                .OrderByDescending(t => t.CreateDate)
-                .ToList();
+            var (transactions, totalCount) = await _sysTransactionRepository
+                .GetTransactionsByAccountAsync(accountId, request.TransactionType, request.PageNumber, request.PageSize);
 
             var result = new List<TransactionSummaryDto>();
 
-            foreach (var trans in filtered)
+            foreach (var trans in transactions)
             {
                 string description = string.Empty;
                 double amount = 0;
@@ -59,7 +54,7 @@ namespace PPC.Service.Services
                         if (booking != null)
                         {
                             description = $"Bạn đã booking tư vấn {booking.Counselor.Fullname} vào {booking.TimeStart?.ToString("dd/MM/yyyy HH:mm")}";
-                            amount = - booking.Price ?? 0;
+                            amount = -booking.Price ?? 0;
                         }
                         break;
 
@@ -68,25 +63,25 @@ namespace PPC.Service.Services
                         if (booking2 != null)
                         {
                             description = $"Bạn đã hủy booking tư vấn {booking2.Counselor.Fullname} vào {booking2.TimeStart?.ToString("dd/MM/yyyy HH:mm")}";
-                            amount = booking2.Price / 2 ?? 0;
+                            amount = booking2.Price/2 ?? 0;
                         }
                         break;
 
-                    case "7":
-                        var booking7 = await _bookingRepository.GetByIdWithCounselor(trans.DocNo);
-                        if (booking7 != null)
+                    case "3":
+                        var booking3 = await _bookingRepository.GetByIdWithCounselor(trans.DocNo);
+                        if (booking3 != null)
                         {
-                            description = $"Bạn đã được hoàn tiền từ buổi booking tư vấn {booking7.Counselor.Fullname} vào {booking7.TimeStart?.ToString("dd/MM/yyyy HH:mm")}";
-                            amount = booking7.Price ?? 0;
+                            description = $"Bạn đã được hoàn tiền từ buổi booking tư vấn {booking3.Counselor.Fullname} vào {booking3.TimeStart?.ToString("dd/MM/yyyy HH:mm")}";
+                            amount = booking3.Price ?? 0;
                         }
                         break;
 
                     case "5":
-                        var memberMemberShip = await _memberMemberShipRepository.GetByIdWithMemberShipAsync(trans.DocNo);
-                        if (memberMemberShip != null)
+                        var membership = await _memberMemberShipRepository.GetByIdWithMemberShipAsync(trans.DocNo);
+                        if (membership != null)
                         {
-                            description = $"Bạn đã mua gói {memberMemberShip.MemberShip.MemberShipName}";
-                            amount = - memberMemberShip.Price ?? 0;
+                            description = $"Bạn đã mua gói {membership.MemberShip.MemberShipName}";
+                            amount = membership.Price ?? 0;
                         }
                         break;
 
@@ -102,11 +97,12 @@ namespace PPC.Service.Services
                     DocNo = trans.DocNo,
                     CreateDate = trans.CreateDate,
                     Description = description,
-                    Amount = amount                  
+                    Amount = amount
                 });
             }
 
-            return ServiceResponse<List<TransactionSummaryDto>>.SuccessResponse(result);
+            var paging = new PagingResponse<TransactionSummaryDto>(result, totalCount, request.PageNumber, request.PageSize);
+            return ServiceResponse<PagingResponse<TransactionSummaryDto>>.SuccessResponse(paging);
         }
     }
 }

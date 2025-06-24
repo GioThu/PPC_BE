@@ -10,5 +10,6 @@ namespace PPC.Repository.Interfaces
 {
     public interface ISysTransactionRepository : IGenericRepository<SysTransaction>
     {
+        Task<(List<SysTransaction> Items, int TotalCount)> GetTransactionsByAccountAsync(string accountId, string? transactionType, int pageNumber, int pageSize);
     }
 }

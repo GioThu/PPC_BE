@@ -423,7 +423,6 @@ namespace PPC.Service.Services
                 _ => ServiceResponse<string>.SuccessResponse("Booking status updated successfully.")
             };
         }
-
         public async Task<ServiceResponse<string>> ReportBookingAsync(BookingReportRequest request)
         {
             var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
@@ -477,6 +476,10 @@ namespace PPC.Service.Services
                 booking.Status = 2; 
                 await _bookingRepository.UpdateAsync(booking);
             }
+            BackgroundJob.Schedule<IBookingService>(
+                    x => x.AutoCompleteBookingIfStillPending(booking.Id),
+                    TimeSpan.FromDays(1)
+                );
         }
         public async Task<ServiceResponse<string>> CancelByCounselorAsync(CancelBookingByCounselorRequest request)
         {
@@ -564,6 +567,7 @@ namespace PPC.Service.Services
             counselor.Reviews = count;
 
             await _counselorRepository.UpdateAsync(counselor);
+
 
             return ServiceResponse<string>.SuccessResponse("Rating submitted successfully.");
         }
