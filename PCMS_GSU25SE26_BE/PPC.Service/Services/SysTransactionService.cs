@@ -81,7 +81,7 @@ namespace PPC.Service.Services
                         if (membership != null)
                         {
                             description = $"Bạn đã mua gói {membership.MemberShip.MemberShipName}";
-                            amount = membership.Price ?? 0;
+                            amount = - membership.Price ?? 0;
                         }
                         break;
 
