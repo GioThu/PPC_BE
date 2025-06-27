@@ -87,5 +87,21 @@ namespace PPC.Repository.Repositories
 
             return account?.Wallet?.Remaining;
         }
+
+        public async Task<(string walletId, double? remaining)> GetWalletInfoByAccountIdAsync(string accountId)
+        {
+            var account = await _context.Accounts
+                .Include(a => a.Wallet)
+                .FirstOrDefaultAsync(a => a.Id == accountId);
+
+            return (account?.WalletId, account?.Wallet?.Remaining);
+        }
+
+        public async Task<Account> GetAccountByWalletIdAsync(string walletId)
+        {
+            return await _context.Accounts
+                .Include(a => a.Counselors)
+                .FirstOrDefaultAsync(a => a.WalletId == walletId);
+        }
     }
 }

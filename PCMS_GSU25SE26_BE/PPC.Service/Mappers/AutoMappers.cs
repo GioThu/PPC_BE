@@ -4,6 +4,7 @@ using PPC.Service.ModelResponse.BookingResponse;
 using PPC.Service.ModelResponse.CategoryResponse;
 using PPC.Service.ModelResponse.CirtificationResponse;
 using PPC.Service.ModelResponse.CounselorResponse;
+using PPC.Service.ModelResponse.DepositResponse;
 using PPC.Service.ModelResponse.MemberResponse;
 using PPC.Service.ModelResponse.PersonTypeResponse;
 using PPC.Service.ModelResponse.SurveyResponse;
@@ -33,6 +34,9 @@ namespace PPC.Service.Mappers
             CreateMap<Question, SurveyQuestionDto>();
             CreateMap<Answer, SurveyAnswerDto>();
             CreateMap<PersonType, PersonTypeDto>();
+            CreateMap<Deposit, DepositDto>();
+
+
 
 
 

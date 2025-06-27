@@ -12,6 +12,9 @@ public partial class Deposit
     public string WalletId { get; set; }
 
     public double? Total { get; set; }
+    public string Stk { get; set; }           
+    public string BankName { get; set; }       
+    public string AccountName { get; set; }
 
     public DateTime? CreateDate { get; set; }
 

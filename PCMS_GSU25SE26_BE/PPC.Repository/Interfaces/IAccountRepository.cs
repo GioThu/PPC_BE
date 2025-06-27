@@ -16,6 +16,9 @@ namespace PPC.Repository.Interfaces
         Task<Account> AdminLogin(string email, string password);
         Task<double?> GetRemainingBalanceByAccountIdAsync(string accountId);
 
+        Task<(string walletId, double? remaining)> GetWalletInfoByAccountIdAsync(string accountId);
+        Task<Account> GetAccountByWalletIdAsync(string walletId);
+
 
     }
 }

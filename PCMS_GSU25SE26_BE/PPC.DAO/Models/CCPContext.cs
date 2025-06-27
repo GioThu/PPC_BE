@@ -604,6 +604,18 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(64)
                 .IsUnicode(false)
                 .HasColumnName("walletId");
+            entity.Property(e => e.Stk)
+        .HasMaxLength(100)
+        .IsUnicode(false)
+        .HasColumnName("stk");
+
+            entity.Property(e => e.BankName)
+                .HasMaxLength(255)
+                .HasColumnName("bankName");
+
+            entity.Property(e => e.AccountName)
+                .HasMaxLength(255)
+                .HasColumnName("accountName");
 
             entity.HasOne(d => d.Wallet).WithMany(p => p.Deposits)
                 .HasForeignKey(d => d.WalletId)
