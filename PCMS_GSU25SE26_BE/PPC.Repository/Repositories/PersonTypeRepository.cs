@@ -22,11 +22,26 @@ namespace PPC.Repository.Repositories
                 .ToListAsync();
         }
 
+
         public async Task<List<PersonType>> GetPersonTypesBySurveyAsync(string surveyId)
         {
             return await _context.PersonTypes
+                .Include(pt => pt.Category)
                 .Where(pt => pt.SurveyId == surveyId && pt.Status == 1)
                 .ToListAsync();
+        }
+
+        public async Task<PersonType> GetPersonTypeByIdAsync(string id)
+        {
+            return await _context.PersonTypes
+                .Include(pt => pt.Category)
+                .FirstOrDefaultAsync(pt => pt.Id == id && pt.Status == 1);
+        }
+
+        public async Task UpdatePersonTypeAsync(PersonType personType)
+        {
+            _context.PersonTypes.Update(personType);
+            await _context.SaveChangesAsync();
         }
     }
 }

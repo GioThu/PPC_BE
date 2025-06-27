@@ -16,7 +16,7 @@ namespace PPC.Service.Mappers
             {
                 Id = survey.Id,
                 Name = survey.Name,
-                Descriptione = survey.Descriptione,
+                Description = survey.Description,
                 Image = survey.Image,
                 CreateAt = survey.CreateAt,
                 Status = survey.Status

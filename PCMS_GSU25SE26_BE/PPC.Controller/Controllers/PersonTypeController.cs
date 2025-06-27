@@ -27,5 +27,26 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpGet("by-survey/{surveyId}")]
+        public async Task<IActionResult> GetBySurvey(string surveyId)
+        {
+            var result = await _personTypeService.GetPersonTypesBySurveyAsync(surveyId);
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _personTypeService.GetPersonTypeByIdAsync(id);
+            return Ok(result);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] PersonTypeUpdateRequest request)
+        {
+            var result = await _personTypeService.UpdatePersonTypeAsync(request);
+            return Ok(result);
+        }
     }
 }

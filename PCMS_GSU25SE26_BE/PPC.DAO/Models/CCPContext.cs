@@ -845,9 +845,9 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.CreateAt)
                 .HasColumnType("datetime")
                 .HasColumnName("createAt");
-            entity.Property(e => e.Descriptione)
+            entity.Property(e => e.Description)
                 .HasMaxLength(1000)
-                .HasColumnName("descriptione");
+                .HasColumnName("Descriptione");
             entity.Property(e => e.Image)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -860,7 +860,9 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(64)
                 .IsUnicode(false)
                 .HasColumnName("surveyId");
-
+            entity.Property(e => e.Detail)
+    .HasColumnName("detail")
+    .HasColumnType("nvarchar(max)");
             entity.HasOne(d => d.Category).WithMany(p => p.PersonTypes)
                 .HasForeignKey(d => d.CategoryId)
                 .HasConstraintName("FK__PersonTyp__categ__5629CD9C");
@@ -1038,9 +1040,9 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.CreateAt)
                 .HasColumnType("datetime")
                 .HasColumnName("createAt");
-            entity.Property(e => e.Descriptione)
+            entity.Property(e => e.Description)
                 .HasMaxLength(1000)
-                .HasColumnName("descriptione");
+                .HasColumnName("Descriptione");
             entity.Property(e => e.Image)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -1112,9 +1114,9 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.CreateAt)
                 .HasColumnType("datetime")
                 .HasColumnName("createAt");
-            entity.Property(e => e.Descriptione)
+            entity.Property(e => e.Description)
                 .HasMaxLength(1000)
-                .HasColumnName("descriptione");
+                .HasColumnName("Descriptione");
             entity.Property(e => e.Image)
                 .HasMaxLength(255)
                 .IsUnicode(false)

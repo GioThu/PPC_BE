@@ -87,8 +87,8 @@ namespace PPC.Service.Services
                     );
                 }
 
-                description = !string.IsNullOrEmpty(matched.Descriptione)
-                  ? matched.Descriptione
+                description = !string.IsNullOrEmpty(matched.Description)
+                  ? matched.Description
                   : "No description available.";
 
                 member.Mbti = matched.Name;
@@ -114,8 +114,8 @@ namespace PPC.Service.Services
                             case "SV003": member.LoveLanguage = matched.Name; break;
                             case "SV004": member.BigFive = matched.Name; break;
                         }
-                        description = !string.IsNullOrEmpty(matched.Descriptione)
-                  ? matched.Descriptione
+                        description = !string.IsNullOrEmpty(matched.Description)
+                  ? matched.Description
                   : "No description available.";
                         resultType = matched.Name;
                         categoryId = matched.CategoryId;

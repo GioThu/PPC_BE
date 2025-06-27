@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PPC.Service.ModelResponse.SurveyResponse
+namespace PPC.Service.ModelRequest.PersonTypeRequest
 {
-    public class SurveyDto
+    public class PersonTypeUpdateRequest
     {
         public string Id { get; set; }
-        public string Name { get; set; }
         public string Description { get; set; }
+        public string Detail { get; set; }
         public string Image { get; set; }
-        public DateTime? CreateAt { get; set; }
-        public int? Status { get; set; }
+        public string CategoryId { get; set; }
+
     }
 }
