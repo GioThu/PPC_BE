@@ -22,5 +22,21 @@ namespace PPC.Repository.Repositories
                 .Where(d => d.Status == status)
                 .ToListAsync();
         }
+
+        public async Task<List<Deposit>> GetDepositsByWalletIdAsync(string walletId)
+        {
+            return await _context.Deposits
+                .Where(d => d.WalletId == walletId)
+                .OrderByDescending(d => d.CreateDate)
+                .ToListAsync();
+        }
+
+        public async Task<Wallet> GetWithAccountByIdAsync(string walletId)
+        {
+            return await _context.Wallets
+                .Include(w => w.Accounts)
+                .FirstOrDefaultAsync(w => w.Id == walletId);
+        }
+
     }
 }

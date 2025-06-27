@@ -28,7 +28,7 @@ namespace PPC.Service.Mappers
             {
                 Id = Utils.Utils.GenerateIdModel("Withdraw"),
                 WalletId = walletId,
-                Total = - request.Total,
+                Total =  request.Total,
                 Stk = request.Stk,
                 BankName = request.BankName,
                 AccountName = request.AccountName,

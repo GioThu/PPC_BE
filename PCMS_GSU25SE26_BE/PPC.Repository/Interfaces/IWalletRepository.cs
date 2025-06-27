@@ -10,5 +10,7 @@ namespace PPC.Repository.Interfaces
 {
     public interface IWalletRepository : IGenericRepository<Wallet>
     {
+        Task<Wallet> GetWithAccountByIdAsync(string walletId);
+
     }
 }

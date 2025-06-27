@@ -14,6 +14,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> CreateWithdrawAsync(string accountId, WithdrawCreateRequest request);
         Task<ServiceResponse<string>> CreateDepositAsync(string accountId, DepositCreateRequest request);
         Task<ServiceResponse<List<DepositDto>>> GetDepositsByStatusAsync(int status);
-
+        Task<ServiceResponse<List<DepositDto>>> GetMyDepositsAsync(string accountId);
+        Task<ServiceResponse<string>> ChangeDepositStatusAsync(DepositChangeStatusRequest request);
     }
 }

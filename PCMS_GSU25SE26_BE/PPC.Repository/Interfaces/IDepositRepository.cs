@@ -11,5 +11,7 @@ namespace PPC.Repository.Interfaces
     public interface IDepositRepository : IGenericRepository<Deposit>
     {
         Task<List<Deposit>> GetDepositsByStatusAsync(int status);
+        Task<List<Deposit>> GetDepositsByWalletIdAsync(string walletId);
+
     }
 }
