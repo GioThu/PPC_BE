@@ -15,5 +15,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<List<PersonTypeDto>>> GetPersonTypesBySurveyAsync(string surveyId);
         Task<ServiceResponse<PersonTypeDto>> GetPersonTypeByIdAsync(string id);
         Task<ServiceResponse<string>> UpdatePersonTypeAsync(PersonTypeUpdateRequest request);
+        Task<ServiceResponse<MyPersonTypeResponse>> GetMyPersonTypeAsync(string memberId, string surveyId);
+
     }
 }

@@ -19,15 +19,16 @@ namespace PPC.Service.Services
         private readonly ICategoryRepository _categoryRepository;
         private readonly ISurveyRepository _surveyRepository;
         private readonly IMapper _mapper;
+        private readonly IMemberRepository _memberRepo;
 
 
-        public PersonTypeService(IPersonTypeRepository personTypeRepository, ICategoryRepository categoryRepository, ISurveyRepository surveyRepository, IMapper mapper)
+        public PersonTypeService(IPersonTypeRepository personTypeRepository, ICategoryRepository categoryRepository, ISurveyRepository surveyRepository, IMapper mapper, IMemberRepository memberRepo)
         {
             _personTypeRepository = personTypeRepository;
             _categoryRepository = categoryRepository;
             _surveyRepository = surveyRepository;
             _mapper = mapper;
-
+            _memberRepo = memberRepo;
         }
 
         public async Task<ServiceResponse<string>> CreatePersonTypeAsync(CreatePersonTypeRequest request)
@@ -87,6 +88,42 @@ namespace PPC.Service.Services
 
             await _personTypeRepository.UpdatePersonTypeAsync(entity);
             return ServiceResponse<string>.SuccessResponse("Update successful");
+        }
+
+        public async Task<ServiceResponse<MyPersonTypeResponse>> GetMyPersonTypeAsync(string memberId, string surveyId)
+        {
+            // Lấy Member
+            var member = await _memberRepo.GetByIdAsync(memberId);
+            if (member == null)
+                return ServiceResponse<MyPersonTypeResponse>.ErrorResponse("Member not found");
+
+            // Xác định name theo surveyId
+            string personTypeName = surveyId switch
+            {
+                "SV001" => member.Mbti,
+                "SV002" => member.Disc,
+                "SV003" => member.LoveLanguage,
+                "SV004" => member.BigFive,
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(personTypeName))
+                return ServiceResponse<MyPersonTypeResponse>.ErrorResponse("No person type found for this survey.");
+
+            // Tìm trong PersonType table
+            var personType = await _personTypeRepository
+                .GetPersonTypesBySurveyAsync(surveyId);
+
+            var matched = personType
+                .FirstOrDefault(pt => pt.Name == personTypeName);
+
+            if (matched == null)
+                return ServiceResponse<MyPersonTypeResponse>.ErrorResponse("PersonType not found in system.");
+
+            // Map sang DTO
+            var dto = _mapper.Map<MyPersonTypeResponse>(matched);
+
+            return ServiceResponse<MyPersonTypeResponse>.SuccessResponse(dto);
         }
     }
 

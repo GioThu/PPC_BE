@@ -48,5 +48,17 @@ namespace PPC.Controller.Controllers
             var result = await _personTypeService.UpdatePersonTypeAsync(request);
             return Ok(result);
         }
+
+
+        [HttpGet("my-person-type/{surveyId}")]
+        public async Task<IActionResult> GetMyPersonType(string surveyId)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("Member not found.");
+
+            var result = await _personTypeService.GetMyPersonTypeAsync(memberId, surveyId);
+            return Ok(result);
+        }
     }
 }

@@ -35,8 +35,7 @@ namespace PPC.Service.Mappers
             CreateMap<Answer, SurveyAnswerDto>();
             CreateMap<PersonType, PersonTypeDto>();
             CreateMap<Deposit, DepositDto>();
-
-
+            CreateMap<PersonType, MyPersonTypeResponse>();
 
 
 
