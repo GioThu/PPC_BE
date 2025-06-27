@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
+using PPC.Service.ModelRequest.SurveyRequest;
 using PPC.Service.Services;
 
 namespace PPC.Controller.Controllers
@@ -35,6 +36,16 @@ namespace PPC.Controller.Controllers
 
             var result = await _questionService.GetRandomQuestionsAsync(surveyId, count);
             return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("getResultSurvey")]
+        public async Task<IActionResult> SubmitResult([FromBody] SurveyResultRequest request)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId)) return Unauthorized("Member not found");
+
+            var response = await _surveyService.SubmitResultAsync(memberId, request);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
     }
 }

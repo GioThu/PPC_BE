@@ -30,6 +30,7 @@ builder.Services.AddScoped<ISysTransactionRepository, SysTransactionRepository>(
 builder.Services.AddScoped<IBookingSubCategoryRepository, BookingSubCategoryRepository>();
 builder.Services.AddScoped<ISurveyRepository, SurveyRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IPersonTypeRepository, PersonTypeRepository>();
 
 
 
@@ -49,6 +50,8 @@ builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<ISysTransactionService, SysTransactionService>();
+builder.Services.AddScoped<IPersonTypeService, PersonTypeService>();
+
 
 
 

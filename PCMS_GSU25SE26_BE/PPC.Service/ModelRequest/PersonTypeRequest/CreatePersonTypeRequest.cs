@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PPC.Service.ModelRequest.PersonTypeRequest
+{
+    public class CreatePersonTypeRequest
+    {
+        public string CategoryId { get; set; }
+        public string SurveyId { get; set; }
+        public string Name { get; set; }
+        public string Descriptione { get; set; }
+        public string Image { get; set; }
+    }
+}
