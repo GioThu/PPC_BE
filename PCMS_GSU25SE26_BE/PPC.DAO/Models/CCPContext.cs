@@ -1025,6 +1025,12 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.Result)
                 .HasMaxLength(255)
                 .HasColumnName("result");
+            entity.Property(e => e.Detail)
+        .HasMaxLength(1000)
+        .HasColumnName("detail");
+            entity.Property(e => e.Description)
+        .HasMaxLength(2000)
+        .HasColumnName("description");
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.Type)
                 .HasMaxLength(255)

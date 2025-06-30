@@ -32,6 +32,7 @@ builder.Services.AddScoped<ISurveyRepository, SurveyRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IPersonTypeRepository, PersonTypeRepository>();
 builder.Services.AddScoped<IDepositRepository, DepositRepository>();
+builder.Services.AddScoped<IResultHistoryRepository, ResultHistoryRepository>();
 
 
 

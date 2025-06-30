@@ -20,15 +20,17 @@ namespace PPC.Service.Services
         private readonly ISurveyRepository _surveyRepository;
         private readonly IMapper _mapper;
         private readonly IMemberRepository _memberRepo;
+        private readonly IResultHistoryRepository _resultHistoryRepo;
 
 
-        public PersonTypeService(IPersonTypeRepository personTypeRepository, ICategoryRepository categoryRepository, ISurveyRepository surveyRepository, IMapper mapper, IMemberRepository memberRepo)
+        public PersonTypeService(IPersonTypeRepository personTypeRepository, ICategoryRepository categoryRepository, ISurveyRepository surveyRepository, IMapper mapper, IMemberRepository memberRepo, IResultHistoryRepository resultHistoryRepo)
         {
             _personTypeRepository = personTypeRepository;
             _categoryRepository = categoryRepository;
             _surveyRepository = surveyRepository;
             _mapper = mapper;
             _memberRepo = memberRepo;
+            _resultHistoryRepo = resultHistoryRepo;
         }
 
         public async Task<ServiceResponse<string>> CreatePersonTypeAsync(CreatePersonTypeRequest request)
@@ -122,8 +124,58 @@ namespace PPC.Service.Services
 
             // Map sang DTO
             var dto = _mapper.Map<MyPersonTypeResponse>(matched);
+            var history = await _resultHistoryRepo.GetLatestResultAsync(memberId, surveyId);
+            if (history != null && !string.IsNullOrEmpty(history.Detail))
+            {
+                dto.Scores = history.Detail
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(pair => pair.Split(':'))
+                    .Where(parts => parts.Length == 2)
+                    .ToDictionary(parts => parts[0], parts => int.Parse(parts[1]));
+            }
 
             return ServiceResponse<MyPersonTypeResponse>.SuccessResponse(dto);
+        }
+
+        public async Task<ServiceResponse<List<ResultHistoryResponse>>> GetHistoryByMemberAndSurveyAsync(string memberId, string surveyId)
+        {
+            var histories = await _resultHistoryRepo.GetResultHistoriesByMemberAndSurveyAsync(memberId, surveyId);
+
+            if (!histories.Any())
+                return ServiceResponse<List<ResultHistoryResponse>>.ErrorResponse("No history found.");
+
+            var responses = new List<ResultHistoryResponse>();
+
+            foreach (var history in histories)
+            {
+
+                var scores = new Dictionary<string, int>();
+                if (!string.IsNullOrEmpty(history.Detail))
+                {
+                    scores = history.Detail
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(x => x.Split(':'))
+                        .Where(parts => parts.Length == 2)
+                        .ToDictionary(
+                            parts => parts[0],
+                            parts => int.Parse(parts[1])
+                        );
+                }
+
+                var dto = new ResultHistoryResponse
+                {
+                    SurveyId = history.Type,
+                    Result = history.Result,
+                    Description = history.Description,
+                    RawScores = history.Detail,
+                    Scores = scores,
+                    CreateAt = history.CreateAt
+                };
+
+                responses.Add(dto);
+            }
+
+            return ServiceResponse<List<ResultHistoryResponse>>.SuccessResponse(responses);
         }
     }
 

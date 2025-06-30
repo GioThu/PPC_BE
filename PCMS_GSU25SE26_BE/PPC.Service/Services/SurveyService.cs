@@ -20,13 +20,15 @@ namespace PPC.Service.Services
         private readonly IMapper _mapper;
         private readonly IMemberRepository _memberRepo;
         private readonly IPersonTypeRepository _personTypeRepo;
+        private readonly IResultHistoryRepository _resultHistoryRepo;
 
-        public SurveyService(ISurveyRepository surveyRepository, IMapper mapper, IMemberRepository memberRepo, IPersonTypeRepository personTypeRepo)
+        public SurveyService(ISurveyRepository surveyRepository, IMapper mapper, IMemberRepository memberRepo, IPersonTypeRepository personTypeRepo, IResultHistoryRepository resultHistoryRepo)
         {
             _surveyRepository = surveyRepository;
             _mapper = mapper;
             _memberRepo = memberRepo;
             _personTypeRepo = personTypeRepo;
+            _resultHistoryRepo = resultHistoryRepo;
         }
 
         public async Task<ServiceResponse<List<SurveyDto>>> GetAllSurveysAsync()
@@ -154,6 +156,23 @@ namespace PPC.Service.Services
             member.Rec2 = recs.ElementAtOrDefault(1);
 
             await _memberRepo.UpdateAsync(member);
+
+            var detail = string.Join(",", request.Answers
+    .Select(a => $"{a.Tag}:{a.Score}"));
+
+            var history = new ResultHistory
+            {
+                Id = Utils.Utils.GenerateIdModel("ResultHistory"),
+                MemberId = memberId,
+                Type = request.SurveyId,
+                Result = resultType,
+                Detail = detail,
+                CreateAt = Utils.Utils.GetTimeNow(),
+                Description = description,
+                Status = 1
+            };
+
+            await _resultHistoryRepo.CreateAsync(history);
 
             return ServiceResponse<string>.SuccessResponse($"Bạn thuộc kiểu {resultType} : {description}");
         }

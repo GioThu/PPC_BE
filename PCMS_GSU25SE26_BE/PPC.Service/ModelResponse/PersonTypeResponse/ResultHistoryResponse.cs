@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 
 namespace PPC.Service.ModelResponse.PersonTypeResponse
 {
-    public class MyPersonTypeResponse
+    public class ResultHistoryResponse
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Detail { get; set; }
-        public string Image { get; set; }
         public string SurveyId { get; set; }
+        public string Result { get; set; }
+        public string Description { get; set; }
+        public string RawScores { get; set; }
         public Dictionary<string, int> Scores { get; set; }
+        public DateTime? CreateAt { get; set; }
     }
 }

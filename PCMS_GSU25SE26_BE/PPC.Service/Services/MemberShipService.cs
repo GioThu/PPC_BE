@@ -118,7 +118,7 @@ namespace PPC.Service.Services
             wallet.Remaining -= price;
             await _walletRepository.UpdateAsync(wallet);
 
-            var now = DateTime.UtcNow;
+            var now = Utils.Utils.GetTimeNow();
             var expiry = now.AddDays(membership.ExpiryDate ?? 30);
             var memberMemberShip = new MemberMemberShip
             {
@@ -156,7 +156,7 @@ namespace PPC.Service.Services
         }
         public async Task<ServiceResponse<List<MyMemberShipStatusResponse>>> GetMemberShipStatusAsync(string memberId)
         {
-            var now = DateTime.UtcNow;
+            var now = Utils.Utils.GetTimeNow();
 
             var memberships = await _memberShipRepository.GetAllActiveAsync();
 
@@ -192,7 +192,7 @@ namespace PPC.Service.Services
 
         public async Task<int> GetMaxBookingDiscountByMemberAsync(string memberId)
         {
-            var now = DateTime.UtcNow;
+            var now = Utils.Utils.GetTimeNow();
 
             var activeMemberships = await _memberMemberShipRepository
                 .GetActiveMemberShipsByMemberIdAsync(memberId); 

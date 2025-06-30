@@ -10,8 +10,6 @@ namespace PPC.Repository.Interfaces
 {
     public interface IPersonTypeRepository : IGenericRepository<PersonType>
     {
-        public interface IPersonTypeRepository
-        { }
         Task<List<PersonType>> GetAllPersonTypesAsync();
         Task<List<PersonType>> GetPersonTypesBySurveyAsync(string surveyId);
         Task UpdatePersonTypeAsync(PersonType personType);

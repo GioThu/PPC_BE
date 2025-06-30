@@ -14,7 +14,8 @@ public partial class ResultHistory
     public string Type { get; set; }
 
     public string Result { get; set; }
-
+    public string Detail { get; set; }
+    public string Description { get; set; }
     public DateTime? CreateAt { get; set; }
 
     public int? Status { get; set; }

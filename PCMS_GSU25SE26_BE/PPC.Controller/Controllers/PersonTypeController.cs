@@ -60,5 +60,19 @@ namespace PPC.Controller.Controllers
             var result = await _personTypeService.GetMyPersonTypeAsync(memberId, surveyId);
             return Ok(result);
         }
+
+        [HttpGet("my-history/{surveyId}")]
+        public async Task<IActionResult> GetMyHistoryBySurvey(string surveyId)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _personTypeService.GetHistoryByMemberAndSurveyAsync(memberId, surveyId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

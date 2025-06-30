@@ -27,7 +27,6 @@ namespace PPC.Service.Services
             _logger = logger;
         }
 
-        // Tạo LiveKit token
         public string GenerateLiveKitToken(string room, string id, string name, DateTime startTime, DateTime endTime)
         {
             var exp = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds();
@@ -61,8 +60,8 @@ namespace PPC.Service.Services
             var securityToken = new JwtSecurityToken(
                 issuer: _apiKey,
                 audience: _apiKey,
-                notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddMinutes(10),
+                notBefore: Utils.Utils.GetTimeNow(),
+                expires: Utils.Utils.GetTimeNow().AddMinutes(10),
                 signingCredentials: credentials
             );
 
@@ -74,7 +73,6 @@ namespace PPC.Service.Services
             return tokenHandler.WriteToken(securityToken);
         }
 
-        // Xử lý Webhook và xác thực token
         public async Task<bool> HandleWebhookAsync(string rawBody, string authorizationHeader)
         {
             var webhookReceiver = new WebhookReceiver(_apiKey, _apiSecret);  
@@ -97,7 +95,7 @@ namespace PPC.Service.Services
                             TransactionType = "LiveKitRoomFinished",
                             CreateBy = "system",
                             DocNo = roomSid,
-                            CreateDate = DateTime.UtcNow
+                            CreateDate = Utils.Utils.GetTimeNow()
                         };
                         await _sysTransactionRepository.CreateAsync(transaction);
                         _logger.LogInformation($"Room finished: {roomSid}");

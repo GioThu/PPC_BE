@@ -19,30 +19,25 @@ public class RoomService : IRoomService
     public RoomService()
     {
         _httpClient = new HttpClient();
-        _apiKey = "106bf9f6fac65aab09b8572ca4c634305061956886d371fafc5c901e6cf74e0f"; // API Key của bạn
+        _apiKey = "106bf9f6fac65aab09b8572ca4c634305061956886d371fafc5c901e6cf74e0f"; 
     }
 
-    // Phương thức tạo phòng
     public async Task<ServiceResponse<RoomResponse>> CreateRoomAsync(CreateRoomRequest2 request)
     {
         var dailyBaseUrl = "https://api.daily.co/v1";
 
-        // Cấu hình authorization với API key
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
 
         string roomUrl;
 
-        // Kiểm tra xem phòng đã tồn tại chưa
         var roomExists = await CheckRoomExistsAsync(request.RoomName);
 
         if (roomExists)
         {
-            // Nếu phòng đã tồn tại, chỉ cần lấy URL của phòng
             roomUrl = await GetRoomUrlAsync(request.RoomName);
         }
         else
         {
-            // Nếu phòng chưa tồn tại, tạo phòng mới
             var now = DateTime.UtcNow;
             long nbfUnix = new DateTimeOffset(now).ToUnixTimeSeconds();
             var durationMinutes = (request.EndTime - request.StartTime).TotalMinutes;
@@ -66,28 +61,23 @@ public class RoomService : IRoomService
             var response = await _httpClient.PostAsync($"{dailyBaseUrl}/rooms", content);
             var responseJson = await response.Content.ReadAsStringAsync();
 
-            // Kiểm tra xem API có trả về thành công không
             if (!response.IsSuccessStatusCode)
                 throw new Exception($"Create room failed: {responseJson}");
 
-            // Lấy URL của phòng mới từ response
             dynamic roomData = JsonConvert.DeserializeObject(responseJson);
             roomUrl = roomData.url;
         }
 
-        // Tạo token cho người dùng (token được tạo ngay cả khi phòng đã tồn tại)
         var token = GenerateMeetingToken(request.RoomName, request.UserName, request.StartTime, request.EndTime);
 
-        // Trả kết quả với joinUrl chứa token
         return ServiceResponse<RoomResponse>.SuccessResponse(new RoomResponse
         {
-            JoinUrl = $"{roomUrl}?t={token}",  // Dùng URL phòng đã có hoặc phòng mới và thêm token vào URL
+            JoinUrl = $"{roomUrl}?t={token}",  
             RoomName = request.RoomName,
             UserName = request.UserName
         });
     }
 
-    // Kiểm tra xem phòng đã tồn tại chưa
     private async Task<bool> CheckRoomExistsAsync(string roomName)
     {
         var dailyBaseUrl = "https://api.daily.co/v1";
@@ -95,12 +85,11 @@ public class RoomService : IRoomService
 
         if (response.IsSuccessStatusCode)
         {
-            return true;  // Phòng đã tồn tại
+            return true; 
         }
-        return false; // Phòng chưa tồn tại
+        return false; 
     }
 
-    // Lấy URL phòng
     private async Task<string> GetRoomUrlAsync(string roomName)
     {
         var dailyBaseUrl = "https://api.daily.co/v1";
@@ -114,7 +103,6 @@ public class RoomService : IRoomService
         return roomData.url;
     }
 
-    // Hàm tạo JWT Token
     private string GenerateMeetingToken(string roomName, string userName, DateTime startTime, DateTime endTime)
     {
         var claims = new[]
