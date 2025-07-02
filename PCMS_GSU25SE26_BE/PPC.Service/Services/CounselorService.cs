@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Repository.Repositories;
@@ -25,14 +26,16 @@ namespace PPC.Service.Services
         private readonly ICounselorSubCategoryRepository _counselorSubCategoryRepository;
         private readonly IWorkScheduleRepository _workScheduleRepo;
         private readonly IBookingRepository _bookingRepo;
+        private readonly IMemberRepository _memberRepo;
 
-        public CounselorService(ICounselorRepository counselorRepository, IMapper mapper, ICounselorSubCategoryRepository counselorSubCategoryRepository, IWorkScheduleRepository workScheduleRepo, IBookingRepository bookingRepo)
+        public CounselorService(ICounselorRepository counselorRepository, IMapper mapper, ICounselorSubCategoryRepository counselorSubCategoryRepository, IWorkScheduleRepository workScheduleRepo, IBookingRepository bookingRepo, IMemberRepository memberRepo)
         {
             _counselorRepository = counselorRepository;
             _mapper = mapper;
             _counselorSubCategoryRepository = counselorSubCategoryRepository;
             _workScheduleRepo = workScheduleRepo;
             _bookingRepo = bookingRepo;
+            _memberRepo = memberRepo;
         }
 
         public async Task<ServiceResponse<List<CounselorDto>>> GetAllCounselorsAsync()
@@ -231,6 +234,111 @@ namespace PPC.Service.Services
 
             string action = request.Status == 0 ? "blocked" : "unblocked";
             return ServiceResponse<string>.SuccessResponse($"Counselor {action} successfully.");
+        }
+
+        public async Task<ServiceResponse<List<CounselorWithSubDto>>> GetRecommendedCounselorsAsync(string memberId)
+        {
+            var member = await _memberRepo.GetByIdAsync(memberId);
+            if (member == null)
+                return ServiceResponse<List<CounselorWithSubDto>>.ErrorResponse("Member not found.");
+
+            var categoryIds = new List<string>();
+            if (!string.IsNullOrEmpty(member.Rec1)) categoryIds.Add(member.Rec1);
+            if (!string.IsNullOrEmpty(member.Rec2)) categoryIds.Add(member.Rec2);
+
+            List<Counselor> counselors;
+            if (categoryIds.Any())
+            {
+                counselors = await _counselorRepository.GetCounselorsByCategoriesAsync(categoryIds);
+            }
+            else
+            {
+                counselors = new List<Counselor>();
+            }
+
+            var ranked = counselors.Select(c =>
+            {
+                var subCategories = c.CounselorSubCategories
+                    .Where(cs =>
+                        cs.SubCategory.Status == 1 &&
+                        cs.SubCategory.Category.Status == 1 &&
+                        categoryIds.Contains(cs.SubCategory.CategoryId))
+                    .GroupBy(sc => sc.SubCategory.Id)
+                    .Select(g => new SubCategoryDto
+                    {
+                        Id = g.Key,
+                        Name = g.First().SubCategory.Name
+                    })
+                    .ToList();
+
+                var matchedSubCategories = subCategories.Count;
+
+                // Tính score
+                double score =c.Rating * Math.Max(1,Math.Log(c.Reviews + 1)) * (1 + matchedSubCategories);
+
+                return new
+                {
+                    Counselor = c,
+                    SubCategories = subCategories,
+                    Score = score
+                };
+            })
+            .OrderByDescending(x => x.Score)
+            .Take(5)  
+            .Select(x => new CounselorWithSubDto
+            {
+                Id = x.Counselor.Id,
+                Fullname = x.Counselor.Fullname,
+                Avatar = x.Counselor.Avatar,
+                Description = x.Counselor.Description,
+                Price = x.Counselor.Price,
+                Rating = x.Counselor.Rating,
+                Reviews = x.Counselor.Reviews,
+                YearOfJob = x.Counselor.YearOfJob,
+                Phone = x.Counselor.Phone,
+                Status = x.Counselor.Status,
+                IsBookingAvailible = true,
+                SubCategories = x.SubCategories
+            })
+            .ToList();
+
+            if (!ranked.Any())
+            {
+                ranked = await GetTopCounselorsFallbackAsync();
+            }
+
+            return ServiceResponse<List<CounselorWithSubDto>>.SuccessResponse(ranked);
+        }
+
+        private async Task<List<CounselorWithSubDto>> GetTopCounselorsFallbackAsync()
+        {
+            var counselors = await _counselorRepository.GetTopCounselorsAsync(5);
+
+            var result = counselors.Select(c => new CounselorWithSubDto
+            {
+                Id = c.Id,
+                Fullname = c.Fullname,
+                Avatar = c.Avatar,
+                Description = c.Description,
+                Price = c.Price,
+                Rating = c.Rating,
+                Reviews = c.Reviews,
+                YearOfJob = c.YearOfJob,
+                Phone = c.Phone,
+                Status = c.Status,
+                IsBookingAvailible = true,
+                SubCategories = c.CounselorSubCategories
+                    .Where(cs => cs.SubCategory.Status == 1 && cs.SubCategory.Category.Status == 1)
+                    .GroupBy(sc => sc.SubCategory.Id)
+                    .Select(g => new SubCategoryDto
+                    {
+                        Id = g.Key,
+                        Name = g.First().SubCategory.Name
+                    })
+                    .ToList()
+            }).ToList();
+
+            return result;
         }
     }
 }

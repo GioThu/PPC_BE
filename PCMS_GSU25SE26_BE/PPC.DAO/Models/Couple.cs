@@ -9,9 +9,9 @@ public partial class Couple
 {
     public string Id { get; set; }
 
-    public string Male { get; set; }
+    public string Member { get; set; }
 
-    public string Female { get; set; }
+    public string Member1 { get; set; }
 
     public string Mbti { get; set; }
 
@@ -53,7 +53,9 @@ public partial class Couple
 
     public int? Status { get; set; }
 
-    public virtual Member FemaleNavigation { get; set; }
+    public string? AccessCode { get; set; }
 
-    public virtual Member MaleNavigation { get; set; }
+    public virtual Member Member1Navigation { get; set; }
+
+    public virtual Member MemberNavigation { get; set; }
 }

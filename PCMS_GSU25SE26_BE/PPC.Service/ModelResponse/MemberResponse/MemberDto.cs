@@ -26,10 +26,6 @@ namespace PPC.Service.ModelResponse.MemberResponse
 
         public string Gender { get; set; }
 
-        public string Rec1 { get; set; }
-
-        public string Rec2 { get; set; }
-
         public int? Status { get; set; }
     }
 }

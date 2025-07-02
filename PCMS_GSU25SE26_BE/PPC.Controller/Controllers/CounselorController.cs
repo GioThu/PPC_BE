@@ -78,5 +78,16 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpGet("recommend")]
+        public async Task<IActionResult> Recommend()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("Member not found.");
+
+            var result = await _counselorService.GetRecommendedCounselorsAsync(memberId);
+            return Ok(result);
+        }
     }
 }

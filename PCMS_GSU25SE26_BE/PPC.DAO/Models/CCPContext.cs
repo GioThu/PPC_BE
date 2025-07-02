@@ -462,10 +462,14 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.DiscResult)
                 .HasMaxLength(255)
                 .HasColumnName("discResult");
-            entity.Property(e => e.Female)
+            entity.Property(e => e.Member)
                 .HasMaxLength(64)
                 .IsUnicode(false)
                 .HasColumnName("female");
+            entity.Property(e => e.AccessCode)
+                .HasMaxLength(64)
+                .IsUnicode(false)
+                .HasColumnName("accessCode");
             entity.Property(e => e.IsVirtual).HasColumnName("isVirtual");
             entity.Property(e => e.LoveLanguage)
                 .HasMaxLength(255)
@@ -476,7 +480,7 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.LoveLanguageResult)
                 .HasMaxLength(255)
                 .HasColumnName("loveLanguageResult");
-            entity.Property(e => e.Male)
+            entity.Property(e => e.Member1)
                 .HasMaxLength(64)
                 .IsUnicode(false)
                 .HasColumnName("male");
@@ -505,12 +509,12 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("virtualName");
 
-            entity.HasOne(d => d.FemaleNavigation).WithMany(p => p.CoupleFemaleNavigations)
-                .HasForeignKey(d => d.Female)
+            entity.HasOne(d => d.MemberNavigation).WithMany(p => p.CoupleFemaleNavigations)
+                .HasForeignKey(d => d.Member)
                 .HasConstraintName("FK__Couple__female__74AE54BC");
 
-            entity.HasOne(d => d.MaleNavigation).WithMany(p => p.CoupleMaleNavigations)
-                .HasForeignKey(d => d.Male)
+            entity.HasOne(d => d.Member1Navigation).WithMany(p => p.CoupleMaleNavigations)
+                .HasForeignKey(d => d.Member1)
                 .HasConstraintName("FK__Couple__male__73BA3083");
         });
 

@@ -33,6 +33,7 @@ builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IPersonTypeRepository, PersonTypeRepository>();
 builder.Services.AddScoped<IDepositRepository, DepositRepository>();
 builder.Services.AddScoped<IResultHistoryRepository, ResultHistoryRepository>();
+builder.Services.AddScoped<ICoupleRepository, CoupleRepository>();
 
 
 
@@ -54,6 +55,8 @@ builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<ISysTransactionService, SysTransactionService>();
 builder.Services.AddScoped<IPersonTypeService, PersonTypeService>();
 builder.Services.AddScoped<IDepositService, DepositService>();
+builder.Services.AddScoped<ICoupleService, CoupleService>();
+
 
 
 
