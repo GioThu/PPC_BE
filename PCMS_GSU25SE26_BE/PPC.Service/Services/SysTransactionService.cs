@@ -18,13 +18,15 @@ namespace PPC.Service.Services
         private readonly ISysTransactionRepository _sysTransactionRepository;
         private readonly IBookingRepository _bookingRepository;
         private readonly IMemberMemberShipRepository _memberMemberShipRepository;
+        private readonly IDepositRepository _depositRepository;
 
 
-        public SysTransactionService(ISysTransactionRepository sysTransactionRepository, IBookingRepository bookingRepository, IMemberMemberShipRepository memberMemberShipRepository)
+        public SysTransactionService(ISysTransactionRepository sysTransactionRepository, IBookingRepository bookingRepository, IMemberMemberShipRepository memberMemberShipRepository, IDepositRepository depositRepository)
         {
             _sysTransactionRepository = sysTransactionRepository;
             _bookingRepository = bookingRepository;
             _memberMemberShipRepository = memberMemberShipRepository;
+            _depositRepository = depositRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateTransactionAsync(SysTransactionCreateRequest request)
@@ -92,6 +94,24 @@ namespace PPC.Service.Services
                             var durationMinutes = (int)(booking7.TimeEnd.Value - booking7.TimeStart.Value).TotalMinutes;
                             description = $"Bạn đã hoàn thành buổi booking với {booking7.Member.Fullname} trong thời gian {durationMinutes} phút";
                             amount = (booking7.Price * 7 / 10) ?? 0;
+                        }
+                        break;
+
+                    case "8":
+                        var deposit8 = await _depositRepository.GetByIdAsync(trans.DocNo);
+                        if (deposit8 != null && deposit8.CreateDate.HasValue)
+                        {
+                            description = $"Bạn đã rút số tiền {deposit8.Total} vào lúc {deposit8.CreateDate?.ToString("dd/MM/yyyy HH:mm")}";
+                            amount = - deposit8.Total ?? 0;
+                        }
+                        break;
+
+                    case "9":
+                        var deposit9 = await _depositRepository.GetByIdAsync(trans.DocNo);
+                        if (deposit9 != null && deposit9.CreateDate.HasValue)
+                        {
+                            description = $"Bạn đã nạp số tiền {deposit9.Total} vào lúc {deposit9.CreateDate?.ToString("dd/MM/yyyy HH:mm")}";
+                            amount = deposit9.Total ?? 0;
                         }
                         break;
 

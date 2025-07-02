@@ -175,21 +175,21 @@ namespace PPC.Service.Services
                     return ServiceResponse<string>.ErrorResponse("Wallet not found.");
                 }
 
-                if (deposit.Total > 0)
-                {
-                    wallet.Remaining ??= 0;
-                    wallet.Remaining += deposit.Total;
-                }
-                else 
-                {
-                    var withdrawAmount = Math.Abs(deposit.Total ?? 0);
-                    if (wallet.Remaining < withdrawAmount)
-                    {
-                        return ServiceResponse<string>.ErrorResponse("Insufficient balance for withdrawal approval.");
-                    }
+                var withdrawAmount = deposit.Total ?? 0;
 
-                    wallet.Remaining -= withdrawAmount;
+                if (withdrawAmount <= 0)
+                {
+                    return ServiceResponse<string>.ErrorResponse("Invalid withdrawal amount.");
                 }
+
+                wallet.Remaining ??= 0;
+
+                if (wallet.Remaining < withdrawAmount)
+                {
+                    return ServiceResponse<string>.ErrorResponse("Insufficient balance for withdrawal approval.");
+                }
+
+                wallet.Remaining -= withdrawAmount;
 
                 await _walletRepository.UpdateAsync(wallet);
                 var transaction = new SysTransaction
