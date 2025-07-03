@@ -13,5 +13,10 @@ namespace PPC.Repository.Interfaces
         Task<List<Couple>> GetCouplesByMemberIdWithMembersAsync(string memberId);
         Task<Couple> GetByAccessCodeAsync(string accessCode);
         Task<Couple> GetCoupleByIdWithMembersAsync(string coupleId);
+        Task<bool> HasActiveCoupleAsync(string memberId);
+        Task<Couple> GetLatestCoupleByMemberIdAsync(string memberId);
+        Task<Couple> GetLatestCoupleByMemberIdWithMembersAsync(string memberId);
+        Task<int?> GetLatestCoupleStatusByMemberIdAsync(string memberId);
+
     }
 }

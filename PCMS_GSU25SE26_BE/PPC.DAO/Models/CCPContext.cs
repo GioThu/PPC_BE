@@ -465,7 +465,7 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.Member)
                 .HasMaxLength(64)
                 .IsUnicode(false)
-                .HasColumnName("female");
+                .HasColumnName("male");
             entity.Property(e => e.AccessCode)
                 .HasMaxLength(64)
                 .IsUnicode(false)
@@ -483,7 +483,7 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.Member1)
                 .HasMaxLength(64)
                 .IsUnicode(false)
-                .HasColumnName("male");
+                .HasColumnName("female");
             entity.Property(e => e.Mbti)
                 .HasMaxLength(255)
                 .HasColumnName("mbti");
@@ -509,11 +509,11 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("virtualName");
 
-            entity.HasOne(d => d.MemberNavigation).WithMany(p => p.CoupleFemaleNavigations)
+            entity.HasOne(d => d.MemberNavigation).WithMany(p => p.CoupleMaleNavigations)
                 .HasForeignKey(d => d.Member)
                 .HasConstraintName("FK__Couple__female__74AE54BC");
 
-            entity.HasOne(d => d.Member1Navigation).WithMany(p => p.CoupleMaleNavigations)
+            entity.HasOne(d => d.Member1Navigation).WithMany(p => p.CoupleFemaleNavigations)
                 .HasForeignKey(d => d.Member1)
                 .HasConstraintName("FK__Couple__male__73BA3083");
         });

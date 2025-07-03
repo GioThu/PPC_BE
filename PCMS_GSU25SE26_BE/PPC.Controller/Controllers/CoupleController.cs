@@ -17,35 +17,6 @@ namespace PPC.Controller.Controllers
             _coupleService = coupleService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateCouple()
-        {
-            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
-            if (string.IsNullOrEmpty(memberId))
-                return Unauthorized("MemberId not found in token.");
-
-            var response = await _coupleService.CreateCoupleAsync(memberId);
-
-            if (response.Success)
-                return Ok(response);
-
-            return BadRequest(response);
-        }
-
-        [HttpGet("my-room")]
-        public async Task<IActionResult> GetMyRoom()
-        {
-            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
-            if (string.IsNullOrEmpty(memberId))
-                return Unauthorized("MemberId not found in token.");
-
-            var response = await _coupleService.GetMyRoomsAsync(memberId);
-
-            if (response.Success)
-                return Ok(response);
-
-            return BadRequest(response);
-        }
 
         [HttpPost("join")]
         public async Task<IActionResult> JoinCouple([FromBody] JoinCoupleRequest request)
@@ -65,10 +36,63 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
-        [HttpGet("{coupleId}")]
-        public async Task<IActionResult> GetCoupleDetail(string coupleId)
+
+        [HttpPost]
+        public async Task<IActionResult> CreateCouple([FromBody] CoupleCreateRequest request)
         {
-            var response = await _coupleService.GetCoupleDetailAsync(coupleId);
+            if (request.SurveyIds == null || !request.SurveyIds.Any())
+                return BadRequest("SurveyIds is required.");
+
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _coupleService.CreateCoupleAsync(memberId, request);
+
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [HttpPut("cancel-room")]
+        public async Task<IActionResult> CancelLatestCouple()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _coupleService.CancelLatestCoupleAsync(memberId);
+
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [HttpGet("get-latest-room")]
+        public async Task<IActionResult> GetLatestCoupleDetail()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _coupleService.GetLatestCoupleDetailAsync(memberId);
+
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [HttpGet("latest-status")]
+        public async Task<IActionResult> GetLatestCoupleStatus()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _coupleService.GetLatestCoupleStatusAsync(memberId);
 
             if (response.Success)
                 return Ok(response);

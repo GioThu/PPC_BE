@@ -38,7 +38,11 @@ namespace PPC.Service.Mappers
             CreateMap<Deposit, DepositDto>();
             CreateMap<PersonType, MyPersonTypeResponse>();
             CreateMap<Couple, CoupleRoomResponse>();
-            CreateMap<Couple, CoupleDetailResponse>();
+            CreateMap<Couple, CoupleDetailResponse>()
+            .ForMember(dest => dest.Member,
+                opt => opt.MapFrom(src => src.MemberNavigation))
+            .ForMember(dest => dest.Member1,
+                opt => opt.MapFrom(src => src.Member1Navigation));
 
 
             CreateMap<Booking, BookingDto>()

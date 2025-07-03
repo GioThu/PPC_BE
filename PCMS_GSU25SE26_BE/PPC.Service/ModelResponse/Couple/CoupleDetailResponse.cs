@@ -10,6 +10,7 @@ namespace PPC.Service.ModelResponse.Couple
     public class CoupleDetailResponse
     {
         public string Id { get; set; }
+        public bool IsOwned { get; set; }
         public MemberDto Member { get; set; }
         public MemberDto Member1 { get; set; }
         public string Mbti { get; set; }
