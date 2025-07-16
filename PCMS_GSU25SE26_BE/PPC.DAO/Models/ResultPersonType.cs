@@ -17,9 +17,11 @@ public partial class ResultPersonType
 
     public string PersonType2Id { get; set; }
 
-    public string Name { get; set; }
-
     public string Description { get; set; }
+
+    public string Detail { get; set; }
+
+    public int Compatibility { get; set; }
 
     public string Image { get; set; }
 

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.Couple;
+using PPC.Service.ModelRequest.SurveyRequest;
 
 namespace PPC.Controller.Controllers
 {
@@ -93,6 +94,39 @@ namespace PPC.Controller.Controllers
                 return Unauthorized("MemberId not found in token.");
 
             var response = await _coupleService.GetLatestCoupleStatusAsync(memberId);
+
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [HttpPost("submit")]
+        public async Task<IActionResult> SubmitSurveyResult([FromBody] SurveyResultRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _coupleService.SubmitResultAsync(memberId, request);
+
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [HttpGet("partner-progress")]
+        public async Task<IActionResult> CheckPartnerSurveyProgress()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _coupleService.CheckPartnerAllSurveysStatusAsync(memberId);
 
             if (response.Success)
                 return Ok(response);

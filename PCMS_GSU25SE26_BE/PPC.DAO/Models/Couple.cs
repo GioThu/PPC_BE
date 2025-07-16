@@ -29,6 +29,16 @@ public partial class Couple
 
     public string BigFive1 { get; set; }
 
+    public string MbtiDescription { get; set; }
+    public string DiscDescription { get; set; }
+    public string LoveLanguageDescription { get; set; }
+    public string BigFiveDescription { get; set; }
+
+    public string Mbti1Description { get; set; }
+    public string Disc1Description { get; set; }
+    public string LoveLanguage1Description { get; set; }
+    public string BigFive1Description { get; set; }
+
     public string MbtiResult { get; set; }
 
     public string DiscResult { get; set; }

@@ -443,9 +443,15 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.BigFive)
                 .HasMaxLength(255)
                 .HasColumnName("bigFive");
+            entity.Property(e => e.BigFiveDescription)
+                .HasMaxLength(255)
+                .HasColumnName("bigFiveDesc");
             entity.Property(e => e.BigFive1)
                 .HasMaxLength(255)
                 .HasColumnName("bigFive1");
+            entity.Property(e => e.BigFive1Description)
+                .HasMaxLength(255)
+                .HasColumnName("bigFive1Desc");
             entity.Property(e => e.BigFiveResult)
                 .HasMaxLength(255)
                 .HasColumnName("bigFiveResult");
@@ -456,9 +462,15 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.Disc)
                 .HasMaxLength(255)
                 .HasColumnName("disc");
+            entity.Property(e => e.DiscDescription)
+                .HasMaxLength(255)
+                .HasColumnName("discDesc");
             entity.Property(e => e.Disc1)
                 .HasMaxLength(255)
                 .HasColumnName("disc1");
+            entity.Property(e => e.Disc1Description)
+                .HasMaxLength(255)
+                .HasColumnName("disc1Desc");
             entity.Property(e => e.DiscResult)
                 .HasMaxLength(255)
                 .HasColumnName("discResult");
@@ -474,9 +486,15 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.LoveLanguage)
                 .HasMaxLength(255)
                 .HasColumnName("loveLanguage");
+            entity.Property(e => e.LoveLanguageDescription)
+                .HasMaxLength(255)
+                .HasColumnName("loveLanguageDesc");
             entity.Property(e => e.LoveLanguage1)
                 .HasMaxLength(255)
                 .HasColumnName("loveLanguage1");
+            entity.Property(e => e.LoveLanguage1Description)
+                .HasMaxLength(255)
+                .HasColumnName("loveLanguage1Desc");
             entity.Property(e => e.LoveLanguageResult)
                 .HasMaxLength(255)
                 .HasColumnName("loveLanguageResult");
@@ -487,9 +505,15 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.Mbti)
                 .HasMaxLength(255)
                 .HasColumnName("mbti");
+            entity.Property(e => e.MbtiDescription)
+                .HasMaxLength(255)
+                .HasColumnName("mbtiDesc");
             entity.Property(e => e.Mbti1)
                 .HasMaxLength(255)
                 .HasColumnName("mbti1");
+            entity.Property(e => e.Mbti1Description)
+                .HasMaxLength(255)
+                .HasColumnName("mbti1Desc");
             entity.Property(e => e.MbtiResult)
                 .HasMaxLength(255)
                 .HasColumnName("mbtiResult");
@@ -1069,9 +1093,6 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("image");
-            entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .HasColumnName("name");
             entity.Property(e => e.PersonType2Id)
                 .HasMaxLength(64)
                 .IsUnicode(false)
@@ -1080,6 +1101,10 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(64)
                 .IsUnicode(false)
                 .HasColumnName("personTypeId");
+            entity.Property(e => e.Detail)
+                .HasColumnName("detail")
+                .HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Compatibility).HasColumnName("compatibility");
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.SurveyId)
                 .HasMaxLength(64)

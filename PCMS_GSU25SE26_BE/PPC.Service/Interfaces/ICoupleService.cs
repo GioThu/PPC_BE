@@ -1,6 +1,8 @@
 ﻿using PPC.Service.ModelRequest.Couple;
+using PPC.Service.ModelRequest.SurveyRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.Couple;
+using PPC.Service.ModelResponse.CoupleResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +19,9 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> CancelLatestCoupleAsync(string memberId);
         Task<ServiceResponse<CoupleDetailResponse>> GetLatestCoupleDetailAsync(string memberId);
         Task<ServiceResponse<int?>> GetLatestCoupleStatusAsync(string memberId);
+        Task<ServiceResponse<string>> SubmitResultAsync(string memberId, SurveyResultRequest request);
+        Task<ServiceResponse<PartnerSurveySimpleProgressDto>> CheckPartnerAllSurveysStatusAsync(string memberId);
+
 
     }
 }
