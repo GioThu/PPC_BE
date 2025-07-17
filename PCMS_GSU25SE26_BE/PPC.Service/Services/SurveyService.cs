@@ -188,7 +188,5 @@ namespace PPC.Service.Services
                     pt.Name == name)?.CategoryId;
         }
 
-
-
     }
 }

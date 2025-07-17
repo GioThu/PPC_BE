@@ -21,5 +21,16 @@ namespace PPC.Repository.Repositories
             await _context.ResultPersonTypes.AddRangeAsync(entities);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<ResultPersonType> FindResultAsync(string surveyId, string type1Name, string type2Name)
+        {
+            return await _context.ResultPersonTypes
+                .Include(r => r.PersonType)
+                .Include(r => r.PersonType2)
+                .Where(r => r.SurveyId == surveyId &&
+                            r.PersonType.Name == type1Name &&
+                            r.PersonType2.Name == type2Name)
+                .FirstOrDefaultAsync();
+        }
     }
 }

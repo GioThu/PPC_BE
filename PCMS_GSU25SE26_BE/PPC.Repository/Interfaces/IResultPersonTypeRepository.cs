@@ -11,5 +11,6 @@ namespace PPC.Repository.Interfaces
     public interface IResultPersonTypeRepository : IGenericRepository<ResultPersonType>
     {
         Task BulkInsertAsync(List<ResultPersonType> entities);
+        Task<ResultPersonType> FindResultAsync(string surveyId, string type1Name, string type2Name);
     }
 }

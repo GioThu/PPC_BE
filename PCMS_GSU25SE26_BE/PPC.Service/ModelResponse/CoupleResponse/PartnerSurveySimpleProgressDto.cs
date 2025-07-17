@@ -8,8 +8,13 @@ namespace PPC.Service.ModelResponse.CoupleResponse
 {
     public class PartnerSurveySimpleProgressDto
     {
-        public int TotalDone { get; set; }
-        public int TotalSurveys { get; set; }
-        public bool IsDoneAll { get; set; }
+        public int PartnerTotalDone { get; set; }
+        public int PartnerTotalSurveys { get; set; }
+        public bool IsPartnerDoneAll { get; set; }
+
+        public int SelfTotalDone { get; set; }
+        public int SelfTotalSurveys { get; set; }
+        public bool IsSelfDoneAll { get; set; }
     }
+
 }
