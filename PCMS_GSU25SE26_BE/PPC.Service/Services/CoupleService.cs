@@ -172,7 +172,13 @@ public class CoupleService : ICoupleService
         var personTypeDict = personTypes.ToDictionary(x => x.Name, x => x);
         string resultType = null;
         string description = "";
-        string detail = string.Join(",", request.Answers.Select(a => $"{a.Tag}:{a.Score}"));
+        if (request.Answers == null || !request.Answers.Any())
+            return ServiceResponse<string>.ErrorResponse("No answers provided.");
+
+        var detail = string.Join(",", request.Answers
+            .Where(a => !string.IsNullOrEmpty(a.Tag))
+            .Select(a => $"{a.Tag}:{a.Score}"));
+
 
         // ✅ Tính resultType theo Survey
         if (request.SurveyId == "SV001") // MBTI
