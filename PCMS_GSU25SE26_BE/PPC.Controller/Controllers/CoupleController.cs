@@ -133,5 +133,20 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpGet("my-couples-history")]
+        public async Task<IActionResult> GetMyCouples()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("memberId not found in token.");
+
+            var response = await _coupleService.GetCouplesByMemberIdAsync(memberId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

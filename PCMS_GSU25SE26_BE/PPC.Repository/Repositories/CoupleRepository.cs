@@ -72,5 +72,15 @@ namespace PPC.Repository.Repositories
                 .Select(c => (int?)c.Status)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<List<Couple>> GetCouplesByMemberIdAsync(string memberId)
+        {
+            return await _context.Couples
+                .Include(c => c.MemberNavigation)
+                .Include(c => c.Member1Navigation)
+                .Where(c => c.Member == memberId || c.Member1 == memberId)
+                .OrderByDescending(c => c.CreateAt)
+                .ToListAsync();
+        }
     }
 }

@@ -256,7 +256,7 @@ public class CoupleService : ICoupleService
                 }
             }
         }
-
+        couple.Status = allCompleted ? 2 : 1; 
         await _coupleRepository.UpdateAsync(couple);
 
         return ServiceResponse<string>.SuccessResponse($"Bạn thuộc kiểu {resultType} : {description}");
@@ -319,6 +319,13 @@ public class CoupleService : ICoupleService
         };
 
         return ServiceResponse<PartnerSurveySimpleProgressDto>.SuccessResponse(dto);
+    }
+
+    public async Task<ServiceResponse<List<CoupleDetailResponse>>> GetCouplesByMemberIdAsync(string memberId)
+    {
+        var couples = await _coupleRepository.GetCouplesByMemberIdAsync(memberId);
+        var result = _mapper.Map<List<CoupleDetailResponse>>(couples);
+        return ServiceResponse<List<CoupleDetailResponse>>.SuccessResponse(result);
     }
 
 }
