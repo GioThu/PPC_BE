@@ -12,5 +12,7 @@ namespace PPC.Repository.Interfaces
     {
         Task BulkInsertAsync(List<ResultPersonType> entities);
         Task<ResultPersonType> FindResultAsync(string surveyId, string type1Name, string type2Name);
+        Task<ResultPersonType> GetByIdWithIncludesAsync(string id);
+        Task<List<ResultPersonType>> GetByPersonTypeIdAsync(string personTypeId);
     }
 }

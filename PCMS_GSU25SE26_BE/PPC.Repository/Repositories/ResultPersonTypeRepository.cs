@@ -32,5 +32,25 @@ namespace PPC.Repository.Repositories
                             r.PersonType2.Name == type2Name)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<ResultPersonType> GetByIdWithIncludesAsync(string id)
+        {
+            return await _context.ResultPersonTypes
+                .Include(x => x.Category)
+                .Include(x => x.PersonType)
+                .Include(x => x.PersonType2)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<List<ResultPersonType>> GetByPersonTypeIdAsync(string personTypeId)
+        {
+            return await _context.ResultPersonTypes
+                .Include(r => r.PersonType)
+                .Include(r => r.PersonType2)
+                .Include(r => r.Category)
+                .Where(r => r.PersonTypeId == personTypeId || r.PersonType2Id == personTypeId)
+                .ToListAsync();
+        }
+
     }
 }

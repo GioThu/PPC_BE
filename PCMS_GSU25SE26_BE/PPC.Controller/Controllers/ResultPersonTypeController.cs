@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
+using PPC.Service.ModelRequest.PersonTypeRequest;
 
 namespace PPC.Controller.Controllers
 {
@@ -15,15 +16,21 @@ namespace PPC.Controller.Controllers
             _resultPersonTypeService = resultPersonTypeService;
         }
 
-        [HttpPost("generate/{surveyId}")]
-        public async Task<IActionResult> GeneratePersonTypePairs(string surveyId)
+        [HttpGet("by-persontype/{personTypeId}")]
+        public async Task<IActionResult> GetByPersonTypeId(string personTypeId)
         {
-            var response = await _resultPersonTypeService.GenerateAllPersonTypePairsAsync(surveyId);
+            var response = await _resultPersonTypeService.GetResultByPersonTypeIdAsync(personTypeId);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
-            if (response.Success)
-                return Ok(response);
+        [HttpPut("edit")]
+        public async Task<IActionResult> Edit([FromBody] ResultPersonTypeEditRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            return BadRequest(response);
+            var response = await _resultPersonTypeService.UpdateResultPersonTypeAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
     }
 }

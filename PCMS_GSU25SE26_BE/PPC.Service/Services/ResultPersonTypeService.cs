@@ -1,7 +1,10 @@
-﻿using PPC.DAO.Models;
+﻿using AutoMapper;
+using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Service.Interfaces;
+using PPC.Service.ModelRequest.PersonTypeRequest;
 using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.CoupleResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +17,16 @@ namespace PPC.Service.Services
     {
         private readonly IPersonTypeRepository _personTypeRepo;
         private readonly IResultPersonTypeRepository _resultPersonTypeRepo;
+        private readonly IMapper _mapper;
 
         public ResultPersonTypeService(
             IPersonTypeRepository personTypeRepo,
-            IResultPersonTypeRepository resultPersonTypeRepo)
+            IResultPersonTypeRepository resultPersonTypeRepo,
+            IMapper mapper)
         {
             _personTypeRepo = personTypeRepo;
             _resultPersonTypeRepo = resultPersonTypeRepo;
+            _mapper = mapper;
         }
 
         public async Task<ServiceResponse<int>> GenerateAllPersonTypePairsAsync(string surveyId)
@@ -64,6 +70,29 @@ namespace PPC.Service.Services
             await _resultPersonTypeRepo.BulkInsertAsync(resultPairs);
 
             return ServiceResponse<int>.SuccessResponse(resultPairs.Count);
+        }
+
+        public async Task<ServiceResponse<List<ResultPersonTypeDto>>> GetResultByPersonTypeIdAsync(string personTypeId)
+        {
+            var results = await _resultPersonTypeRepo.GetByPersonTypeIdAsync(personTypeId);
+            var dtos = _mapper.Map<List<ResultPersonTypeDto>>(results);
+            return ServiceResponse<List<ResultPersonTypeDto>>.SuccessResponse(dtos);
+        }
+
+        public async Task<ServiceResponse<string>> UpdateResultPersonTypeAsync(ResultPersonTypeEditRequest request)
+        {
+            var result = await _resultPersonTypeRepo.GetByIdAsync(request.Id);
+            if (result == null)
+                return ServiceResponse<string>.ErrorResponse("Result not found.");
+
+            result.Description = request.Description;
+            result.Detail = request.Detail;
+            result.Image = request.Image;
+            result.Compatibility = request.Compatibility;
+            result.CategoryId = request.CategoryId;
+
+            await _resultPersonTypeRepo.UpdateAsync(result);
+            return ServiceResponse<string>.SuccessResponse("Update successful.");
         }
     }
 }

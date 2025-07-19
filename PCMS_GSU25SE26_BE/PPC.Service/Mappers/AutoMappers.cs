@@ -5,6 +5,7 @@ using PPC.Service.ModelResponse.CategoryResponse;
 using PPC.Service.ModelResponse.CirtificationResponse;
 using PPC.Service.ModelResponse.CounselorResponse;
 using PPC.Service.ModelResponse.Couple;
+using PPC.Service.ModelResponse.CoupleResponse;
 using PPC.Service.ModelResponse.DepositResponse;
 using PPC.Service.ModelResponse.MemberResponse;
 using PPC.Service.ModelResponse.PersonTypeResponse;
@@ -43,6 +44,7 @@ namespace PPC.Service.Mappers
                 opt => opt.MapFrom(src => src.MemberNavigation))
             .ForMember(dest => dest.Member1,
                 opt => opt.MapFrom(src => src.Member1Navigation));
+            CreateMap<ResultPersonType, ResultPersonTypeDto>();
 
 
             CreateMap<Booking, BookingDto>()

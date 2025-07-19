@@ -82,5 +82,13 @@ namespace PPC.Repository.Repositories
                 .OrderByDescending(c => c.CreateAt)
                 .ToListAsync();
         }
+
+        public async Task<Couple> GetCoupleWithMembersByIdAsync(string id)
+        {
+            return await _context.Couples
+                .Include(c => c.MemberNavigation)
+                .Include(c => c.Member1Navigation)
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
     }
 }

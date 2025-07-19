@@ -148,5 +148,19 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpGet("result/{coupleId}")]
+        public async Task<IActionResult> GetCoupleResultById(string coupleId)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var result = await _coupleService.GetCoupleResultByIdAsync(coupleId, memberId);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
     }
 }

@@ -18,6 +18,6 @@ namespace PPC.Repository.Interfaces
         Task<Couple> GetLatestCoupleByMemberIdWithMembersAsync(string memberId);
         Task<int?> GetLatestCoupleStatusByMemberIdAsync(string memberId);
         Task<List<Couple>> GetCouplesByMemberIdAsync(string memberId);
-
+        Task<Couple> GetCoupleWithMembersByIdAsync(string id);
     }
 }
