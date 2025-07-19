@@ -28,8 +28,10 @@ namespace PPC.Repository.Repositories
                 .Include(r => r.PersonType)
                 .Include(r => r.PersonType2)
                 .Where(r => r.SurveyId == surveyId &&
-                            r.PersonType.Name == type1Name &&
-                            r.PersonType2.Name == type2Name)
+                       (
+                           (r.PersonType.Name == type1Name && r.PersonType2.Name == type2Name) ||
+                           (r.PersonType.Name == type2Name && r.PersonType2.Name == type1Name)
+                       ))
                 .FirstOrDefaultAsync();
         }
 

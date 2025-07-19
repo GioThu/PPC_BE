@@ -13,6 +13,6 @@ namespace PPC.Service.Interfaces
     {
         Task<ServiceResponse<string>> CreateCourseAsync(string creatorId, CourseCreateRequest request);
         Task<ServiceResponse<List<CourseDto>>> GetAllCoursesAsync();
-
+        Task<ServiceResponse<string>> SetCourseCategoryAsync(CourseCategoryRequest request);
     }
 }

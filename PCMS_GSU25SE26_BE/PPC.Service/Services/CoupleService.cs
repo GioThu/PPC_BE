@@ -202,7 +202,7 @@ public class CoupleService : ICoupleService
             return ServiceResponse<string>.ErrorResponse("Unable to determine result.");
 
         description = personTypeDict[resultType].Description ?? "No description available.";
-        // ✅ Ghi kết quả vào Couple
+
         if (couple.Member == memberId)
         {
             switch (request.SurveyId)
@@ -224,7 +224,6 @@ public class CoupleService : ICoupleService
             }
         }
 
-        // ✅ Check xem tất cả các survey cần làm đã hoàn thành chưa
         var surveyMap = new List<(string SurveyId, string Type1, string Type2, Action<string> SetResult)>
     {
         ("SV001", couple.Mbti, couple.Mbti1, (id) => couple.MbtiResult = id),

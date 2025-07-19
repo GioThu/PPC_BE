@@ -44,6 +44,11 @@ namespace PPC.Service.Services
             var courseDtos = courses.Select(c => c.ToDto()).ToList();
             return ServiceResponse<List<CourseDto>>.SuccessResponse(courseDtos);
         }
+
+        public Task<ServiceResponse<string>> SetCourseCategoryAsync(CourseCategoryRequest request)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }
