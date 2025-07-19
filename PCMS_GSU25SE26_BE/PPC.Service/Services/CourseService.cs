@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
+using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
 using PPC.Service.Mappers;
 using PPC.Service.ModelRequest.CourseRequest;
@@ -16,12 +18,14 @@ namespace PPC.Service.Services
     public class CourseService : ICourseService
     {
         private readonly ICourseRepository _courseRepository;
+        private readonly ICourseSubCategoryRepository _courseSubCategoryRepository;
         private readonly IMapper _mapper;
 
-        public CourseService(ICourseRepository courseRepository, IMapper mapper)
+        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository)
         {
             _courseRepository = courseRepository;
             _mapper = mapper;
+            _courseSubCategoryRepository = courseSubCategoryRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateCourseAsync(string creatorId, CourseCreateRequest request)
@@ -45,9 +49,34 @@ namespace PPC.Service.Services
             return ServiceResponse<List<CourseDto>>.SuccessResponse(courseDtos);
         }
 
-        public Task<ServiceResponse<string>> SetCourseCategoryAsync(CourseCategoryRequest request)
+        public async Task<ServiceResponse<string>> AddSubCategoryAsync(CourseSubCategoryRequest request)
         {
-            throw new NotImplementedException();
+            if (await _courseSubCategoryRepository.ExistsAsync(request.CourseId, request.SubCategoryId))
+            {
+                return ServiceResponse<string>.ErrorResponse("Sub-category already exists in course.");
+            }
+
+            var entry = new CourseSubCategory
+            {
+                Id = Utils.Utils.GenerateIdModel("CourseSubCategory"),
+                CourseId = request.CourseId,
+                SubCategoryId = request.SubCategoryId
+            };
+
+            await _courseSubCategoryRepository.CreateAsync(entry);
+            return ServiceResponse<string>.SuccessResponse("Sub-category added to course successfully.");
+        }
+
+        public async Task<ServiceResponse<string>> RemoveSubCategoryAsync(CourseSubCategoryRequest request)
+        {
+            var entry = await _courseSubCategoryRepository.GetAsync(request.CourseId, request.SubCategoryId);
+            if (entry == null)
+            {
+                return ServiceResponse<string>.ErrorResponse("Sub-category not found in course.");
+            }
+
+            await _courseSubCategoryRepository.RemoveAsync(entry);
+            return ServiceResponse<string>.SuccessResponse("Sub-category removed from course successfully.");
         }
     }
 

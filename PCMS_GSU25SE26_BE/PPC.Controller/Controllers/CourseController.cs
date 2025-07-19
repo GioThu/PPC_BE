@@ -37,5 +37,25 @@ namespace PPC.Controller.Controllers
             var response = await _courseService.GetAllCoursesAsync();
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+        [HttpPost("add-subcate")]
+        public async Task<IActionResult> AddSubCategory([FromBody] CourseSubCategoryRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _courseService.AddSubCategoryAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpDelete("remove-subcate")]
+        public async Task<IActionResult> RemoveSubCategory([FromBody] CourseSubCategoryRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _courseService.RemoveSubCategoryAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
     }
 }

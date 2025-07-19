@@ -11,5 +11,7 @@ namespace PPC.Repository.Interfaces
     public interface ICourseSubCategoryRepository : IGenericRepository<CourseSubCategory>
     {
         Task<CourseSubCategory> GetCourseCategoryAsync(string courseId);
+        Task<bool> ExistsAsync(string courseId, string subCategoryId);
+        Task<CourseSubCategory> GetAsync(string courseId, string subCategoryId);
     }
 }

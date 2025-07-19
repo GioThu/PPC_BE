@@ -19,5 +19,17 @@ namespace PPC.Repository.Repositories
             return await _context.CourseSubCategories
                 .FirstOrDefaultAsync(c => c.CourseId == courseId);
         }
+
+        public async Task<bool> ExistsAsync(string courseId, string subCategoryId)
+        {
+            return await _context.CourseSubCategories
+                .AnyAsync(c => c.CourseId == courseId && c.SubCategoryId == subCategoryId);
+        }
+
+        public async Task<CourseSubCategory> GetAsync(string courseId, string subCategoryId)
+        {
+            return await _context.CourseSubCategories
+                .FirstOrDefaultAsync(c => c.CourseId == courseId && c.SubCategoryId == subCategoryId);
+        }
     }
 }

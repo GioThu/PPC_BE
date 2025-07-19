@@ -36,6 +36,8 @@ builder.Services.AddScoped<IResultHistoryRepository, ResultHistoryRepository>();
 builder.Services.AddScoped<ICoupleRepository, CoupleRepository>();
 builder.Services.AddScoped<IResultPersonTypeRepository, ResultPersonTypeRepository>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<ICourseSubCategoryRepository, CourseSubCategoryRepository>();
+
 
 
 
