@@ -247,7 +247,6 @@ public class CoupleService : ICoupleService
             }
         }
 
-        // ✅ Nếu đã xong hết, tính Result cho tất cả
         if (allCompleted)
         {
             foreach (var survey in surveyMap)
@@ -262,7 +261,6 @@ public class CoupleService : ICoupleService
                 }
             }
         }
-        couple.Status = allCompleted ? 2 : 1; 
         await _coupleRepository.UpdateAsync(couple);
 
         return ServiceResponse<string>.SuccessResponse($"Bạn thuộc kiểu {resultType} : {description}");
@@ -391,4 +389,15 @@ public class CoupleService : ICoupleService
         return ServiceResponse<List<CoupleDetailResponse>>.SuccessResponse(result);
     }
 
+    public async Task<ServiceResponse<string>> MarkCoupleAsCompletedAsync(string coupleId)
+    {
+        var couple = await _coupleRepository.GetByIdAsync(coupleId);
+        if (couple == null)
+            return ServiceResponse<string>.ErrorResponse("Couple not found.");
+
+        couple.Status = 2;
+        await _coupleRepository.UpdateAsync(couple);
+
+        return ServiceResponse<string>.SuccessResponse("Couple marked as completed.");
+    }
 }

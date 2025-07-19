@@ -23,6 +23,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<PartnerSurveySimpleProgressDto>> CheckPartnerAllSurveysStatusAsync(string memberId);
         Task<ServiceResponse<List<CoupleDetailResponse>>> GetCouplesByMemberIdAsync(string memberId);
         Task<ServiceResponse<CoupleResultDto>> GetCoupleResultByIdAsync(string coupleId, string currentMemberId);
-
+        Task<ServiceResponse<string>> MarkCoupleAsCompletedAsync(string coupleId);
     }
 }
