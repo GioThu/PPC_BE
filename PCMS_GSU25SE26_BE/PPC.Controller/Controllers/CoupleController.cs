@@ -162,5 +162,12 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(result);
         }
+
+        [HttpPut("{id}/complete")]
+        public async Task<IActionResult> CompleteCouple(string id)
+        {
+            var response = await _coupleService.MarkCoupleAsCompletedAsync(id);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
     }
 }
