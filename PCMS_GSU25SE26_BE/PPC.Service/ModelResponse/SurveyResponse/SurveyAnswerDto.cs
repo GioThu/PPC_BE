@@ -13,4 +13,11 @@ namespace PPC.Service.ModelResponse.SurveyResponse
         public int? Score { get; set; }
         public string Tag { get; set; }
     }
+
+    public class AnswerDto
+    {
+        public string Id { get; set; }
+        public string Text { get; set; }
+        public int? Score { get; set; }
+    }
 }

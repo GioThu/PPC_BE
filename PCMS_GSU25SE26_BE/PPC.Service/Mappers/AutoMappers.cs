@@ -36,6 +36,8 @@ namespace PPC.Service.Mappers
             CreateMap<Survey, SurveyDto>();
             CreateMap<Question, SurveyQuestionDto>();
             CreateMap<Answer, SurveyAnswerDto>();
+            CreateMap<Question, QuestionDto>();
+            CreateMap<Answer, AnswerDto>();
             CreateMap<PersonType, PersonTypeDto>();
             CreateMap<Deposit, DepositDto>();
             CreateMap<PersonType, MyPersonTypeResponse>();

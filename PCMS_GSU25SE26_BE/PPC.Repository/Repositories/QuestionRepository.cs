@@ -153,5 +153,12 @@ namespace PPC.Repository.Repositories
             return result.OrderBy(_ => Guid.NewGuid()).Take(count).ToList();
         }
 
+        public async Task<List<Question>> GetQuestionsByQuizIdAsync(string quizId)
+        {
+            return await _context.Questions
+                .Include(q => q.Answers)
+                .Where(q => q.QuizId == quizId)
+                .ToListAsync();
+        }
     }
 }

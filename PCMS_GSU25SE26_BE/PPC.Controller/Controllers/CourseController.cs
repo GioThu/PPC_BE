@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.CourseRequest;
+using PPC.Service.ModelRequest.SurveyRequest;
+using PPC.Service.Services;
 
 namespace PPC.Controller.Controllers
 {
@@ -11,10 +13,14 @@ namespace PPC.Controller.Controllers
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _courseService;
+        private readonly IQuestionService _questionService;
 
-        public CourseController(ICourseService courseService)
+
+        public CourseController(ICourseService courseService, IQuestionService questionService)
         {
             _courseService = courseService;
+            _questionService = questionService;
+
         }
 
         [HttpPost]
@@ -92,5 +98,43 @@ namespace PPC.Controller.Controllers
             return response.Success ? Ok(response) : NotFound(response);
         }
 
+        [HttpGet("by-quiz/{quizId}")]
+        public async Task<IActionResult> GetByQuizId(string quizId)
+        {
+            var result = await _questionService.GetQuestionsByQuizIdAsync(quizId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [Authorize(Roles = "1")]
+        [HttpPost("create-question")]
+        public async Task<IActionResult> CreateQuestion([FromBody] QuestionCreateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _questionService.CreateQuestion1Async(request);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+
+        [Authorize(Roles = "1")]
+        [HttpDelete("delete-question/{questionId}")]
+        public async Task<IActionResult> Delete(string questionId)
+        {
+            var result = await _questionService.DeleteAsync(questionId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [Authorize(Roles = "1")]
+        [HttpPut("update-question")]
+        public async Task<IActionResult> Update([FromBody] QuestionUpdateRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var result = await _questionService.UpdateAsync(request.Id, request);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
     }
 }

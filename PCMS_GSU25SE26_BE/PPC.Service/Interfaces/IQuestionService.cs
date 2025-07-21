@@ -1,4 +1,6 @@
-﻿using PPC.Service.ModelRequest.SurveyRequest;
+﻿using PPC.DAO.Models;
+using PPC.Service.ModelRequest.CourseRequest;
+using PPC.Service.ModelRequest.SurveyRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.SurveyResponse;
 using System;
@@ -17,6 +19,9 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> UpdateAsync(string questionId, SurveyQuestionUpdateRequest request);
         Task<ServiceResponse<string>> DeleteAsync(string questionId);
         Task<ServiceResponse<List<SurveyQuestionDto>>> GetRandomQuestionsAsync(string surveyId, int count);
-
+        Task<ServiceResponse<List<QuestionDto>>> GetQuestionsByQuizIdAsync(string quizId);
+        Task<ServiceResponse<string>> CreateQuestion1Async(QuestionCreateRequest request);
+        Task<ServiceResponse<string>> UpdateAsync(string questionId, QuestionUpdateRequest request);
+        
     }
 }

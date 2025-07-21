@@ -52,7 +52,6 @@ namespace PPC.Service.Services
 
             if (request.SurveyId == "SV001")
             { 
-                // ✅ Tính điểm MBTI chính xác
                 var mbtiLetters = new List<string>();
 
                 var eScore = request.Answers.Where(x => x.Tag == "E").Sum(x => x.Score);
@@ -130,7 +129,6 @@ namespace PPC.Service.Services
 
             await _memberRepo.UpdateAsync(member);
 
-            // ✅ Tập hợp các survey user đã làm
             var surveysDoneRaw = new List<(string SurveyId, string Name)>
     {
         (!string.IsNullOrEmpty(member.Mbti))         ? ("SV001", member.Mbti) : default,
@@ -187,6 +185,7 @@ namespace PPC.Service.Services
                     pt.SurveyId == surveyId &&
                     pt.Name == name)?.CategoryId;
         }
+
 
     }
 }

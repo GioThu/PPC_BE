@@ -12,4 +12,12 @@ namespace PPC.Service.ModelResponse.SurveyResponse
         public string Description { get; set; }
         public List<SurveyAnswerDto> Answers { get; set; }
     }
+
+    public class QuestionDto
+    {
+        public string Id { get; set; }
+        public string Description { get; set; }
+        public int TotalScore { get; set; }
+        public List<AnswerDto> Answers { get; set; }
+    }
 }
