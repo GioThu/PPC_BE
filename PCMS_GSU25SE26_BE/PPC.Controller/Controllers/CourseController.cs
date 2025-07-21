@@ -57,5 +57,32 @@ namespace PPC.Controller.Controllers
             var response = await _courseService.RemoveSubCategoryAsync(request);
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+        [HttpPost("create-lecture")]
+        public async Task<IActionResult> CreateLectureWithChapter([FromBody] LectureWithChapterCreateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _courseService.CreateLectureWithChapterAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpPost("create-quiz")]
+        public async Task<IActionResult> CreateQuizWithChapter([FromBody] QuizWithChapterCreateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _courseService.CreateQuizWithChapterAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpGet("{courseId}")]
+        public async Task<IActionResult> GetCourseDetail(string courseId)
+        {
+            var response = await _courseService.GetCourseDetailByIdAsync(courseId);
+            return response.Success ? Ok(response) : NotFound(response);
+        }
     }
 }

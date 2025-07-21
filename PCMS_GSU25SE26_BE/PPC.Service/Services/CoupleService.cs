@@ -274,7 +274,7 @@ public class CoupleService : ICoupleService
         var result = new CoupleResultDto
         {
             Id = couple.Id,
-            IsOwned = couple.Member == currentMemberId || couple.Member1 == currentMemberId,
+            IsOwned = couple.Member == currentMemberId,
             Member = _mapper.Map<MemberDto>(couple.MemberNavigation),
             Member1 = _mapper.Map<MemberDto>(couple.Member1Navigation),
             Mbti = couple.Mbti,

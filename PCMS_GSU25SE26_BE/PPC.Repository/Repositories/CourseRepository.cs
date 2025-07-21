@@ -27,5 +27,14 @@ namespace PPC.Repository.Repositories
                     .ThenInclude(cs => cs.SubCategory)
                 .ToListAsync();
         }
+
+        public async Task<Course> GetCourseWithAllDetailsAsync(string courseId)
+        {
+            return await _context.Courses
+                .Include(c => c.Chapters)
+                .Include(c => c.CourseSubCategories)
+                    .ThenInclude(cs => cs.SubCategory)
+                .FirstOrDefaultAsync(c => c.Id == courseId);
+        }
     }
 }

@@ -20,12 +20,19 @@ namespace PPC.Service.Services
         private readonly ICourseRepository _courseRepository;
         private readonly ICourseSubCategoryRepository _courseSubCategoryRepository;
         private readonly IMapper _mapper;
+        private readonly ILectureRepository _lectureRepository;
+        private readonly IChapterRepository _chapterRepository;
+        private readonly IQuizRepository _quizRepository;
 
-        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository)
+
+        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository)
         {
             _courseRepository = courseRepository;
             _mapper = mapper;
             _courseSubCategoryRepository = courseSubCategoryRepository;
+            _lectureRepository = lectureRepository;
+            _chapterRepository = chapterRepository;
+            _quizRepository = quizRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateCourseAsync(string creatorId, CourseCreateRequest request)
@@ -77,6 +84,47 @@ namespace PPC.Service.Services
 
             await _courseSubCategoryRepository.RemoveAsync(entry);
             return ServiceResponse<string>.SuccessResponse("Sub-category removed from course successfully.");
+        }
+
+        public async Task<ServiceResponse<string>> CreateLectureWithChapterAsync(LectureWithChapterCreateRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Name))
+                return ServiceResponse<string>.ErrorResponse("Name is required.");
+
+            var nextChapNum = await _chapterRepository.GetNextChapterNumberAsync(request.CourseId);
+
+            var chapter = request.ToChapter(nextChapNum);
+            await _chapterRepository.CreateAsync(chapter);
+
+            var lecture = request.ToLecture(chapter.Id);
+            await _lectureRepository.CreateAsync(lecture);
+
+            return ServiceResponse<string>.SuccessResponse("Lecture and chapter created successfully.");
+        }
+
+        public async Task<ServiceResponse<string>> CreateQuizWithChapterAsync(QuizWithChapterCreateRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Name))
+                return ServiceResponse<string>.ErrorResponse("Name is required.");
+
+            var nextChapNum = await _chapterRepository.GetNextChapterNumberAsync(request.CourseId);
+            var chapter = request.ToChapter(nextChapNum);
+            await _chapterRepository.CreateAsync(chapter);
+
+            var quiz = request.ToQuiz(chapter.Id);
+            await _quizRepository.CreateAsync(quiz);
+
+            return ServiceResponse<string>.SuccessResponse("Quiz and Chapter created successfully.");
+        }
+
+        public async Task<ServiceResponse<CourseDto>> GetCourseDetailByIdAsync(string courseId)
+        {
+            var course = await _courseRepository.GetCourseWithAllDetailsAsync(courseId);
+            if (course == null)
+                return ServiceResponse<CourseDto>.ErrorResponse("Course not found.");
+
+            var dto = _mapper.Map<CourseDto>(course);
+            return ServiceResponse<CourseDto>.SuccessResponse(dto);
         }
     }
 

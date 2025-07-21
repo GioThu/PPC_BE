@@ -37,6 +37,10 @@ builder.Services.AddScoped<ICoupleRepository, CoupleRepository>();
 builder.Services.AddScoped<IResultPersonTypeRepository, ResultPersonTypeRepository>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<ICourseSubCategoryRepository, CourseSubCategoryRepository>();
+builder.Services.AddScoped<IChapterRepository, ChapterRepository>();
+builder.Services.AddScoped<ILectureRepository, LectureRepository>();
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+
 
 
 
