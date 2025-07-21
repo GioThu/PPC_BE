@@ -11,5 +11,6 @@ namespace PPC.Repository.Interfaces
     public interface IChapterRepository : IGenericRepository<Chapter>
     {
         Task<int> GetNextChapterNumberAsync(string courseId);
+        Task<Chapter> GetByIdAsync(string chapterId);
     }
 }

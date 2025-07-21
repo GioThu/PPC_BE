@@ -16,6 +16,7 @@ namespace PPC.Service.Mappers
             {
                 Id = Utils.Utils.GenerateIdModel("Chapter"),
                 CourseId = request.CourseId,
+                Description = request.Description,
                 Name = request.Name,
                 ChapterType = "Quiz",
                 ChapNum = chapNum,
@@ -29,7 +30,6 @@ namespace PPC.Service.Mappers
             {
                 Id = Utils.Utils.GenerateIdModel("Quiz"),
                 Name = request.Name,
-                Description = request.Description,
                 Status = 1
             };
         }

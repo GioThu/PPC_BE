@@ -17,7 +17,7 @@ namespace PPC.Service.Mappers
                 Id = Utils.Utils.GenerateIdModel("Chapter"),
                 CourseId = request.CourseId,
                 Name = request.Name,
-                ChapterType = "lecture",
+                ChapterType = "Lecture",
                 ChapNum = chapNum,
                 CreateAt = Utils.Utils.GetTimeNow(),
                 Status = 1,
@@ -31,7 +31,7 @@ namespace PPC.Service.Mappers
                 Id = Utils.Utils.GenerateIdModel("Lecture"),
                 Name = request.Name,
                 Description = request.Description,
-                Type = "lecture",
+                Type = "Lecture",
                 LectureMetadata = request.LectureMetadata,
                 CreateAt = Utils.Utils.GetTimeNow()
             };

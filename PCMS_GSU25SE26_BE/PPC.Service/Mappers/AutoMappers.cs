@@ -46,12 +46,19 @@ namespace PPC.Service.Mappers
             .ForMember(dest => dest.Member1,
                 opt => opt.MapFrom(src => src.Member1Navigation));
             CreateMap<ResultPersonType, ResultPersonTypeDto>();
+            CreateMap<Chapter, ChapterDetailDto>()
+            .ForMember(dest => dest.Lecture, opt => opt.Ignore())
+            .ForMember(dest => dest.Quiz, opt => opt.Ignore());
+            CreateMap<Lecture, LectureDto>();
+            CreateMap<Quiz, QuizDto>();
+
             CreateMap<Chapter, ChapterDto>();
             CreateMap<Course, CourseDto>()
             .ForMember(dest => dest.ChapterCount, opt => opt.MapFrom(src => src.Chapters.Count))
             .ForMember(dest => dest.SubCategories, opt => opt.MapFrom(src =>
                 src.CourseSubCategories.Select(cs => cs.SubCategory)))
             .ForMember(dest => dest.Chapters, opt => opt.MapFrom(src => src.Chapters));
+
             CreateMap<Booking, BookingDto>()
                 .ForMember(dest => dest.Member, opt => opt.MapFrom(src => src.Member))      
                 .ForMember(dest => dest.Member2, opt => opt.MapFrom(src => src.Member2))    

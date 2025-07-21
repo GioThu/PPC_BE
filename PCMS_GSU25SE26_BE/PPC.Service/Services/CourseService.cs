@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Repository.Repositories;
@@ -95,9 +96,13 @@ namespace PPC.Service.Services
 
             var chapter = request.ToChapter(nextChapNum);
             await _chapterRepository.CreateAsync(chapter);
+            
 
             var lecture = request.ToLecture(chapter.Id);
             await _lectureRepository.CreateAsync(lecture);
+            chapter.ChapNo = lecture.Id; 
+            
+            await _chapterRepository.UpdateAsync(chapter);
 
             return ServiceResponse<string>.SuccessResponse("Lecture and chapter created successfully.");
         }
@@ -113,6 +118,8 @@ namespace PPC.Service.Services
 
             var quiz = request.ToQuiz(chapter.Id);
             await _quizRepository.CreateAsync(quiz);
+            chapter.ChapNo = quiz.Id;
+            await _chapterRepository.UpdateAsync(chapter);
 
             return ServiceResponse<string>.SuccessResponse("Quiz and Chapter created successfully.");
         }
@@ -125,6 +132,29 @@ namespace PPC.Service.Services
 
             var dto = _mapper.Map<CourseDto>(course);
             return ServiceResponse<CourseDto>.SuccessResponse(dto);
+        }
+
+        public async Task<ServiceResponse<ChapterDetailDto>> GetChapterDetailAsync(string chapterId)
+        {
+            var chapter = await _chapterRepository.GetByIdAsync(chapterId);
+            if (chapter == null)
+                return ServiceResponse<ChapterDetailDto>.ErrorResponse("Chapter not found.");
+
+            var dto = _mapper.Map<ChapterDetailDto>(chapter);
+
+            if (chapter.ChapterType == "Lecture")
+            {
+                var lecture = await _lectureRepository.GetByIdAsync(chapter.ChapNo);
+
+                dto.Lecture = _mapper.Map<LectureDto>(lecture);
+            }
+            else if (chapter.ChapterType == "Quiz")
+            {
+                var quiz = await _quizRepository.GetByIdAsync(chapter.ChapNo);
+                dto.Quiz = _mapper.Map<QuizDto>(quiz);
+            }
+
+            return ServiceResponse<ChapterDetailDto>.SuccessResponse(dto);
         }
     }
 

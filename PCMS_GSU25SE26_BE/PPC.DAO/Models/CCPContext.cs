@@ -707,8 +707,8 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(1000)
                 .HasColumnName("description");
             entity.Property(e => e.LectureMetadata)
-                .HasColumnType("text")
-                .HasColumnName("lecture_metadata");
+                .HasColumnName("lecture_metadata")
+            .HasColumnType("nvarchar(max)");
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnName("name");

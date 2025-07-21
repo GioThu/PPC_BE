@@ -21,5 +21,10 @@ namespace PPC.Repository.Repositories
 
             return max + 1;
         }
+
+        public async Task<Chapter> GetByIdAsync(string chapterId)
+        {
+            return await _context.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
+        }
     }
 }

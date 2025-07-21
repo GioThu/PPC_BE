@@ -6,9 +6,14 @@ using System.Threading.Tasks;
 
 namespace PPC.Service.ModelResponse.CourseResponse
 {
-    public class QuizDto
+    public class ChapterDetailDto
     {
         public string Id { get; set; }
         public string Name { get; set; }
+        public int? ChapNum { get; set; }
+        public string ChapterType { get; set; }
+
+        public LectureDto Lecture { get; set; }
+        public QuizDto Quiz { get; set; }
     }
 }

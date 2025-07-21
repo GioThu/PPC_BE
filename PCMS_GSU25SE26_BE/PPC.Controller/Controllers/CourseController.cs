@@ -84,5 +84,13 @@ namespace PPC.Controller.Controllers
             var response = await _courseService.GetCourseDetailByIdAsync(courseId);
             return response.Success ? Ok(response) : NotFound(response);
         }
+
+        [HttpGet("{id}/chapter-detail")]
+        public async Task<IActionResult> GetChapterDetail(string id)
+        {
+            var response = await _courseService.GetChapterDetailAsync(id);
+            return response.Success ? Ok(response) : NotFound(response);
+        }
+
     }
 }
