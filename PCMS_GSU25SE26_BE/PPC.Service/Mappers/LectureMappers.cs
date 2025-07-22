@@ -24,6 +24,20 @@ namespace PPC.Service.Mappers
             };
         }
 
+        public static Chapter ToChapter(this VideoWithChapterCreateRequest request, int chapNum)
+        {
+            return new Chapter
+            {
+                Id = Utils.Utils.GenerateIdModel("Chapter"),
+                CourseId = request.CourseId,
+                Name = request.Name,
+                ChapterType = "Video",
+                ChapNum = chapNum,
+                CreateAt = Utils.Utils.GetTimeNow(),
+                Status = 1,
+            };
+        }
+
         public static Lecture ToLecture(this LectureWithChapterCreateRequest request, string chapterId)
         {
             return new Lecture
@@ -33,6 +47,20 @@ namespace PPC.Service.Mappers
                 Description = request.Description,
                 Type = "Lecture",
                 LectureMetadata = request.LectureMetadata,
+                CreateAt = Utils.Utils.GetTimeNow()
+            };
+        }
+
+        public static Lecture ToLecture(this VideoWithChapterCreateRequest request, string chapterId)
+        {
+            return new Lecture
+            {
+                Id = Utils.Utils.GenerateIdModel("Lecture"),
+                Name = request.Name,
+                Description = request.Description,
+                Type = "Video",
+                VideoUrl = request.VideoUrl,
+                TimeVideo = request.TimeVideo,
                 CreateAt = Utils.Utils.GetTimeNow()
             };
         }

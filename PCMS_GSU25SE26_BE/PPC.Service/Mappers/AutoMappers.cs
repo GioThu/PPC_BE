@@ -50,8 +50,11 @@ namespace PPC.Service.Mappers
             CreateMap<ResultPersonType, ResultPersonTypeDto>();
             CreateMap<Chapter, ChapterDetailDto>()
             .ForMember(dest => dest.Lecture, opt => opt.Ignore())
-            .ForMember(dest => dest.Quiz, opt => opt.Ignore());
+            .ForMember(dest => dest.Quiz, opt => opt.Ignore())
+            .ForMember(dest => dest.Video, opt => opt.Ignore());
+
             CreateMap<Lecture, LectureDto>();
+            CreateMap<Lecture, VideoDto>();
             CreateMap<Quiz, QuizDto>();
 
             CreateMap<Chapter, ChapterDto>();

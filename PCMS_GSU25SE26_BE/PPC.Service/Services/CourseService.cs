@@ -107,6 +107,26 @@ namespace PPC.Service.Services
             return ServiceResponse<string>.SuccessResponse("Lecture and chapter created successfully.");
         }
 
+        public async Task<ServiceResponse<string>> CreateVideoWithChapterAsync(VideoWithChapterCreateRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Name))
+                return ServiceResponse<string>.ErrorResponse("Name is required.");
+
+            var nextChapNum = await _chapterRepository.GetNextChapterNumberAsync(request.CourseId);
+
+            var chapter = request.ToChapter(nextChapNum);
+            await _chapterRepository.CreateAsync(chapter);
+
+
+            var lecture = request.ToLecture(chapter.Id);
+            await _lectureRepository.CreateAsync(lecture);
+            chapter.ChapNo = lecture.Id;
+
+            await _chapterRepository.UpdateAsync(chapter);
+
+            return ServiceResponse<string>.SuccessResponse("Lecture and chapter created successfully.");
+        }
+
         public async Task<ServiceResponse<string>> CreateQuizWithChapterAsync(QuizWithChapterCreateRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Name))
@@ -152,6 +172,11 @@ namespace PPC.Service.Services
             {
                 var quiz = await _quizRepository.GetByIdAsync(chapter.ChapNo);
                 dto.Quiz = _mapper.Map<QuizDto>(quiz);
+            }
+            else if (chapter.ChapterType == "Video")
+            {
+                var video = await _lectureRepository.GetByIdAsync(chapter.ChapNo);
+                dto.Video = _mapper.Map<VideoDto>(video);
             }
 
             return ServiceResponse<ChapterDetailDto>.SuccessResponse(dto);

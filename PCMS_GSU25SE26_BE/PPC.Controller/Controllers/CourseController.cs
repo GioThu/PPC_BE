@@ -74,6 +74,16 @@ namespace PPC.Controller.Controllers
             return response.Success ? Ok(response) : BadRequest(response);
         }
 
+        [HttpPost("create-video")]
+        public async Task<IActionResult> CreateVideoWithChapter([FromBody] VideoWithChapterCreateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _courseService.CreateVideoWithChapterAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
         [HttpPost("create-quiz")]
         public async Task<IActionResult> CreateQuizWithChapter([FromBody] QuizWithChapterCreateRequest request)
         {

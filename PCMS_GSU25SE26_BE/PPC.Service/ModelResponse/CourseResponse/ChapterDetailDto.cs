@@ -15,5 +15,6 @@ namespace PPC.Service.ModelResponse.CourseResponse
 
         public LectureDto Lecture { get; set; }
         public QuizDto Quiz { get; set; }
+        public VideoDto Video { get; set; }
     }
 }
