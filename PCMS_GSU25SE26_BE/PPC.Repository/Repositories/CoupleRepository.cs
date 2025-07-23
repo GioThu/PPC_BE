@@ -50,8 +50,12 @@ namespace PPC.Repository.Repositories
 
         public async Task<bool> HasActiveCoupleAsync(string memberId)
         {
-            return await _context.Couples
-        .AnyAsync(c => (c.Member == memberId || c.Member1 == memberId) && c.Status == 1);
+            var couple = await _context.Couples
+        .Where(c => c.Member == memberId || c.Member1 == memberId)
+        .OrderByDescending(c => c.CreateAt)
+        .FirstOrDefaultAsync();
+
+            return couple != null && couple.Status == 1;
         }
 
         public async Task<Couple> GetLatestCoupleByMemberIdWithMembersAsync(string memberId)
