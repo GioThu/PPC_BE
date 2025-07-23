@@ -169,5 +169,19 @@ namespace PPC.Controller.Controllers
             var response = await _coupleService.MarkCoupleAsCompletedAsync(id);
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+        [Authorize(Roles = "3")]
+        [HttpPost("create-virtual")]
+        public async Task<IActionResult> CreateVirtual([FromBody] VirtualCoupleCreateRequest request)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("Member ID not found.");
+
+            var result = await _coupleService.CreateVirtualCoupleAsync(memberId, request);
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result);
+        }
     }
 }
