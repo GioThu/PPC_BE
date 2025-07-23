@@ -24,5 +24,8 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<List<CoupleDetailResponse>>> GetCouplesByMemberIdAsync(string memberId);
         Task<ServiceResponse<CoupleResultDto>> GetCoupleResultByIdAsync(string coupleId, string currentMemberId);
         Task<ServiceResponse<string>> MarkCoupleAsCompletedAsync(string coupleId);
+        Task<ServiceResponse<string>> CreateVirtualCoupleAsync(string memberId, VirtualCoupleCreateRequest request);
+        Task<ServiceResponse<string>> SubmitVirtualResultAsync(string memberId, SurveyResultRequest request);
+        Task<ServiceResponse<string>> ApplyLatestResultToSelfAsync(string memberId, string surveyId);
     }
 }

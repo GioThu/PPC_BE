@@ -17,15 +17,17 @@ public class CoupleService : ICoupleService
     private readonly IMemberRepository _memberRepo;
     private readonly IPersonTypeRepository _personTypeRepo;
     private readonly IResultPersonTypeRepository _resultPersonTypeRepo;
+    private readonly IResultHistoryRepository _resultHistoryRepo;
 
 
-    public CoupleService(ICoupleRepository coupleRepository, IMapper mapper, IMemberRepository memberRepo, IPersonTypeRepository personTypeRepo, IResultPersonTypeRepository resultPersonTypeRepo)
+    public CoupleService(ICoupleRepository coupleRepository, IMapper mapper, IMemberRepository memberRepo, IPersonTypeRepository personTypeRepo, IResultPersonTypeRepository resultPersonTypeRepo, IResultHistoryRepository resultHistoryRepo)
     {
         _coupleRepository = coupleRepository;
         _mapper = mapper;
         _memberRepo = memberRepo;
         _personTypeRepo = personTypeRepo;
         _resultPersonTypeRepo = resultPersonTypeRepo;
+        _resultHistoryRepo = resultHistoryRepo;
     }
 
     public async Task<ServiceResponse<string>> JoinCoupleByAccessCodeAsync(string memberId, string accessCode)
@@ -398,5 +400,227 @@ public class CoupleService : ICoupleService
         await _coupleRepository.UpdateAsync(couple);
 
         return ServiceResponse<string>.SuccessResponse("Couple marked as completed.");
+    }
+
+    public async Task<ServiceResponse<string>> CreateVirtualCoupleAsync(string memberId, VirtualCoupleCreateRequest request)
+    {
+        var hasActive = await _coupleRepository.HasActiveCoupleAsync(memberId);
+        if (hasActive)
+        {
+            return ServiceResponse<string>.ErrorResponse("You already have an active room. Cannot create a new one.");
+        }
+
+        var couple = new Couple
+        {
+            Id = Utils.GenerateIdModel("Couple"),
+            Member = memberId,
+            AccessCode = Utils.GenerateAccessCode(),
+            CreateAt = Utils.GetTimeNow(),
+            Status = 1,
+            IsVirtual = true,
+            VirtualName = request.VirtualName,
+            VirtualDob = request.VirtualDob
+        };
+
+        if (request.SurveyIds != null)
+        {
+            foreach (var sv in request.SurveyIds)
+            {
+                switch (sv)
+                {
+                    case "SV001":
+                        couple.Mbti = "false";
+                        couple.Mbti1 = "false";
+                        break;
+                    case "SV002":
+                        couple.Disc = "false";
+                        couple.Disc1 = "false";
+                        break;
+                    case "SV003":
+                        couple.LoveLanguage = "false";
+                        couple.LoveLanguage1 = "false";
+                        break;
+                    case "SV004":
+                        couple.BigFive = "false";
+                        couple.BigFive1 = "false";
+                        break;
+                }
+            }
+        }
+
+        await _coupleRepository.CreateAsync(couple);
+
+        return ServiceResponse<string>.SuccessResponse(couple.Id);
+    }
+
+    public async Task<ServiceResponse<string>> SubmitVirtualResultAsync(string memberId, SurveyResultRequest request)
+    {
+        var couple = await _coupleRepository.GetLatestCoupleByMemberIdAsync(memberId);
+        if (couple == null || couple.IsVirtual != true)
+            return ServiceResponse<string>.ErrorResponse("Virtual couple not found.");
+
+        var personTypes = await _personTypeRepo.GetPersonTypesBySurveyAsync(request.SurveyId);
+        var personTypeDict = personTypes.ToDictionary(x => x.Name, x => x);
+        string resultType = null;
+        string description = "";
+
+        if (request.Answers == null || !request.Answers.Any())
+            return ServiceResponse<string>.ErrorResponse("No answers provided.");
+
+        var detail = string.Join(",", request.Answers
+            .Where(a => !string.IsNullOrEmpty(a.Tag))
+            .Select(a => $"{a.Tag}:{a.Score}"));
+
+        // ✅ Tính resultType theo Survey
+        if (request.SurveyId == "SV001") // MBTI
+        {
+            var mbtiLetters = new List<string>
+        {
+            request.Answers.Where(x => x.Tag == "E").Sum(x => x.Score) >= request.Answers.Where(x => x.Tag == "I").Sum(x => x.Score) ? "E" : "I",
+            request.Answers.Where(x => x.Tag == "N").Sum(x => x.Score) >= request.Answers.Where(x => x.Tag == "S").Sum(x => x.Score) ? "N" : "S",
+            request.Answers.Where(x => x.Tag == "T").Sum(x => x.Score) >= request.Answers.Where(x => x.Tag == "F").Sum(x => x.Score) ? "T" : "F",
+            request.Answers.Where(x => x.Tag == "J").Sum(x => x.Score) >= request.Answers.Where(x => x.Tag == "P").Sum(x => x.Score) ? "J" : "P",
+        };
+            resultType = string.Join("", mbtiLetters);
+        }
+        else
+        {
+            var highest = request.Answers.OrderByDescending(x => x.Score).FirstOrDefault();
+            resultType = highest?.Tag;
+        }
+
+        if (string.IsNullOrEmpty(resultType) || !personTypeDict.ContainsKey(resultType))
+            return ServiceResponse<string>.ErrorResponse("Unable to determine result.");
+
+        description = personTypeDict[resultType].Description ?? "No description available.";
+
+        // ✅ Ghi kết quả vào Virtual (tức là Member1)
+        switch (request.SurveyId)
+        {
+            case "SV001": couple.Mbti1 = resultType; couple.Mbti1Description = detail; break;
+            case "SV002": couple.Disc1 = resultType; couple.Disc1Description = detail; break;
+            case "SV003": couple.LoveLanguage1 = resultType; couple.LoveLanguage1Description = detail; break;
+            case "SV004": couple.BigFive1 = resultType; couple.BigFive1Description = detail; break;
+        }
+
+        var surveyMap = new List<(string SurveyId, string Type1, string Type2, Action<string> SetResult)>
+    {
+        ("SV001", couple.Mbti, couple.Mbti1, (id) => couple.MbtiResult = id),
+        ("SV002", couple.Disc, couple.Disc1, (id) => couple.DiscResult = id),
+        ("SV003", couple.LoveLanguage, couple.LoveLanguage1, (id) => couple.LoveLanguageResult = id),
+        ("SV004", couple.BigFive, couple.BigFive1, (id) => couple.BigFiveResult = id),
+    };
+
+        bool allCompleted = true;
+
+        foreach (var survey in surveyMap)
+        {
+            if (survey.Type1 == null && survey.Type2 == null) continue;
+
+            if (survey.Type1 == null || survey.Type2 == null ||
+                survey.Type1 == "false" || survey.Type2 == "false")
+            {
+                allCompleted = false;
+                break;
+            }
+        }
+
+        if (allCompleted)
+        {
+            foreach (var survey in surveyMap)
+            {
+                if (survey.Type1 == null || survey.Type2 == null ||
+                    survey.Type1 == "false" || survey.Type2 == "false") continue;
+
+                var result = await _resultPersonTypeRepo.FindResultAsync(survey.SurveyId, survey.Type1, survey.Type2);
+                if (result != null)
+                {
+                    survey.SetResult(result.Id);
+                }
+            }
+        }
+
+        await _coupleRepository.UpdateAsync(couple);
+        return ServiceResponse<string>.SuccessResponse($"Virtual thuộc kiểu {resultType} : {description}");
+    }
+
+    public async Task<ServiceResponse<string>> ApplyLatestResultToSelfAsync(string memberId, string surveyId)
+    {
+        var couple = await _coupleRepository.GetLatestCoupleByMemberIdAsync(memberId);
+        if (couple == null)
+            return ServiceResponse<string>.ErrorResponse("Couple not found.");
+
+        var history = await _resultHistoryRepo.GetLatestResultAsync(memberId, surveyId);
+        if (history == null)
+            return ServiceResponse<string>.ErrorResponse("No recent result found for this survey.");
+
+        // Ghi kết quả vào cặp
+        if (couple.Member == memberId)
+        {
+            switch (surveyId)
+            {
+                case "SV001": couple.Mbti = history.Result; couple.MbtiDescription = history.Detail; break;
+                case "SV002": couple.Disc = history.Result; couple.DiscDescription = history.Detail; break;
+                case "SV003": couple.LoveLanguage = history.Result; couple.LoveLanguageDescription = history.Detail; break;
+                case "SV004": couple.BigFive = history.Result; couple.BigFiveDescription = history.Detail; break;
+            }
+        }
+        else if (couple.Member1 == memberId || couple.IsVirtual == true)
+        {
+            switch (surveyId)
+            {
+                case "SV001": couple.Mbti1 = history.Result; couple.Mbti1Description = history.Detail; break;
+                case "SV002": couple.Disc1 = history.Result; couple.Disc1Description = history.Detail; break;
+                case "SV003": couple.LoveLanguage1 = history.Result; couple.LoveLanguage1Description = history.Detail; break;
+                case "SV004": couple.BigFive1 = history.Result; couple.BigFive1Description = history.Detail; break;
+            }
+        }
+
+        // Danh sách các bài kiểm tra
+        var surveyMap = new List<(string SurveyId, string Type1, string Type2, Action<string> SetResult)>
+    {
+        ("SV001", couple.Mbti, couple.Mbti1, (id) => couple.MbtiResult = id),
+        ("SV002", couple.Disc, couple.Disc1, (id) => couple.DiscResult = id),
+        ("SV003", couple.LoveLanguage, couple.LoveLanguage1, (id) => couple.LoveLanguageResult = id),
+        ("SV004", couple.BigFive, couple.BigFive1, (id) => couple.BigFiveResult = id),
+    };
+
+        bool allCompleted = true;
+
+        foreach (var survey in surveyMap)
+        {
+            // Nếu cả 2 bên đều null, tức là không cần làm bài này
+            if (survey.Type1 == null && survey.Type2 == null)
+                continue;
+
+            // Nếu một trong hai chưa làm hoặc bị đánh dấu "false" thì chưa xong
+            if (survey.Type1 == null || survey.Type2 == null ||
+                survey.Type1 == "false" || survey.Type2 == "false")
+            {
+                allCompleted = false;
+                break;
+            }
+        }
+
+        if (allCompleted)
+        {
+            foreach (var survey in surveyMap)
+            {
+                if (survey.Type1 == null || survey.Type2 == null ||
+                    survey.Type1 == "false" || survey.Type2 == "false")
+                    continue;
+
+                var result = await _resultPersonTypeRepo.FindResultAsync(survey.SurveyId, survey.Type1, survey.Type2);
+                if (result != null)
+                {
+                    survey.SetResult(result.Id);
+                }
+            }
+        }
+
+        couple.Status = allCompleted ? 2 : 1;
+        await _coupleRepository.UpdateAsync(couple);
+
+        return ServiceResponse<string>.SuccessResponse($"Applied result '{history.Result}' to Couple successfully.");
     }
 }

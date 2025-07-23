@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace PPC.Service.ModelRequest.Couple
 {
-    internal class VirtualCoupleCreateRequest
+    public class VirtualCoupleCreateRequest
     {
+        public List<string> SurveyIds { get; set; }  // Ví dụ: ["SV001", "SV002"]
+        public string VirtualName { get; set; }
+        public DateTime? VirtualDob { get; set; }
     }
 }

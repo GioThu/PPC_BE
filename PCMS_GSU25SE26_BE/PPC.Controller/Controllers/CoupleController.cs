@@ -183,5 +183,35 @@ namespace PPC.Controller.Controllers
                 return Ok(result);
             return BadRequest(result);
         }
+
+        [Authorize(Roles = "3")]
+        [HttpPost("submit-virtual")]
+        public async Task<IActionResult> SubmitVirtual([FromBody] SurveyResultRequest request)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("Member ID not found.");
+
+            var response = await _coupleService.SubmitVirtualResultAsync(memberId, request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [Authorize(Roles = "3")]
+        [HttpPost("apply-latest-result")]
+        public async Task<IActionResult> ApplyLatestResult([FromBody] ApplyResultRequest request)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("Member ID not found.");
+
+            var response = await _coupleService.ApplyLatestResultToSelfAsync(memberId, request.SurveyId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }
