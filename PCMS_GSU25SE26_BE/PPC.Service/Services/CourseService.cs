@@ -24,9 +24,10 @@ namespace PPC.Service.Services
         private readonly ILectureRepository _lectureRepository;
         private readonly IChapterRepository _chapterRepository;
         private readonly IQuizRepository _quizRepository;
+        private readonly IMemberShipRepository _memberShipRepository;
 
 
-        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository)
+        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository)
         {
             _courseRepository = courseRepository;
             _mapper = mapper;
@@ -34,6 +35,7 @@ namespace PPC.Service.Services
             _lectureRepository = lectureRepository;
             _chapterRepository = chapterRepository;
             _quizRepository = quizRepository;
+            _memberShipRepository = memberShipRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateCourseAsync(string creatorId, CourseCreateRequest request)
@@ -181,6 +183,32 @@ namespace PPC.Service.Services
 
             return ServiceResponse<ChapterDetailDto>.SuccessResponse(dto);
         }
+
+        public async Task<ServiceResponse<List<CourseListDto>>> GetAllCoursesAsync(string accountId)
+        {
+            var courses = await _courseRepository.GetAllActiveCoursesAsync();
+            var courseDtos = _mapper.Map<List<CourseListDto>>(courses);
+
+            var enrolledCourseIds = await _courseRepository.GetEnrolledCourseIdsAsync(accountId);
+
+            var allMemberships = await _memberShipRepository.GetAllActiveAsync();
+            var rankToMembershipName = allMemberships
+                .Where(m => m.Rank.HasValue)
+                .ToDictionary(m => m.Rank.Value, m => m.MemberShipName);
+
+            foreach (var dto in courseDtos)
+            {
+                dto.IsEnrolled = enrolledCourseIds.Contains(dto.Id);
+
+                if (dto.Rank.HasValue && rankToMembershipName.TryGetValue(dto.Rank.Value, out var name))
+                {
+                    dto.FreeByMembershipName = name;
+                }
+            }
+
+            return ServiceResponse<List<CourseListDto>>.SuccessResponse(courseDtos);
+        }
+
     }
 
 }

@@ -7,7 +7,7 @@ using PPC.Service.Services;
 
 namespace PPC.Controller.Controllers
 {
-    [Authorize(Roles = "1,2")] 
+    [Authorize(Roles = "1,2,3")] 
     [ApiController]
     [Route("api/[controller]")]
     public class CourseController : ControllerBase
@@ -144,6 +144,17 @@ namespace PPC.Controller.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var result = await _questionService.UpdateAsync(request.Id, request);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("all-for-user")]
+        public async Task<IActionResult> GetAllCoursesByUsers()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("Account ID not found in token");
+
+            var result = await _courseService.GetAllCoursesAsync(memberId);
             return result.Success ? Ok(result) : BadRequest(result);
         }
     }

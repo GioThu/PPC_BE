@@ -36,5 +36,23 @@ namespace PPC.Repository.Repositories
                     .ThenInclude(cs => cs.SubCategory)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
         }
+
+        public async Task<List<string>> GetEnrolledCourseIdsAsync(string accountId)
+        {
+            return await _context.EnrollCourses
+                .Where(e => e.MemberId == accountId && e.Status == 1)
+                .Select(e => e.CourseId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Course>> GetAllActiveCoursesAsync()
+        {
+            return await _context.Courses
+                .Include(c => c.Chapters)
+                .Include(c => c.CourseSubCategories)
+                    .ThenInclude(cs => cs.SubCategory)
+                .Where(c => c.Status == 1)
+                .ToListAsync();
+        }
     }
 }

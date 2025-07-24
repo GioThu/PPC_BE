@@ -56,6 +56,9 @@ namespace PPC.Service.Mappers
             CreateMap<Lecture, LectureDto>();
             CreateMap<Lecture, VideoDto>();
             CreateMap<Quiz, QuizDto>();
+            CreateMap<Course, CourseListDto>()
+    .ForMember(dest => dest.IsEnrolled, opt => opt.Ignore())
+    .ForMember(dest => dest.FreeByMembershipName, opt => opt.Ignore());
 
             CreateMap<Chapter, ChapterDto>();
             CreateMap<Course, CourseDto>()

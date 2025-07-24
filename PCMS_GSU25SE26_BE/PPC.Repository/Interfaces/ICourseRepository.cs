@@ -1,4 +1,5 @@
-﻿using PPC.DAO.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using PPC.DAO.Models;
 using PPC.Repository.GenericRepository;
 using System;
 using System.Collections.Generic;
@@ -14,5 +15,7 @@ namespace PPC.Repository.Interfaces
         Task<List<Course>> GetAllCoursesWithDetailsAsync();
         Task<Course> GetCourseWithAllDetailsAsync(string courseId);
 
+        Task<List<Course>> GetAllActiveCoursesAsync();
+        Task<List<string>> GetEnrolledCourseIdsAsync(string accountId);
     }
 }

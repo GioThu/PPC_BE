@@ -20,6 +20,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> CreateQuizWithChapterAsync(QuizWithChapterCreateRequest request);
         Task<ServiceResponse<CourseDto>> GetCourseDetailByIdAsync(string courseId);
         Task<ServiceResponse<ChapterDetailDto>> GetChapterDetailAsync(string chapterId);
+        Task<ServiceResponse<List<CourseListDto>>> GetAllCoursesAsync(string accountId);
 
     }
 }

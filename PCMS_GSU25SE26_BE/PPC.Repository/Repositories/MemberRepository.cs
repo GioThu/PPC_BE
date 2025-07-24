@@ -48,5 +48,6 @@ namespace PPC.Repository.Repositories
                     .ThenInclude(a => a.Wallet)
                 .FirstOrDefaultAsync(m => m.Id == memberId);
         }
+
     }
 }
