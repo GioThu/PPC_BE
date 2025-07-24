@@ -74,5 +74,21 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpPost("get-by-name")]
+        public async Task<IActionResult> GetByNameAndSurvey([FromBody] PersonTypeByNameRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.SurveyId))
+                return BadRequest("Name and SurveyId are required.");
+
+            var result = await _personTypeService.GetByNameAndSurveyIdAsync(request);
+            if (result.Success)
+                return Ok(result);
+
+            return NotFound(result);
+        }
     }
 }

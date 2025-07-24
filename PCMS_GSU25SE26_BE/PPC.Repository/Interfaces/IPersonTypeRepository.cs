@@ -14,5 +14,6 @@ namespace PPC.Repository.Interfaces
         Task<List<PersonType>> GetPersonTypesBySurveyAsync(string surveyId);
         Task UpdatePersonTypeAsync(PersonType personType);
         Task<PersonType> GetPersonTypeByIdAsync(string id);
+        Task<PersonType> GetByNameAndSurveyIdAsync(string name, string surveyId);
     }
 }

@@ -43,5 +43,12 @@ namespace PPC.Repository.Repositories
             _context.PersonTypes.Update(personType);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<PersonType> GetByNameAndSurveyIdAsync(string name, string surveyId)
+        {
+            return await _context.PersonTypes
+                .Include(pt => pt.Category)
+                .FirstOrDefaultAsync(pt => pt.Name == name && pt.SurveyId == surveyId);
+        }
     }
 }

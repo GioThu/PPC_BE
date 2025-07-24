@@ -177,6 +177,16 @@ namespace PPC.Service.Services
 
             return ServiceResponse<List<ResultHistoryResponse>>.SuccessResponse(responses);
         }
+
+        public async Task<ServiceResponse<PersonTypeDto>> GetByNameAndSurveyIdAsync(PersonTypeByNameRequest request)
+        {
+            var personType = await _personTypeRepository.GetByNameAndSurveyIdAsync(request.Name, request.SurveyId);
+            if (personType == null)
+                return ServiceResponse<PersonTypeDto>.ErrorResponse("Person type not found.");
+
+            var dto = _mapper.Map<PersonTypeDto>(personType);
+            return ServiceResponse<PersonTypeDto>.SuccessResponse(dto);
+        }
     }
 
 }
