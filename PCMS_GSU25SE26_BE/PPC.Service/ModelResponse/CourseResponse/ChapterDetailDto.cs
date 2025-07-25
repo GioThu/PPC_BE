@@ -11,6 +11,7 @@ namespace PPC.Service.ModelResponse.CourseResponse
         public string Id { get; set; }
         public string Name { get; set; }
         public int? ChapNum { get; set; }
+        public string Description { get; set; }
         public string ChapterType { get; set; }
 
         public LectureDto Lecture { get; set; }
