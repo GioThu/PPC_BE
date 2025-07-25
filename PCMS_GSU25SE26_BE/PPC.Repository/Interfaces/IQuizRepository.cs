@@ -10,5 +10,7 @@ namespace PPC.Repository.Interfaces
 {
     public interface IQuizRepository : IGenericRepository<Quiz>
     {
+        Task<Quiz> GetByIdWithDetailsAsync(string quizId);
+
     }
 }

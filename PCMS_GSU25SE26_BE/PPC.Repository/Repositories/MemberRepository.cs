@@ -48,6 +48,12 @@ namespace PPC.Repository.Repositories
                     .ThenInclude(a => a.Wallet)
                 .FirstOrDefaultAsync(m => m.Id == memberId);
         }
-
+        public async Task<Account> GetAccountWithWalletAndMemberAsync(string accountId)
+        {
+            return await _context.Accounts
+                .Include(a => a.Wallet)
+                .Include(a => a.Members)
+                .FirstOrDefaultAsync(a => a.Id == accountId && a.Status == 1);
+        }
     }
 }

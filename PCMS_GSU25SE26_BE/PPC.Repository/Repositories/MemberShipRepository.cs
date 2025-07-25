@@ -26,5 +26,18 @@ namespace PPC.Repository.Repositories
                 .OrderBy(ms => ms.Rank)
                 .ToListAsync();
         }
+
+        public async Task<List<MemberMemberShip>> GetActiveMemberShipsByMemberIdAsync(string memberId)
+        {
+            var now = DateTime.UtcNow;
+
+            return await _context.MemberMemberShips
+                .Include(mms => mms.MemberShip)
+                .Where(mms =>
+                    mms.MemberId == memberId &&
+                    mms.Status == 1 &&
+                    mms.ExpiryDate > now)
+                .ToListAsync();
+        }
     }
 }

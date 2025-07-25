@@ -1,4 +1,5 @@
-﻿using PPC.DAO.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using PPC.DAO.Models;
 using PPC.Repository.GenericRepository;
 using System;
 using System.Collections.Generic;
@@ -12,5 +13,6 @@ namespace PPC.Repository.Interfaces
     {
         Task<bool> IsNameDuplicatedAsync(string name);
         Task<List<MemberShip>> GetAllActiveAsync();
+        Task<List<MemberMemberShip>> GetActiveMemberShipsByMemberIdAsync(string memberId);
     }
 }

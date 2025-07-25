@@ -25,9 +25,16 @@ namespace PPC.Service.Services
         private readonly IChapterRepository _chapterRepository;
         private readonly IQuizRepository _quizRepository;
         private readonly IMemberShipRepository _memberShipRepository;
+        private readonly IAccountRepository _accountRepository;
+        private readonly IEnrollCourseRepository _enrollCourseRepository;
+        private readonly IWalletRepository _walletRepository;
+        private readonly ISysTransactionRepository _sysTransactionRepository;
+        private readonly IMemberMemberShipRepository _memberMemberShipRepository;
+        private readonly IMemberRepository _memberRepository;
 
 
-        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository)
+
+        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository, IAccountRepository accountRepository, IEnrollCourseRepository enrollCourseRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IMemberMemberShipRepository memberMemberShipRepository, IMemberRepository memberRepository)
         {
             _courseRepository = courseRepository;
             _mapper = mapper;
@@ -36,6 +43,12 @@ namespace PPC.Service.Services
             _chapterRepository = chapterRepository;
             _quizRepository = quizRepository;
             _memberShipRepository = memberShipRepository;
+            _accountRepository = accountRepository;
+            _enrollCourseRepository = enrollCourseRepository;
+            _walletRepository = walletRepository;
+            _sysTransactionRepository = sysTransactionRepository;
+            _memberMemberShipRepository = memberMemberShipRepository;
+            _memberRepository = memberRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateCourseAsync(string creatorId, CourseCreateRequest request)
@@ -98,12 +111,12 @@ namespace PPC.Service.Services
 
             var chapter = request.ToChapter(nextChapNum);
             await _chapterRepository.CreateAsync(chapter);
-            
+
 
             var lecture = request.ToLecture(chapter.Id);
             await _lectureRepository.CreateAsync(lecture);
-            chapter.ChapNo = lecture.Id; 
-            
+            chapter.ChapNo = lecture.Id;
+
             await _chapterRepository.UpdateAsync(chapter);
 
             return ServiceResponse<string>.SuccessResponse("Lecture and chapter created successfully.");
@@ -172,7 +185,7 @@ namespace PPC.Service.Services
             }
             else if (chapter.ChapterType == "Quiz")
             {
-                var quiz = await _quizRepository.GetByIdAsync(chapter.ChapNo);
+                var quiz = await _quizRepository.GetByIdWithDetailsAsync(chapter.ChapNo);
                 dto.Quiz = _mapper.Map<QuizDto>(quiz);
             }
             else if (chapter.ChapterType == "Video")
@@ -209,6 +222,124 @@ namespace PPC.Service.Services
             return ServiceResponse<List<CourseListDto>>.SuccessResponse(courseDtos);
         }
 
+        public async Task<ServiceResponse<EnrollCourseResultDto>> EnrollCourseAsync(string courseId, string accountId)
+        {
+            if (string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(courseId))
+                return ServiceResponse<EnrollCourseResultDto>.ErrorResponse("Thiếu thông tin đầu vào.");
+
+            // Lấy tài khoản
+            var account = await _accountRepository.GetAccountWithWalletAsync(accountId);
+            if (account == null || string.IsNullOrEmpty(account.WalletId))
+                return ServiceResponse<EnrollCourseResultDto>.ErrorResponse("Tài khoản không hợp lệ hoặc không có ví.");
+
+            // Lấy ví
+            var wallet = account.Wallet;
+            if (wallet == null || wallet.Status != 1)
+                return ServiceResponse<EnrollCourseResultDto>.ErrorResponse("Ví không khả dụng.");
+
+            // Lấy member
+            var member = await _memberRepository.GetByAccountIdAsync(account.Id);
+            if (member == null)
+                return ServiceResponse<EnrollCourseResultDto>.ErrorResponse("Không tìm thấy thành viên.");
+
+            // Kiểm tra đã đăng ký khóa học chưa
+            var isAlreadyEnrolled = await _enrollCourseRepository.IsEnrolledAsync(member.Id, courseId);
+            if (isAlreadyEnrolled)
+                return ServiceResponse<EnrollCourseResultDto>.ErrorResponse("Bạn đã đăng ký khóa học này rồi.");
+
+            // Lấy khóa học
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null || course.Status == 0)
+                return ServiceResponse<EnrollCourseResultDto>.ErrorResponse("Không tìm thấy khóa học.");
+
+            // Lấy danh sách MemberShip còn hạn
+            var activeMemberships = await _memberShipRepository.GetActiveMemberShipsByMemberIdAsync(member.Id);
+
+            // Kiểm tra miễn phí
+            bool isFree = activeMemberships.Any(ms => ms.MemberShip.Rank >= course.Rank);
+            double coursePrice = course.Price ?? 0;
+            double finalPrice = 0;
+
+            if (!isFree)
+            {
+                int maxDiscount = activeMemberships
+                    .Select(ms => ms.MemberShip.DiscountCourse ?? 0)
+                    .DefaultIfEmpty(0)
+                    .Max();
+
+                finalPrice = Math.Round(coursePrice * (1 - maxDiscount / 100.0), 0);
+            }
+
+            if (!isFree && (wallet.Remaining ?? 0) < finalPrice)
+                return ServiceResponse<EnrollCourseResultDto>.ErrorResponse("Số dư trong ví không đủ để đăng ký khóa học.");
+
+            // Tạo EnrollCourse
+            var enroll = new EnrollCourse
+            {
+                Id = Utils.Utils.GenerateIdModel("EnrollCourse"),
+                CourseId = courseId,
+                MemberId = member.Id,
+                CreateDate = Utils.Utils.GetTimeNow(),
+                Price = finalPrice,
+                Status = 1,
+                Processing = 0,
+                IsOpen = true,
+            };
+            await _enrollCourseRepository.CreateAsync(enroll);
+
+            // Nếu không free thì trừ tiền + tạo giao dịch
+            string transactionId = null;
+            if (finalPrice > 0)
+            {
+                wallet.Remaining -= finalPrice;
+                await _walletRepository.UpdateAsync(wallet);
+
+                var transaction = new SysTransaction
+                {
+                    Id = Utils.Utils.GenerateIdModel("SysTransaction"),
+                    TransactionType = "4", // enroll course
+                    DocNo = enroll.Id,
+                    CreateBy = accountId,
+                    CreateDate = Utils.Utils.GetTimeNow()
+                };
+                await _sysTransactionRepository.CreateAsync(transaction);
+
+                transactionId = transaction.Id;
+            }
+
+            return ServiceResponse<EnrollCourseResultDto>.SuccessResponse(new EnrollCourseResultDto
+            {
+                EnrollCourseId = enroll.Id,
+                PaidAmount = finalPrice,
+                Remaining = wallet.Remaining,
+                TransactionId = transactionId,
+                Message = "Đăng ký khóa học thành công."
+            });
+        }
+
+        public async Task<ServiceResponse<List<MyCourseDto>>> GetEnrolledCoursesWithProgressAsync(string memberId)
+        {
+            var enrolls = await _enrollCourseRepository.GetEnrolledCoursesWithProcessingAsync(memberId);
+
+            var courseDtos = new List<MyCourseDto>();
+
+            foreach (var enroll in enrolls)
+            {
+                var course = enroll.Course;
+
+                if (course != null) 
+                {
+                    var dto = _mapper.Map<MyCourseDto>(course);
+                    dto.ChapterCount = course.Chapters?.Count ?? 0; 
+                    dto.ProcessingCount = enroll.Processings?.Count ?? 0;
+
+                    courseDtos.Add(dto);
+                }
+            }
+
+            return ServiceResponse<List<MyCourseDto>>.SuccessResponse(courseDtos);
+        }
     }
+
 
 }

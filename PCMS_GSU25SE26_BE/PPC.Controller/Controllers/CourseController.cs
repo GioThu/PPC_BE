@@ -157,5 +157,30 @@ namespace PPC.Controller.Controllers
             var result = await _courseService.GetAllCoursesAsync(memberId);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
+        [HttpPost("{courseId}/enroll")]
+        public async Task<IActionResult> EnrollCourse(string courseId)
+        {
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
+            if (string.IsNullOrEmpty(accountId))
+                return Unauthorized("Account not found.");
+
+            var result = await _courseService.EnrollCourseAsync(courseId, accountId);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+
+        [HttpGet("my-courses")]
+        public async Task<IActionResult> GetMyCourses()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("Member not found.");
+
+            var response = await _courseService.GetEnrolledCoursesWithProgressAsync(memberId);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
     }
 }

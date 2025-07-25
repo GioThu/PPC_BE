@@ -103,5 +103,12 @@ namespace PPC.Repository.Repositories
                 .Include(a => a.Counselors)
                 .FirstOrDefaultAsync(a => a.WalletId == walletId);
         }
+
+        public async Task<Account> GetAccountWithWalletAsync(string accountId)
+        {
+            return await _context.Accounts
+                .Include(a => a.Wallet)
+                .FirstOrDefaultAsync(a => a.Id == accountId && a.Status == 1);
+        }
     }
 }

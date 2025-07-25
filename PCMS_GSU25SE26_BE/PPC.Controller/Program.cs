@@ -40,6 +40,7 @@ builder.Services.AddScoped<ICourseSubCategoryRepository, CourseSubCategoryReposi
 builder.Services.AddScoped<IChapterRepository, ChapterRepository>();
 builder.Services.AddScoped<ILectureRepository, LectureRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IEnrollCourseRepository, EnrollCourseRepository>();
 
 
 

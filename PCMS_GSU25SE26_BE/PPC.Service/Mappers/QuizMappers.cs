@@ -20,7 +20,8 @@ namespace PPC.Service.Mappers
                 Name = request.Name,
                 ChapterType = "Quiz",
                 ChapNum = chapNum,
-                CreateAt = Utils.Utils.GetTimeNow()
+                CreateAt = Utils.Utils.GetTimeNow(),
+                Status = 1
             };
         }
 

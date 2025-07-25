@@ -1,4 +1,5 @@
-﻿using PPC.DAO.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using PPC.DAO.Models;
 using PPC.Repository.GenericRepository;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,8 @@ namespace PPC.Repository.Interfaces
 
         Task<(string walletId, double? remaining)> GetWalletInfoByAccountIdAsync(string accountId);
         Task<Account> GetAccountByWalletIdAsync(string walletId);
+        Task<Account> GetAccountWithWalletAsync(string accountId);
+        
 
 
     }

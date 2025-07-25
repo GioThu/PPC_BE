@@ -98,7 +98,7 @@ namespace PPC.Repository.Repositories
             var result = new List<Question>();
             var usedIds = new HashSet<string>();
             var tagScoreTotals = tags.ToDictionary(t => t, t => 0);
-            int idealScorePerTag = (int)Math.Round((double)(count * 2) / tags.Count); // ví dụ 25 câu * 2 điểm = 50 → 6.25/tag
+            int idealScorePerTag = (int)Math.Round((double)(count * 2) / tags.Count); 
 
             var shuffled = allQuestions.OrderBy(_ => Guid.NewGuid()).ToList();
 
@@ -157,7 +157,7 @@ namespace PPC.Repository.Repositories
         {
             return await _context.Questions
                 .Include(q => q.Answers)
-                .Where(q => q.QuizId == quizId)
+                .Where(q => q.QuizId == quizId && q.Status == 1)
                 .ToListAsync();
         }
     }

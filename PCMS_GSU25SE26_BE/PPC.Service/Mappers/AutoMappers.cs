@@ -36,7 +36,9 @@ namespace PPC.Service.Mappers
             CreateMap<Survey, SurveyDto>();
             CreateMap<Question, SurveyQuestionDto>();
             CreateMap<Answer, SurveyAnswerDto>();
-            CreateMap<Question, QuestionDto>();
+            CreateMap<Question, QuestionDto>()
+    .ForMember(dest => dest.MaxScore, opt => opt.MapFrom(src =>
+        src.Answers.Max(a => a.Score ?? 0)));
             CreateMap<Answer, AnswerDto>();
             CreateMap<PersonType, PersonTypeDto>();
             CreateMap<Deposit, DepositDto>();
@@ -55,7 +57,10 @@ namespace PPC.Service.Mappers
 
             CreateMap<Lecture, LectureDto>();
             CreateMap<Lecture, VideoDto>();
-            CreateMap<Quiz, QuizDto>();
+            CreateMap<Quiz, QuizDto>()
+    .ForMember(dest => dest.TotalScore, opt => opt.MapFrom(src =>
+        src.Questions.Sum(q => q.Answers.Max(a => a.Score ?? 0))));
+
             CreateMap<Course, CourseListDto>()
     .ForMember(dest => dest.IsEnrolled, opt => opt.Ignore())
     .ForMember(dest => dest.FreeByMembershipName, opt => opt.Ignore());
@@ -74,6 +79,11 @@ namespace PPC.Service.Mappers
                 .ForMember(dest => dest.SubCategories, opt => opt.MapFrom(src => src.BookingSubCategories.Select(bsc => bsc.SubCategory)));
 
             CreateMap<Booking, BookingAdminResponse>();
+
+            CreateMap<Course, MyCourseDto>()
+    .ForMember(dest => dest.SubCategories, opt =>
+        opt.MapFrom(src => src.CourseSubCategories.Select(cs => cs.SubCategory)))
+    .ForMember(dest => dest.Chapters, opt => opt.MapFrom(src => src.Chapters));
         }
     }
 }

@@ -13,5 +13,13 @@ namespace PPC.Repository.Repositories
     public class QuizRepository : GenericRepository<Quiz>, IQuizRepository
     {
         public QuizRepository(CCPContext context) : base(context) { }
+
+        public async Task<Quiz> GetByIdWithDetailsAsync(string quizId)
+        {
+            return await _context.Quizzes
+                .Include(q => q.Questions)
+                    .ThenInclude(qs => qs.Answers)
+                .FirstOrDefaultAsync(q => q.Id == quizId && q.Status == 1);
+        }
     }
 }
