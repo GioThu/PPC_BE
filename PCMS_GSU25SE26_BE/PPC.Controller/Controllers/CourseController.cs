@@ -213,5 +213,44 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(result);
         }
+
+        [HttpPut("lecture")]
+        public async Task<IActionResult> UpdateLecture([FromBody] UpdateLectureRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _courseService.UpdateLectureByChapterIdAsync(request);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+
+        [HttpPut("video")]
+        public async Task<IActionResult> UpdateVideo([FromBody] UpdateVideoRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _courseService.UpdateVideoByChapterIdAsync(request);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+
+        [HttpPut("quiz")]
+        public async Task<IActionResult> UpdateQuiz([FromBody] UpdateQuizRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _courseService.UpdateQuizByChapterIdAsync(request);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
     }
 }

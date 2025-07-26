@@ -10,7 +10,6 @@ namespace PPC.Service.ModelResponse.CourseResponse
     public class QuizDto
     {
         public string Id { get; set; }
-        public string Name { get; set; }
         public int TotalScore { get; set; }
         public List<QuestionDto> Questions { get; set; }
     }

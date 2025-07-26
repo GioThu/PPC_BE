@@ -25,6 +25,8 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<List<MyCourseDto>>> GetEnrolledCoursesWithProgressAsync(string memberId);
         Task<ServiceResponse<string>> UpdateCourseAsync(string courseId, CourseUpdateRequest request);
         Task<ServiceResponse<MemberCourseDto>> GetMemberCourseDetailAsync(string courseId, string accountId);
-
+        Task<ServiceResponse<string>> UpdateLectureByChapterIdAsync(UpdateLectureRequest request);
+        Task<ServiceResponse<string>> UpdateVideoByChapterIdAsync(UpdateVideoRequest request);
+        Task<ServiceResponse<string>> UpdateQuizByChapterIdAsync(UpdateQuizRequest request);
     }
 }

@@ -9,14 +9,12 @@ namespace PPC.Service.ModelResponse.CourseResponse
     public class LectureDto
     {
         public string Id { get; set; }
-        public string Name { get; set; }
         public string LectureMetadata { get; set; }
     }
 
     public class VideoDto
     {
         public string Id { get; set; }
-        public string Name { get; set; }
         public TimeOnly? TimeVideo { get; set; }
         public string VideoUrl { get; set; }
     }

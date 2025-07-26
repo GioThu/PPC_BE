@@ -409,5 +409,87 @@ namespace PPC.Service.Services
 
             return ServiceResponse<MemberCourseDto>.SuccessResponse(dto);
         }
+
+        public async Task<ServiceResponse<string>> UpdateLectureByChapterIdAsync(UpdateLectureRequest request)
+        {
+            var chapter = await _chapterRepository.GetByIdAsync(request.ChapterId);
+            if (chapter == null)
+                return ServiceResponse<string>.ErrorResponse("Chapter không tồn tại.");
+
+            if (chapter.ChapterType != "Lecture")
+                return ServiceResponse<string>.ErrorResponse("Chapter này không phải loại Lecture.");
+
+            if (!string.IsNullOrEmpty(request.ChapterName))
+                chapter.Name = request.ChapterName;
+            if (!string.IsNullOrEmpty(request.ChapterDescription))
+                chapter.Description = request.ChapterDescription;
+
+            await _chapterRepository.UpdateAsync(chapter);
+
+            if (!string.IsNullOrEmpty(chapter.ChapNo))
+            {
+                var lecture = await _lectureRepository.GetByIdAsync(chapter.ChapNo);
+                if (lecture != null && !string.IsNullOrEmpty(request.LectureMetadata))
+                {
+                    lecture.LectureMetadata = request.LectureMetadata;
+                    await _lectureRepository.UpdateAsync(lecture);
+                }
+            }
+
+            return ServiceResponse<string>.SuccessResponse("Cập nhật Lecture thành công.");
+        }
+
+        public async Task<ServiceResponse<string>> UpdateVideoByChapterIdAsync(UpdateVideoRequest request)
+        {
+            var chapter = await _chapterRepository.GetByIdAsync(request.ChapterId);
+            if (chapter == null)
+                return ServiceResponse<string>.ErrorResponse("Chapter không tồn tại.");
+
+            if (chapter.ChapterType != "Video")
+                return ServiceResponse<string>.ErrorResponse("Chapter này không phải loại Video.");
+
+            if (!string.IsNullOrEmpty(request.ChapterName))
+                chapter.Name = request.ChapterName;
+            if (!string.IsNullOrEmpty(request.ChapterDescription))
+                chapter.Description = request.ChapterDescription;
+
+            await _chapterRepository.UpdateAsync(chapter);
+
+            if (!string.IsNullOrEmpty(chapter.ChapNo))
+            {
+                var video = await _lectureRepository.GetByIdAsync(chapter.ChapNo);
+                if (video != null)
+                {
+                    if (!string.IsNullOrEmpty(request.VideoUrl))
+                        video.VideoUrl = request.VideoUrl;
+                    if (request.TimeVideo.HasValue)
+                        video.TimeVideo = request.TimeVideo;
+
+                    await _lectureRepository.UpdateAsync(video);
+                }
+            }
+
+            return ServiceResponse<string>.SuccessResponse("Cập nhật Video thành công.");
+        }
+
+        public async Task<ServiceResponse<string>> UpdateQuizByChapterIdAsync(UpdateQuizRequest request)
+        {
+            var chapter = await _chapterRepository.GetByIdAsync(request.ChapterId);
+            if (chapter == null)
+                return ServiceResponse<string>.ErrorResponse("Chapter không tồn tại.");
+
+            if (chapter.ChapterType != "Quiz")
+                return ServiceResponse<string>.ErrorResponse("Chapter này không phải loại Quiz.");
+
+            if (!string.IsNullOrEmpty(request.ChapterName))
+                chapter.Name = request.ChapterName;
+
+            if (!string.IsNullOrEmpty(request.ChapterDescription))
+                chapter.Description = request.ChapterDescription;
+
+            await _chapterRepository.UpdateAsync(chapter);           
+
+            return ServiceResponse<string>.SuccessResponse("Cập nhật Quiz thành công.");
+        }
     }
 }

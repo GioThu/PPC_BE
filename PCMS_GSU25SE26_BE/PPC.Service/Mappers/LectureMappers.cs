@@ -48,7 +48,8 @@ namespace PPC.Service.Mappers
                 Name = request.Name,
                 Type = "Lecture",
                 LectureMetadata = request.LectureMetadata,
-                CreateAt = Utils.Utils.GetTimeNow()
+                CreateAt = Utils.Utils.GetTimeNow(),
+                Status = 1,
             };
         }
 
@@ -61,7 +62,8 @@ namespace PPC.Service.Mappers
                 Type = "Video",
                 VideoUrl = request.VideoUrl,
                 TimeVideo = request.TimeVideo,
-                CreateAt = Utils.Utils.GetTimeNow()
+                CreateAt = Utils.Utils.GetTimeNow(),
+                Status = 1,
             };
         }
     }
