@@ -17,6 +17,8 @@ namespace PPC.Service.ModelResponse.CourseResponse
         public double? Rating { get; set; }
         public int? Rank { get; set; }
         public bool IsEnrolled { get; set; }
+        public bool IsFree { get; set; }         
+        public bool IsBuy { get; set; }
         public string FreeByMembershipName { get; set; }
         public List<ChapterDto> Chapters { get; set; }
         public List<SubCategoryDto> SubCategories { get; set; }

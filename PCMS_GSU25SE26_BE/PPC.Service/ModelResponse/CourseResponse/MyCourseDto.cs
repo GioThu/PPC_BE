@@ -17,9 +17,9 @@ namespace PPC.Service.ModelResponse.CourseResponse
         public int? Rank { get; set; }
         public double? Rating { get; set; }
         public int ChapterCount { get; set; }
-        public int ProcessingCount { get; set; } // ✅ mới
+        public int ProcessingCount { get; set; }
+        public bool? IsOpen { get; set; }
         public List<ChapterDto> Chapters { get; set; }
         public List<SubCategoryDto> SubCategories { get; set; }
-        public int Status { get; set; }
     }
 }

@@ -26,7 +26,7 @@ namespace PPC.Repository.Repositories
         public async Task<List<EnrollCourse>> GetEnrolledCoursesWithProcessingAsync(string memberId)
         {
             return await _context.EnrollCourses
-                .Where(e => e.MemberId == memberId && e.Status == 1)
+                .Where(e => e.MemberId == memberId )
                 .Include(e => e.Course)
                     .ThenInclude(c => c.Chapters)
                 .Include(e => e.Course)

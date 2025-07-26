@@ -199,21 +199,34 @@ namespace PPC.Service.Services
             return ServiceResponse<ChapterDetailDto>.SuccessResponse(dto);
         }
 
-        public async Task<ServiceResponse<List<CourseListDto>>> GetAllCoursesAsync(string accountId)
+        public async Task<ServiceResponse<List<CourseListDto>>> GetAllCoursesAsync(string accountId, string memberId)
         {
             var courses = await _courseRepository.GetAllActiveCoursesAsync();
             var courseDtos = _mapper.Map<List<CourseListDto>>(courses);
 
-            var enrolledCourseIds = await _courseRepository.GetEnrolledCourseIdsAsync(accountId);
+            var enrollCourses = await _courseRepository.GetEnrollCoursesByAccountIdAsync(memberId);
+
+            var activeMemberships = await _memberShipRepository.GetActiveMemberShipsByMemberIdAsync(memberId);
 
             var allMemberships = await _memberShipRepository.GetAllActiveAsync();
             var rankToMembershipName = allMemberships
                 .Where(m => m.Rank.HasValue)
                 .ToDictionary(m => m.Rank.Value, m => m.MemberShipName);
 
+            var memberMaxRank = activeMemberships
+                .Where(m => m.MemberShip?.Rank != null)
+                .Select(m => m.MemberShip.Rank.Value)
+                .DefaultIfEmpty(0)
+                .Max();
+
             foreach (var dto in courseDtos)
             {
-                dto.IsEnrolled = enrolledCourseIds.Contains(dto.Id);
+                var enrolled = enrollCourses.FirstOrDefault(e => e.CourseId == dto.Id);
+
+                dto.IsEnrolled = enrolled?.IsOpen == true;
+                dto.IsBuy = enrolled?.Status == 0 || enrolled?.Status == 1;
+
+                dto.IsFree =  dto.Rank.HasValue && memberMaxRank >= dto.Rank.Value;
 
                 if (dto.Rank.HasValue && rankToMembershipName.TryGetValue(dto.Rank.Value, out var name))
                 {
@@ -285,7 +298,7 @@ namespace PPC.Service.Services
                 Price = finalPrice,
                 Status = 1,
                 Processing = 0,
-                IsOpen = true,
+                IsOpen = false,
             };
             await _enrollCourseRepository.CreateAsync(enroll);
 
@@ -334,7 +347,7 @@ namespace PPC.Service.Services
                     var dto = _mapper.Map<MyCourseDto>(course);
                     dto.ChapterCount = course.Chapters?.Count ?? 0;
                     dto.ProcessingCount = enroll.Processings?.Count ?? 0;
-
+                    dto.IsOpen = enroll.IsOpen ?? false;
                     courseDtos.Add(dto);
                 }
             }

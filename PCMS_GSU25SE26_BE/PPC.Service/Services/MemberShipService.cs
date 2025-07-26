@@ -158,15 +158,25 @@ namespace PPC.Service.Services
         {
             var now = Utils.Utils.GetTimeNow();
 
+            // Lấy tất cả membership hệ thống (để hiển thị đầy đủ)
             var memberships = await _memberShipRepository.GetAllActiveAsync();
+
+            // Lấy danh sách MemberMemberShip đang hoạt động
+            var activeMemberships = await _memberShipRepository.GetActiveMemberShipsByMemberIdAsync(memberId);
+
+            // Map theo MemberShipId để tra nhanh
+            var activeMembershipDict = activeMemberships
+                .GroupBy(mms => mms.MemberShipId)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.ExpiryDate).FirstOrDefault());
 
             var result = new List<MyMemberShipStatusResponse>();
 
             foreach (var memberShip in memberships)
             {
-                var expire = await _memberMemberShipRepository.GetMemberShipExpireDateAsync(memberId, memberShip.Id);
+                activeMembershipDict.TryGetValue(memberShip.Id, out var activeMemberShip);
 
-                var isActive = expire != null || expire > now;
+                var isActive = activeMemberShip != null && activeMemberShip.ExpiryDate > now;
+                var expiredDate = activeMemberShip?.ExpiryDate;
 
                 var response = new MyMemberShipStatusResponse
                 {
@@ -181,9 +191,10 @@ namespace PPC.Service.Services
                         ExpiryDate = memberShip.ExpiryDate,
                         Status = memberShip.Status
                     },
-                    ExpiredDate = expire,
+                    ExpiredDate = expiredDate,
                     IsActive = isActive
                 };
+
                 result.Add(response);
             }
 

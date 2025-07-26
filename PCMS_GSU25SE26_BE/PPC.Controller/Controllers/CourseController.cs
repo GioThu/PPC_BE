@@ -150,15 +150,17 @@ namespace PPC.Controller.Controllers
         [HttpGet("all-for-user")]
         public async Task<IActionResult> GetAllCoursesByUsers()
         {
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
             var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
-            if (string.IsNullOrEmpty(memberId))
-                return Unauthorized("Account ID not found in token");
 
-            var result = await _courseService.GetAllCoursesAsync(memberId);
-            return result.Success ? Ok(result) : BadRequest(result);
+            if (string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(memberId))
+                return Unauthorized("AccountId or MemberId not found in token.");
+
+            var response = await _courseService.GetAllCoursesAsync(accountId, memberId);
+            return Ok(response);
         }
 
-        [HttpPost("{courseId}/enroll")]
+        [HttpPost("{courseId}/buy")]
         public async Task<IActionResult> EnrollCourse(string courseId)
         {
             var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
@@ -198,7 +200,7 @@ namespace PPC.Controller.Controllers
         }
 
         [Authorize(Roles = "3")] 
-        [HttpGet("{courseId}/member-detail")]
+        [HttpGet("{courseId}/detail-for-member")]
         public async Task<IActionResult> GetMemberCourseDetail(string courseId)
         {
             var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;

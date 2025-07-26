@@ -55,5 +55,13 @@ namespace PPC.Repository.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<EnrollCourse>> GetEnrollCoursesByAccountIdAsync(string memberId)
+        {
+            return await _context.EnrollCourses
+                .Include(e => e.Course)
+                .Where(e => e.MemberId == memberId && e.Status != -1)
+                .ToListAsync();
+        }
+
     }
 }

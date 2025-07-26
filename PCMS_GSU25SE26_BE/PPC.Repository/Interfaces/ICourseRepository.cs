@@ -14,7 +14,7 @@ namespace PPC.Repository.Interfaces
         Task<bool> IsCourseNameExistAsync(string courseName);
         Task<List<Course>> GetAllCoursesWithDetailsAsync();
         Task<Course> GetCourseWithAllDetailsAsync(string courseId);
-
+        Task<List<EnrollCourse>> GetEnrollCoursesByAccountIdAsync(string memberId);
         Task<List<Course>> GetAllActiveCoursesAsync();
         Task<List<string>> GetEnrolledCourseIdsAsync(string accountId);
     }
