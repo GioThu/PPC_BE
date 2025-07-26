@@ -252,5 +252,20 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(result);
         }
+
+        [Authorize(Roles = "3")] // Hoặc role member
+        [HttpPut("enroll/{courseId}")]
+        public async Task<IActionResult> OpenCourse(string courseId)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("Không tìm thấy thông tin thành viên.");
+
+            var result = await _courseService.OpenCourseAsync(courseId, memberId);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
     }
 }

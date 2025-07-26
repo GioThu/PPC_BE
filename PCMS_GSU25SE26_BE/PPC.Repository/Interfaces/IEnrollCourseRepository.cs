@@ -13,5 +13,6 @@ namespace PPC.Repository.Interfaces
         Task<bool> IsEnrolledAsync(string memberId, string courseId);
         Task<List<EnrollCourse>> GetEnrolledCoursesWithProcessingAsync(string memberId);
         Task<EnrollCourse> GetEnrollByCourseAndMemberAsync(string courseId, string memberId);
+        Task<bool> OpenCourseForMemberAsync(string courseId, string memberId);
     }
 }

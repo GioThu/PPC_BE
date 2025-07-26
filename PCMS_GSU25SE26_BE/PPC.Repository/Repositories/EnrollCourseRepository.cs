@@ -44,5 +44,20 @@ namespace PPC.Repository.Repositories
                     e.MemberId == memberId &&
                     e.Status == 1); 
         }
+
+        public async Task<bool> OpenCourseForMemberAsync(string courseId, string memberId)
+        {
+            var enroll = await _context.EnrollCourses
+                .FirstOrDefaultAsync(e => e.CourseId == courseId && e.MemberId == memberId && e.Status == 1);
+
+            if (enroll == null)
+                return false;
+
+            enroll.IsOpen = true;
+            _context.EnrollCourses.Update(enroll);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

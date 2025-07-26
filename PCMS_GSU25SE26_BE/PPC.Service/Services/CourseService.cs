@@ -226,7 +226,7 @@ namespace PPC.Service.Services
                 dto.IsEnrolled = enrolled?.IsOpen == true;
                 dto.IsBuy = enrolled?.Status == 0 || enrolled?.Status == 1;
 
-                dto.IsFree =  dto.Rank.HasValue && memberMaxRank >= dto.Rank.Value;
+                dto.IsFree = dto.Rank.HasValue && memberMaxRank >= dto.Rank.Value;
 
                 if (dto.Rank.HasValue && rankToMembershipName.TryGetValue(dto.Rank.Value, out var name))
                 {
@@ -487,9 +487,20 @@ namespace PPC.Service.Services
             if (!string.IsNullOrEmpty(request.ChapterDescription))
                 chapter.Description = request.ChapterDescription;
 
-            await _chapterRepository.UpdateAsync(chapter);           
+            await _chapterRepository.UpdateAsync(chapter);
 
             return ServiceResponse<string>.SuccessResponse("Cập nhật Quiz thành công.");
+        }
+    
+
+    public async Task<ServiceResponse<string>> OpenCourseAsync(string courseId, string memberId)
+        {
+            var success = await _enrollCourseRepository.OpenCourseForMemberAsync(courseId, memberId);
+
+            if (!success)
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy dữ liệu để mở khóa học.");
+
+            return ServiceResponse<string>.SuccessResponse("Đã mở khóa học thành công.");
         }
     }
 }
