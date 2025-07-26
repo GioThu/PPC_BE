@@ -26,6 +26,13 @@ namespace PPC.Service.Mappers
     {
         public MappingProfile()
         {
+            CreateMap<Course, MemberCourseDto>()
+    .ForMember(dest => dest.ChapterCount, opt => opt.MapFrom(src => src.Chapters.Count))
+    .ForMember(dest => dest.SubCategories, opt => opt.MapFrom(src => src.CourseSubCategories.Select(csc => csc.SubCategory)))
+    .ForMember(dest => dest.Chapters, opt => opt.MapFrom(src => src.Chapters))
+    .ForMember(dest => dest.ProcessingCount, opt => opt.Ignore());
+            CreateMap<Chapter, MemberChapterDto>()
+    .ForMember(dest => dest.IsDone, opt => opt.Ignore());
             CreateMap<WorkSchedule, WorkScheduleDto>();
             CreateMap<Category, CategoryDto>();
             CreateMap<Member, MemberDto>();

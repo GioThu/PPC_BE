@@ -31,10 +31,11 @@ namespace PPC.Service.Services
         private readonly ISysTransactionRepository _sysTransactionRepository;
         private readonly IMemberMemberShipRepository _memberMemberShipRepository;
         private readonly IMemberRepository _memberRepository;
+        private readonly IProcessingRepository _processingRepository;
 
 
 
-        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository, IAccountRepository accountRepository, IEnrollCourseRepository enrollCourseRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IMemberMemberShipRepository memberMemberShipRepository, IMemberRepository memberRepository)
+        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository, IAccountRepository accountRepository, IEnrollCourseRepository enrollCourseRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IMemberMemberShipRepository memberMemberShipRepository, IMemberRepository memberRepository, IProcessingRepository processingRepository)
         {
             _courseRepository = courseRepository;
             _mapper = mapper;
@@ -49,6 +50,7 @@ namespace PPC.Service.Services
             _sysTransactionRepository = sysTransactionRepository;
             _memberMemberShipRepository = memberMemberShipRepository;
             _memberRepository = memberRepository;
+            _processingRepository = processingRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateCourseAsync(string creatorId, CourseCreateRequest request)
@@ -327,10 +329,10 @@ namespace PPC.Service.Services
             {
                 var course = enroll.Course;
 
-                if (course != null) 
+                if (course != null)
                 {
                     var dto = _mapper.Map<MyCourseDto>(course);
-                    dto.ChapterCount = course.Chapters?.Count ?? 0; 
+                    dto.ChapterCount = course.Chapters?.Count ?? 0;
                     dto.ProcessingCount = enroll.Processings?.Count ?? 0;
 
                     courseDtos.Add(dto);
@@ -339,7 +341,60 @@ namespace PPC.Service.Services
 
             return ServiceResponse<List<MyCourseDto>>.SuccessResponse(courseDtos);
         }
+
+        public async Task<ServiceResponse<string>> UpdateCourseAsync(string courseId, CourseUpdateRequest request)
+        {
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null)
+                return ServiceResponse<string>.ErrorResponse("Course not found");
+
+            course.Name = request.Name?.Trim();
+            course.Thumble = request.Thumble;
+            course.Description = request.Description;
+            course.Price = request.Price;
+            course.Rank = request.Rank;
+            course.UpdateAt = Utils.Utils.GetTimeNow();
+
+            var result = await _courseRepository.UpdateAsync(course);
+            if (result == 0)
+                return ServiceResponse<string>.ErrorResponse("Update failed");
+
+            return ServiceResponse<string>.SuccessResponse("Course updated successfully");
+        }
+
+        public async Task<ServiceResponse<MemberCourseDto>> GetMemberCourseDetailAsync(string courseId, string memberId)
+        {
+            // Kiểm tra EnrollCourse
+            var enroll = await _enrollCourseRepository.GetEnrollByCourseAndMemberAsync(courseId, memberId);
+            if (enroll == null)
+                return ServiceResponse<MemberCourseDto>.ErrorResponse("Bạn chưa học khóa học này");
+
+            // Lấy dữ liệu Course
+            var course = await _courseRepository.GetCourseWithAllDetailsAsync(courseId);
+            if (course == null)
+                return ServiceResponse<MemberCourseDto>.ErrorResponse("Course không tồn tại");
+
+            // Map sang DTO
+            var dto = _mapper.Map<MemberCourseDto>(course);
+
+            // Gán ChapterCount từ source
+            dto.ChapterCount = course.Chapters?.Count ?? 0;
+
+            var doneChapterIds = await _processingRepository.GetProcessingChapterIdsByEnrollCourseIdAsync(enroll.Id);
+            var doneSet = doneChapterIds.ToHashSet();
+
+            // Bảo vệ null cho Chapters
+            dto.Chapters ??= new List<MemberChapterDto>();
+
+            foreach (var chapter in dto.Chapters)
+            {
+                chapter.IsDone = doneSet.Contains(chapter.Id);
+            }
+
+            // Gán số lượng đã làm
+            dto.ProcessingCount = doneSet.Count;
+
+            return ServiceResponse<MemberCourseDto>.SuccessResponse(dto);
+        }
     }
-
-
 }

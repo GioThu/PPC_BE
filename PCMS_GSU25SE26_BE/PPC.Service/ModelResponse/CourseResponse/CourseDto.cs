@@ -22,4 +22,20 @@ namespace PPC.Service.ModelResponse.CourseResponse
 
         public int Status { get; set; }
     }
+
+    public class MemberCourseDto
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Thumble { get; set; }
+        public string Description { get; set; }
+        public double? Price { get; set; }
+        public int? Rank { get; set; }
+        public double? Rating { get; set; }
+        public int ProcessingCount { get; set; }
+        public int ChapterCount { get; set; }
+        public List<MemberChapterDto> Chapters { get; set; }
+        public List<SubCategoryDto> SubCategories { get; set; }
+        public int Status { get; set; }
+    }
 }

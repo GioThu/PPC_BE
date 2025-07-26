@@ -182,5 +182,34 @@ namespace PPC.Controller.Controllers
             var response = await _courseService.GetEnrolledCoursesWithProgressAsync(memberId);
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+        [Authorize(Roles = "1")] 
+        [HttpPost("update-course")]
+        public async Task<IActionResult> UpdateCourse([FromBody] CourseUpdateRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _courseService.UpdateCourseAsync(request.CourseId, request);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+
+        [Authorize(Roles = "3")] 
+        [HttpGet("{courseId}/member-detail")]
+        public async Task<IActionResult> GetMemberCourseDetail(string courseId)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("memberId not found in token.");
+
+            var result = await _courseService.GetMemberCourseDetailAsync(courseId, memberId);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
     }
 }
