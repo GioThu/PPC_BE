@@ -36,9 +36,7 @@ namespace PPC.Service.Mappers
             CreateMap<Survey, SurveyDto>();
             CreateMap<Question, SurveyQuestionDto>();
             CreateMap<Answer, SurveyAnswerDto>();
-            CreateMap<Question, QuestionDto>()
-    .ForMember(dest => dest.MaxScore, opt => opt.MapFrom(src =>
-        src.Answers.Max(a => a.Score ?? 0)));
+
             CreateMap<Answer, AnswerDto>();
             CreateMap<PersonType, PersonTypeDto>();
             CreateMap<Deposit, DepositDto>();
@@ -59,7 +57,21 @@ namespace PPC.Service.Mappers
             CreateMap<Lecture, VideoDto>();
             CreateMap<Quiz, QuizDto>()
     .ForMember(dest => dest.TotalScore, opt => opt.MapFrom(src =>
-        src.Questions.Sum(q => q.Answers.Max(a => a.Score ?? 0))));
+        src.Questions != null && src.Questions.Any()
+            ? src.Questions.Sum(q =>
+                q.Answers != null && q.Answers.Any()
+                    ? q.Answers.Max(a => a.Score ?? 0)
+                    : 0)
+            : 0))
+    .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
+
+            CreateMap<Question, QuestionDto>()
+                .ForMember(dest => dest.MaxScore, opt => opt.MapFrom(src =>
+                    src.Answers != null && src.Answers.Any()
+                        ? src.Answers.Max(a => a.Score ?? 0)
+                        : 0))
+                .ForMember(dest => dest.Answers, opt => opt.MapFrom(src => src.Answers));
+
 
             CreateMap<Course, CourseListDto>()
     .ForMember(dest => dest.IsEnrolled, opt => opt.Ignore())
