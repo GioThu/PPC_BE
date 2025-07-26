@@ -267,5 +267,21 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(result);
         }
+
+        [HttpPut("change-status")]
+        public async Task<IActionResult> ChangeCourseStatus([FromBody] ChangeCourseStatusRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (string.IsNullOrWhiteSpace(request.CourseId))
+                return BadRequest("CourseId is required.");
+
+            var response = await _courseService.ChangeCourseStatusAsync(request.CourseId, request.NewStatus);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

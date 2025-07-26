@@ -29,7 +29,7 @@ namespace PPC.Repository.Repositories
 
         public async Task<List<MemberMemberShip>> GetActiveMemberShipsByMemberIdAsync(string memberId)
         {
-            var now = DateTime.UtcNow;
+            var now = GetTimeNow();
 
             return await _context.MemberMemberShips
                 .Include(mms => mms.MemberShip)
@@ -38,6 +38,14 @@ namespace PPC.Repository.Repositories
                     mms.Status == 1 &&
                     mms.ExpiryDate > now)
                 .ToListAsync();
+        }
+
+
+        public DateTime GetTimeNow()
+        {
+            TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTime vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+            return vietnamTime;
         }
     }
 }

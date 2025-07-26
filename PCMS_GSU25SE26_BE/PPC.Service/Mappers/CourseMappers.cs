@@ -48,7 +48,9 @@ namespace PPC.Service.Mappers
                 {
                     Id = cs.SubCategory.Id,
                     Name = cs.SubCategory.Name
-                }).ToList()
+                }).ToList(),
+                Status = course.Status ?? 0
+
             };
         }
     }

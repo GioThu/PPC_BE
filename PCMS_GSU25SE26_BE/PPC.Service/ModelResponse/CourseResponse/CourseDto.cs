@@ -19,7 +19,6 @@ namespace PPC.Service.ModelResponse.CourseResponse
         public int ChapterCount { get; set; }
         public List<ChapterDto> Chapters { get; set; }
         public List<SubCategoryDto> SubCategories { get; set; }
-
         public int Status { get; set; }
     }
 

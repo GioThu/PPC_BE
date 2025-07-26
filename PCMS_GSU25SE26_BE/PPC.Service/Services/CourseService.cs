@@ -491,9 +491,9 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Cập nhật Quiz thành công.");
         }
-    
 
-    public async Task<ServiceResponse<string>> OpenCourseAsync(string courseId, string memberId)
+
+        public async Task<ServiceResponse<string>> OpenCourseAsync(string courseId, string memberId)
         {
             var success = await _enrollCourseRepository.OpenCourseForMemberAsync(courseId, memberId);
 
@@ -501,6 +501,27 @@ namespace PPC.Service.Services
                 return ServiceResponse<string>.ErrorResponse("Không tìm thấy dữ liệu để mở khóa học.");
 
             return ServiceResponse<string>.SuccessResponse("Đã mở khóa học thành công.");
+        }
+
+
+        public async Task<ServiceResponse<string>> ChangeCourseStatusAsync(string courseId, int newStatus)
+        {
+            // Validate input status
+            if (newStatus < 0 || newStatus > 2)
+                return ServiceResponse<string>.ErrorResponse("Invalid status. Must be 0, 1 or 2.");
+
+            // Get course by id
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null)
+                return ServiceResponse<string>.ErrorResponse("Course not found.");
+
+            // Update status
+            course.Status = newStatus;
+            course.UpdateAt = Utils.Utils.GetTimeNow();
+
+            await _courseRepository.UpdateAsync(course);
+
+            return ServiceResponse<string>.SuccessResponse("Course status updated successfully.");
         }
     }
 }
