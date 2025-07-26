@@ -46,7 +46,6 @@ namespace PPC.Service.Mappers
             {
                 Id = Utils.Utils.GenerateIdModel("Lecture"),
                 Name = request.Name,
-                Description = request.Description,
                 Type = "Lecture",
                 LectureMetadata = request.LectureMetadata,
                 CreateAt = Utils.Utils.GetTimeNow()
@@ -59,7 +58,6 @@ namespace PPC.Service.Mappers
             {
                 Id = Utils.Utils.GenerateIdModel("Lecture"),
                 Name = request.Name,
-                Description = request.Description,
                 Type = "Video",
                 VideoUrl = request.VideoUrl,
                 TimeVideo = request.TimeVideo,

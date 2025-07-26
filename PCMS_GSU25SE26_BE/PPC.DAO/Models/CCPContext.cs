@@ -337,9 +337,8 @@ public partial class CCPContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("create_at");
             entity.Property(e => e.Description)
-                .HasMaxLength(1000)
-                .IsUnicode(false)
-                .HasColumnName("description");
+                .HasColumnName("description")
+            .HasColumnType("nvarchar(max)");
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnName("name");
