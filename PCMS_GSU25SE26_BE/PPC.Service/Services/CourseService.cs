@@ -70,6 +70,7 @@ namespace PPC.Service.Services
         public async Task<ServiceResponse<List<CourseDto>>> GetAllCoursesAsync()
         {
             var courses = await _courseRepository.GetAllCoursesWithDetailsAsync();
+
             var courseDtos = courses.Select(c => c.ToDto()).ToList();
             return ServiceResponse<List<CourseDto>>.SuccessResponse(courseDtos);
         }
@@ -492,7 +493,6 @@ namespace PPC.Service.Services
             return ServiceResponse<string>.SuccessResponse("Cập nhật Quiz thành công.");
         }
 
-
         public async Task<ServiceResponse<string>> OpenCourseAsync(string courseId, string memberId)
         {
             var success = await _enrollCourseRepository.OpenCourseForMemberAsync(courseId, memberId);
@@ -502,7 +502,6 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Đã mở khóa học thành công.");
         }
-
 
         public async Task<ServiceResponse<string>> ChangeCourseStatusAsync(string courseId, int newStatus)
         {
@@ -522,6 +521,26 @@ namespace PPC.Service.Services
             await _courseRepository.UpdateAsync(course);
 
             return ServiceResponse<string>.SuccessResponse("Course status updated successfully.");
+        }
+
+        public async Task<ServiceResponse<string>> DeleteChapterAsync(string chapterId)
+        {
+            var chapter = await _chapterRepository.GetByIdAsync(chapterId);
+            if (chapter == null)
+                return ServiceResponse<string>.ErrorResponse("Chapter không tồn tại.");
+
+            chapter.Status = 0;
+            await _chapterRepository.UpdateAsync(chapter);
+
+            var affectedChapters = await _chapterRepository.GetChaptersAfterAsync(chapter.CourseId, chapter.ChapNum ?? 0);
+
+            foreach (var ch in affectedChapters)
+            {
+                ch.ChapNum = ch.ChapNum - 1;
+                await _chapterRepository.UpdateAsync(ch);
+            }
+
+            return ServiceResponse<string>.SuccessResponse("Xóa chapter thành công và cập nhật thứ tự.");
         }
     }
 }

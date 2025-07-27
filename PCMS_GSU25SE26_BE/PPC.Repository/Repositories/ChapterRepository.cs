@@ -16,9 +16,8 @@ namespace PPC.Repository.Repositories
         public async Task<int> GetNextChapterNumberAsync(string courseId)
         {
             var max = await _context.Chapters
-                .Where(c => c.CourseId == courseId)
+                .Where(c => c.CourseId == courseId && c.Status == 1)
                 .MaxAsync(c => (int?)c.ChapNum) ?? 0;
-
             return max + 1;
         }
 
@@ -26,5 +25,24 @@ namespace PPC.Repository.Repositories
         {
             return await _context.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
         }
+
+        public async Task<List<Chapter>> GetChaptersAfterAsync(string courseId, int chapNum)
+        {
+            return await _context.Chapters
+                .Where(c => c.CourseId == courseId && c.ChapNum > chapNum && c.Status == 1)
+                .OrderBy(c => c.ChapNum)
+                .ToListAsync();
+        }
+
+        public async Task DecreaseChapNumAfterAsync(string courseId, int deletedChapNum)
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                @"UPDATE Chapters
+              SET ChapNum = ChapNum - 1
+              WHERE CourseId = {0} AND ChapNum > {1}",
+                courseId, deletedChapNum
+            );
+        }
+
     }
 }

@@ -283,5 +283,16 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [Authorize(Roles = "1")]
+        [HttpDelete("{chapterId}")]
+        public async Task<IActionResult> DeleteChapter(string chapterId)
+        {
+            var result = await _courseService.DeleteChapterAsync(chapterId);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
     }
 }

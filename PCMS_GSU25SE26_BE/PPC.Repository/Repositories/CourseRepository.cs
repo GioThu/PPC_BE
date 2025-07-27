@@ -21,21 +21,44 @@ namespace PPC.Repository.Repositories
 
         public async Task<List<Course>> GetAllCoursesWithDetailsAsync()
         {
-            return await _context.Courses
-                .Include(c => c.Chapters)
+            var courses = await _context.Courses
                 .Include(c => c.CourseSubCategories)
                     .ThenInclude(cs => cs.SubCategory)
+                .Include(c => c.Chapters)
                 .ToListAsync();
+
+            foreach (var course in courses)
+            {
+                course.Chapters = course.Chapters?.Where(ch => ch.Status == 1).ToList();
+                course.CourseSubCategories = course.CourseSubCategories?
+                    .Where(cs => cs.SubCategory != null).ToList();
+            }
+
+            return courses;
         }
 
         public async Task<Course> GetCourseWithAllDetailsAsync(string courseId)
         {
-            return await _context.Courses
+            var course = await _context.Courses
                 .Include(c => c.Chapters)
                 .Include(c => c.CourseSubCategories)
                     .ThenInclude(cs => cs.SubCategory)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
+
+            if (course != null)
+            {
+                course.Chapters = course.Chapters?
+                    .Where(ch => ch.Status == 1)
+                    .ToList();
+
+                course.CourseSubCategories = course.CourseSubCategories?
+                    .Where(cs => cs.SubCategory != null)
+                    .ToList();
+            }
+
+            return course;
         }
+
 
         public async Task<List<string>> GetEnrolledCourseIdsAsync(string accountId)
         {

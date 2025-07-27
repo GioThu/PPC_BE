@@ -12,5 +12,9 @@ namespace PPC.Repository.Interfaces
     {
         Task<int> GetNextChapterNumberAsync(string courseId);
         Task<Chapter> GetByIdAsync(string chapterId);
+        Task<List<Chapter>> GetChaptersAfterAsync(string courseId, int chapNum);
+        Task DecreaseChapNumAfterAsync(string courseId, int deletedChapNum);
+
+
     }
 }
