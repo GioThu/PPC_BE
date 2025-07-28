@@ -17,5 +17,7 @@ namespace PPC.Repository.Interfaces
         Task<List<EnrollCourse>> GetEnrollCoursesByAccountIdAsync(string memberId);
         Task<List<Course>> GetAllActiveCoursesAsync();
         Task<List<string>> GetEnrolledCourseIdsAsync(string accountId);
+        Task<bool> RateCourseAsync(string courseId, string memberId, int rating, string feedback);
+        Task<List<EnrollCourse>> GetEnrollCoursesByCourseIdAsync(string courseId);
     }
 }

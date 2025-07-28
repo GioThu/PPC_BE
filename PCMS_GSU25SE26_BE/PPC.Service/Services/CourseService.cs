@@ -542,5 +542,32 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Xóa chapter thành công và cập nhật thứ tự.");
         }
+
+        public async Task<ServiceResponse<string>> RateCourseAsync(string courseId, string memberId, int rating, string feedback)
+        {
+            var success = await _courseRepository.RateCourseAsync(courseId, memberId, rating, feedback);
+
+            if (!success)
+                return ServiceResponse<string>.ErrorResponse("Member has not enrolled in the course or an error occurred.");
+
+            return ServiceResponse<string>.SuccessResponse("Course rated successfully.");
+        }
+
+        public async Task<ServiceResponse<List<ReviewDto>>> GetCourseReviewsAsync(string courseId)
+        {
+            var enrollCourses = await _courseRepository.GetEnrollCoursesByCourseIdAsync(courseId);
+
+            if (enrollCourses == null || !enrollCourses.Any())
+                return ServiceResponse<List<ReviewDto>>.ErrorResponse("No reviews available for this course.");
+
+            var reviews = enrollCourses.Select(e => new ReviewDto
+            {
+                Rating = e.Rating,
+                Feedback = e.Feedback,
+                MemberName = e.Member.Fullname 
+            }).ToList();
+
+            return ServiceResponse<List<ReviewDto>>.SuccessResponse(reviews);
+        }
     }
 }

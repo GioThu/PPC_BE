@@ -86,5 +86,46 @@ namespace PPC.Repository.Repositories
                 .ToListAsync();
         }
 
+        public async Task<bool> RateCourseAsync(string courseId, string memberId, int rating, string feedback)
+        {
+            var enrollCourse = await _context.EnrollCourses
+                .FirstOrDefaultAsync(e => e.CourseId == courseId && e.MemberId == memberId && e.Status == 1);
+
+            if (enrollCourse == null)
+                return false;
+
+            enrollCourse.Rating = rating;
+            enrollCourse.Feedback = feedback;
+            await _context.SaveChangesAsync();
+
+            // Update course rating and reviews count
+            var course = await _context.Courses
+                .Include(c => c.EnrollCourses)
+                .FirstOrDefaultAsync(c => c.Id == courseId);
+
+            if (course == null)
+                return false;
+
+            // Calculate average rating
+            var totalReviews = course.EnrollCourses.Count(e => e.Rating.HasValue);
+            var averageRating = course.EnrollCourses
+                .Where(e => e.Rating.HasValue)
+                .Average(e => e.Rating);
+
+            course.Rating = averageRating;
+            course.Reviews = totalReviews;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Get all reviews for a course
+        public async Task<List<EnrollCourse>> GetEnrollCoursesByCourseIdAsync(string courseId)
+        {
+            return await _context.EnrollCourses
+                .Where(e => e.CourseId == courseId && e.Status == 1 && e.Rating.HasValue)
+                .Include(e => e.Member)  // Include Member for MemberName
+                .ToListAsync();
+        }
     }
 }

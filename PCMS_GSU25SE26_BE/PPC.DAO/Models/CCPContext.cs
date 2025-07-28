@@ -564,6 +564,7 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnName("name");
+            entity.Property(e => e.Reviews).HasColumnName("reviews");
             entity.Property(e => e.Price).HasColumnName("price");
             entity.Property(e => e.Rank).HasColumnName("rank");
             entity.Property(e => e.Rating).HasColumnName("rating");
@@ -599,6 +600,7 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(64)
                 .IsUnicode(false)
                 .HasColumnName("subCategoryId");
+
 
             entity.HasOne(d => d.Course).WithMany(p => p.CourseSubCategories)
                 .HasForeignKey(d => d.CourseId)

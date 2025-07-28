@@ -21,6 +21,8 @@ public partial class Course
 
     public double? Price { get; set; }
 
+    public int? Reviews { get; set; }
+
     public string CreateBy { get; set; }
 
     public int? Rank { get; set; }

@@ -294,5 +294,30 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(result);
         }
+
+        [HttpPost("rate/{courseId}")]
+        public async Task<IActionResult> RateCourse(string courseId, [FromBody] RateCourseRequest request)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("Member information not found.");
+
+            var result = await _courseService.RateCourseAsync(courseId, memberId, request.Rating, request.Feedback);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+
+        // Endpoint to get reviews of a course
+        [HttpGet("reviews/{courseId}")]
+        public async Task<IActionResult> GetCourseReviews(string courseId)
+        {
+            var result = await _courseService.GetCourseReviewsAsync(courseId);
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
     }
 }
