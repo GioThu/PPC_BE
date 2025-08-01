@@ -42,6 +42,7 @@ builder.Services.AddScoped<ILectureRepository, LectureRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IEnrollCourseRepository, EnrollCourseRepository>();
 builder.Services.AddScoped<IProcessingRepository, ProcessingRepository>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
 
 
 
@@ -67,6 +68,7 @@ builder.Services.AddScoped<ICoupleService, CoupleService>();
 builder.Services.AddScoped<IResultPersonTypeService, ResultPersonTypeService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IProcessingService, ProcessingService>();
+builder.Services.AddScoped<IPostService, PostService>();
 
 
 

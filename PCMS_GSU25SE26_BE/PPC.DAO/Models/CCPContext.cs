@@ -940,13 +940,11 @@ public partial class CCPContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("createBy");
             entity.Property(e => e.Description)
-                .HasMaxLength(1000)
-                .IsUnicode(false)
-                .HasColumnName("description");
+                .HasColumnName("description")
+                .HasColumnType("nvarchar(max)");
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.Title)
-                .HasMaxLength(255)
-                .IsUnicode(false)
+                .HasMaxLength(1000)
                 .HasColumnName("title");
         });
 

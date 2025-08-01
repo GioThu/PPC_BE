@@ -10,6 +10,7 @@ using PPC.Service.ModelResponse.CourseResponse;
 using PPC.Service.ModelResponse.DepositResponse;
 using PPC.Service.ModelResponse.MemberResponse;
 using PPC.Service.ModelResponse.PersonTypeResponse;
+using PPC.Service.ModelResponse.PostResponse;
 using PPC.Service.ModelResponse.SurveyResponse;
 using PPC.Service.ModelResponse.WorkScheduleResponse;
 using System;
@@ -43,7 +44,7 @@ namespace PPC.Service.Mappers
             CreateMap<Survey, SurveyDto>();
             CreateMap<Question, SurveyQuestionDto>();
             CreateMap<Answer, SurveyAnswerDto>();
-
+            CreateMap<Post, PostDto>();
             CreateMap<Answer, AnswerDto>();
             CreateMap<PersonType, PersonTypeDto>();
             CreateMap<Deposit, DepositDto>();
