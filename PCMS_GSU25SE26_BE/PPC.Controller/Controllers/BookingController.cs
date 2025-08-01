@@ -335,5 +335,69 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpPut("assign-member2")]
+        public async Task<IActionResult> AssignMember2([FromQuery] string bookingId, [FromQuery] string memberCode)
+        {
+            if (string.IsNullOrWhiteSpace(bookingId) || string.IsNullOrWhiteSpace(memberCode))
+                return BadRequest("Booking ID and Member Code are required.");
+
+            var response = await _bookingService.UpdateMember2Async(bookingId, memberCode);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [HttpGet("invitations")]
+        [Authorize(Roles = "3")] // Member role
+        public async Task<IActionResult> GetInvitations()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _bookingService.GetInvitationsForMemberAsync(memberId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+        [HttpPost("accept-invitation")]
+        [Authorize(Roles = "3")]
+        public async Task<IActionResult> AcceptInvitation([FromQuery] string bookingId)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _bookingService.AcceptInvitationAsync(bookingId, memberId);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpPost("decline-invitation")]
+        [Authorize(Roles = "3")]
+        public async Task<IActionResult> DeclineInvitation([FromQuery] string bookingId)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _bookingService.DeclineInvitationAsync(bookingId, memberId);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpPost("cancel-invitation")]
+        [Authorize(Roles = "3")]
+        public async Task<IActionResult> CancelInvitation([FromQuery] string bookingId)
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _bookingService.CancelInvitationAsync(bookingId, memberId);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
     }
 }

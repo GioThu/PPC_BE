@@ -28,6 +28,8 @@ namespace PPC.Service.ModelResponse.CoupleResponse
         public int Compatibility { get; set; }
 
         public string Image { get; set; }
+        public string? Weeknesses { get; set; }
+        public string? StrongPoints { get; set; }
 
         public DateTime? CreateAt { get; set; }
 

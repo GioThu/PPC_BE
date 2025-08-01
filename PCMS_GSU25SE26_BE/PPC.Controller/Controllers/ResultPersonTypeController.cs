@@ -31,6 +31,6 @@ namespace PPC.Controller.Controllers
 
             var response = await _resultPersonTypeService.UpdateResultPersonTypeAsync(request);
             return response.Success ? Ok(response) : BadRequest(response);
-        }
+        }   
     }
 }

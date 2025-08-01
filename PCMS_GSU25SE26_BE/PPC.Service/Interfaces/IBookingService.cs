@@ -34,7 +34,12 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> RateBookingAsync(BookingRatingRequest request);
         Task<ServiceResponse<List<BookingRatingFeedbackDto>>> GetRatingFeedbackByCounselorAsync(string counselorId);
         Task<ServiceResponse<int>> GetMaxBookingDiscountByMemberWrappedAsync(string memberId);
+        Task<ServiceResponse<string>> UpdateMember2Async(string bookingId, string memberCode);
+        Task<ServiceResponse<List<BookingDto>>> GetInvitationsForMemberAsync(string memberId);
 
+        Task<ServiceResponse<string>> AcceptInvitationAsync(string bookingId, string memberId);
+        Task<ServiceResponse<string>> DeclineInvitationAsync(string bookingId, string memberId);
+        Task<ServiceResponse<string>> CancelInvitationAsync(string bookingId, string creatorMemberId);
 
     }
 }

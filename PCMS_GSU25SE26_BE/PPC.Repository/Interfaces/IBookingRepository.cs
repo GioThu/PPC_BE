@@ -24,7 +24,11 @@ namespace PPC.Repository.Interfaces
         Task<(List<Booking>, int)> GetBookingsByCounselorPagingAsync(string counselorId, int pageNumber, int pageSize, int? status);
         Task<List<Booking>> GetRatedBookingsByCounselorAsync(string counselorId);
         Task<Booking> GetByIdWithMember(string bookingId);
-
+        Task UpdateMember2Async(string bookingId, string memberCode);
+        Task<List<Booking>> GetInvitationsForMemberAsync(string memberId);
+        Task<bool> AcceptInvitationAsync(string bookingId, string memberId);
+        Task<bool> DeclineInvitationAsync(string bookingId, string memberId);
+        Task<bool> CancelInvitationAsync(string bookingId, string creatorMemberId);
 
     }
 }

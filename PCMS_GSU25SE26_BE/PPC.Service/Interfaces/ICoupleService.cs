@@ -27,5 +27,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> CreateVirtualCoupleAsync(string memberId, VirtualCoupleCreateRequest request);
         Task<ServiceResponse<string>> SubmitVirtualResultAsync(string memberId, SurveyResultRequest request);
         Task<ServiceResponse<string>> ApplyLatestResultToSelfAsync(string memberId, string surveyId);
+
     }
 }

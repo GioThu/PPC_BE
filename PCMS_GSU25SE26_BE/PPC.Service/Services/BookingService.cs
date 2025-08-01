@@ -590,5 +590,60 @@ namespace PPC.Service.Services
             var discount = await _memberShipService.GetMaxBookingDiscountByMemberAsync(memberId); 
             return ServiceResponse<int>.SuccessResponse(discount);
         }
+
+        public async Task<ServiceResponse<string>> UpdateMember2Async(string bookingId, string memberCode)
+        {
+            var fullMemberId = $"Member_{memberCode}";
+
+            var isMemberValid = await _memberRepository.IsMemberExistsAsync(fullMemberId);
+            if (!isMemberValid)
+            {
+                return ServiceResponse<string>.ErrorResponse("Member not found.");
+            }
+
+            try
+            {
+                await _bookingRepository.UpdateMember2Async(bookingId, memberCode);
+                return ServiceResponse<string>.SuccessResponse("Updated Member2 successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<string>.ErrorResponse(ex.Message);
+            }
+        }
+
+        public async Task<ServiceResponse<List<BookingDto>>> GetInvitationsForMemberAsync(string memberId)
+        {
+            var bookings = await _bookingRepository.GetInvitationsForMemberAsync(memberId);
+            var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
+            return ServiceResponse<List<BookingDto>>.SuccessResponse(bookingDtos);
+        }
+
+        public async Task<ServiceResponse<string>> AcceptInvitationAsync(string bookingId, string memberId)
+        {
+            var success = await _bookingRepository.AcceptInvitationAsync(bookingId, memberId);
+            if (!success)
+                return ServiceResponse<string>.ErrorResponse("Invitation not found or already accepted/declined.");
+
+            return ServiceResponse<string>.SuccessResponse("Invitation accepted.");
+        }
+
+        public async Task<ServiceResponse<string>> DeclineInvitationAsync(string bookingId, string memberId)
+        {
+            var success = await _bookingRepository.DeclineInvitationAsync(bookingId, memberId);
+            if (!success)
+                return ServiceResponse<string>.ErrorResponse("Invitation not found or already accepted/declined.");
+
+            return ServiceResponse<string>.SuccessResponse("Invitation declined.");
+        }
+
+        public async Task<ServiceResponse<string>> CancelInvitationAsync(string bookingId, string creatorMemberId)
+        {
+            var success = await _bookingRepository.CancelInvitationAsync(bookingId, creatorMemberId);
+            if (!success)
+                return ServiceResponse<string>.ErrorResponse("Invitation not found or already accepted.");
+
+            return ServiceResponse<string>.SuccessResponse("Invitation has been canceled.");
+        }
     }
 }

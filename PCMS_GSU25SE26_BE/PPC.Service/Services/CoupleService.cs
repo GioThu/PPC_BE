@@ -419,7 +419,12 @@ public class CoupleService : ICoupleService
             Status = 1,
             IsVirtual = true,
             VirtualName = request.VirtualName,
-            VirtualDob = request.VirtualDob
+            VirtualDob = request.VirtualDob,
+            VirtualGender = request.VirtualGender,
+            VirtualAvatar = request.VirtualAvatar,
+            VirtualDescription = request.VirtualDescription,
+            VirtualRelationship = request.VirtualRelationship
+
         };
 
         if (request.SurveyIds != null)

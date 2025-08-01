@@ -51,7 +51,7 @@ namespace PPC.Repository.Repositories
         public async Task<List<Booking>> GetBookingsByMemberIdAsync(string memberId)
         {
             return await _context.Bookings
-                .Where(b => b.MemberId == memberId || b.Member2Id == memberId)
+                .Where(b => b.MemberId == memberId || (b.Member2Id == memberId && b.IsCouple == true))
                 .Include(b => b.Member)
         .Include(b => b.Member2)
         .Include(b => b.Counselor)
@@ -131,7 +131,7 @@ namespace PPC.Repository.Repositories
         public async Task<(List<Booking>, int)> GetBookingsByMemberPagingAsync(string memberId, int pageNumber, int pageSize)
         {
             var query = _context.Bookings
-                .Where(b => b.MemberId == memberId || b.Member2Id == memberId)
+                .Where(b => b.MemberId == memberId || b.Member2Id == memberId && b.IsCouple == true)
                 .Include(b => b.Member)
                 .Include(b => b.Member2)
                 .Include(b => b.Counselor)
@@ -163,7 +163,7 @@ namespace PPC.Repository.Repositories
         public async Task<(List<Booking>, int)> GetBookingsByMemberPagingAsync(string memberId, int pageNumber, int pageSize, int? status)
         {
             var query = _context.Bookings
-                .Where(b => (b.MemberId == memberId || b.Member2Id == memberId));
+                .Where(b => (b.MemberId == memberId || b.Member2Id == memberId && b.IsCouple == true));
 
             if (status.HasValue)
                 query = query.Where(b => b.Status == status);
@@ -226,6 +226,74 @@ namespace PPC.Repository.Repositories
             return await _context.Bookings
                 .Include(b => b.Member)
                 .FirstOrDefaultAsync(b => b.Id == bookingId);
+        }
+
+        public async Task UpdateMember2Async(string bookingId, string memberCode)
+        {
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId);
+            if (booking == null)
+                throw new Exception("Booking not found.");
+
+            if (!string.IsNullOrEmpty(booking.Member2Id))
+                throw new Exception("This booking already has a member invited.");
+
+            booking.Member2Id = $"Member_{memberCode}";
+            booking.IsCouple = false;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Booking>> GetInvitationsForMemberAsync(string memberId)
+        {
+            return await _context.Bookings
+                .Where(b => b.Member2Id == memberId && b.IsCouple == false)
+                .OrderByDescending(b => b.CreateAt)
+                .ToListAsync();
+        }
+
+        public async Task<bool> AcceptInvitationAsync(string bookingId, string memberId)
+        {
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b =>
+                b.Id == bookingId && b.Member2Id == memberId && b.IsCouple == false);
+
+            if (booking == null)
+                return false;
+
+            booking.IsCouple = true;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeclineInvitationAsync(string bookingId, string memberId)
+        {
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b =>
+                b.Id == bookingId && b.Member2Id == memberId && b.IsCouple == false);
+
+            if (booking == null)
+                return false;
+
+            booking.Member2Id = null;
+            booking.IsCouple = null;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> CancelInvitationAsync(string bookingId, string creatorMemberId)
+        {
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b =>
+                b.Id == bookingId &&
+                b.MemberId == creatorMemberId &&
+                b.Member2Id != null &&
+                b.IsCouple == false);
+
+            if (booking == null)
+                return false;
+
+            booking.Member2Id = null;
+            booking.IsCouple = null;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
     }

@@ -55,5 +55,10 @@ namespace PPC.Repository.Repositories
                 .Include(a => a.Members)
                 .FirstOrDefaultAsync(a => a.Id == accountId && a.Status == 1);
         }
+
+        public async Task<bool> IsMemberExistsAsync(string memberId)
+        {
+            return await _context.Members.AnyAsync(m => m.Id == memberId && m.Status == 1);
+        }
     }
 }

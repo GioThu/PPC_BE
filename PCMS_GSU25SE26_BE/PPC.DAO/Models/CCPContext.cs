@@ -531,7 +531,18 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.VirtualName)
                 .HasMaxLength(255)
                 .HasColumnName("virtualName");
-
+            entity.Property(e => e.VirtualAvatar)
+                .HasMaxLength(255)
+                .HasColumnName("virtualAvatar");
+            entity.Property(e => e.VirtualRelationship)
+                .HasMaxLength(255)
+                .HasColumnName("virtualRelationship");
+            entity.Property(e => e.VirtualGender)
+                .HasMaxLength(255)
+                .HasColumnName("virtualGender");
+            entity.Property(e => e.VirtualDescription)
+                .HasColumnName("virtualDescription")
+            .HasColumnType("nvarchar(max)");
             entity.HasOne(d => d.MemberNavigation).WithMany(p => p.CoupleMaleNavigations)
                 .HasForeignKey(d => d.Member)
                 .HasConstraintName("FK__Couple__female__74AE54BC");
@@ -544,9 +555,7 @@ public partial class CCPContext : DbContext
         modelBuilder.Entity<Course>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Course__3213E83F35592F16");
-
             entity.ToTable("Course");
-
             entity.Property(e => e.Id)
                 .HasMaxLength(64)
                 .IsUnicode(false)
@@ -1111,6 +1120,13 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(64)
                 .IsUnicode(false)
                 .HasColumnName("surveyId");
+            entity.Property(e => e.Weeknesses)
+                .HasColumnName("weeknesses")
+                .HasColumnType("nvarchar(max)");
+
+            entity.Property(e => e.StrongPoints)
+                .HasColumnName("strongPoints")
+                .HasColumnType("nvarchar(max)");
 
             entity.HasOne(d => d.Category).WithMany(p => p.ResultPersonTypes)
                 .HasForeignKey(d => d.CategoryId)

@@ -90,6 +90,8 @@ namespace PPC.Service.Services
             result.Image = request.Image;
             result.Compatibility = request.Compatibility;
             result.CategoryId = request.CategoryId;
+            result.Weeknesses = request.Weeknesses;
+            result.StrongPoints = request.StrongPoints;
 
             await _resultPersonTypeRepo.UpdateAsync(result);
             return ServiceResponse<string>.SuccessResponse("Update successful.");

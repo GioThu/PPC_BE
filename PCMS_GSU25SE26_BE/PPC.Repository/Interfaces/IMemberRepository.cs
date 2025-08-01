@@ -14,6 +14,6 @@ namespace PPC.Repository.Interfaces
         Task<Member> GetByAccountIdAsync(string accountId);
         Task<Member> GetByIdWithWalletAsync(string memberId);
         Task<Account> GetAccountWithWalletAndMemberAsync(string accountId);
-
+        Task<bool> IsMemberExistsAsync(string memberId);
     }
 }

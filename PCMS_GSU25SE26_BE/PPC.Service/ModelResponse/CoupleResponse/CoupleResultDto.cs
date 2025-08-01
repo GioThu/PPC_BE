@@ -35,6 +35,10 @@ namespace PPC.Service.ModelResponse.CoupleResponse
         public string BigFiveResult { get; set; }
         public bool? IsVirtual { get; set; }
         public string VirtualName { get; set; }
+        public string? VirtualAvatar { get; set; }
+        public string? VirtualDescription { get; set; }
+        public string? VirtualRelationship { get; set; }
+        public string? VirtualGender { get; set; }
         public DateTime? VirtualDob { get; set; }
         public DateTime? CreateAt { get; set; }
         public string Rec1 { get; set; }

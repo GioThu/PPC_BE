@@ -10,6 +10,10 @@ namespace PPC.Service.ModelRequest.Couple
     {
         public List<string> SurveyIds { get; set; }  // Ví dụ: ["SV001", "SV002"]
         public string VirtualName { get; set; }
+        public string? VirtualAvatar { get; set; }
+        public string? VirtualDescription { get; set; }
+        public string? VirtualRelationship { get; set; }
+        public string? VirtualGender { get; set; }
         public DateTime? VirtualDob { get; set; }
     }
 }

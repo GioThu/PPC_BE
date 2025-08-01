@@ -12,6 +12,8 @@ namespace PPC.Service.ModelRequest.PersonTypeRequest
         public string CategoryId { get; set; }
         public string Description { get; set; }
         public string Detail { get; set; }
+        public string? Weeknesses { get; set; }
+        public string? StrongPoints { get; set; }
         public int Compatibility { get; set; }
         public string Image { get; set; }
     }

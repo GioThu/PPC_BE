@@ -65,6 +65,11 @@ public partial class Couple
 
     public string? AccessCode { get; set; }
 
+    public string? VirtualAvatar { get; set; }
+    public string? VirtualDescription { get; set; }
+    public string? VirtualRelationship { get; set; }
+    public string? VirtualGender { get; set; }
+
     public virtual Member Member1Navigation { get; set; }
 
     public virtual Member MemberNavigation { get; set; }
