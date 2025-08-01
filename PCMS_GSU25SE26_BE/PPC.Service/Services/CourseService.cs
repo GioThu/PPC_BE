@@ -380,8 +380,6 @@ namespace PPC.Service.Services
         {
             // Kiểm tra EnrollCourse
             var enroll = await _enrollCourseRepository.GetEnrollByCourseAndMemberAsync(courseId, memberId);
-            if (enroll == null)
-                return ServiceResponse<MemberCourseDto>.ErrorResponse("Bạn chưa học khóa học này");
 
             // Lấy dữ liệu Course
             var course = await _courseRepository.GetCourseWithAllDetailsAsync(courseId);
