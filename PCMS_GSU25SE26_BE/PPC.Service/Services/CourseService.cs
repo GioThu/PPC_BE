@@ -380,6 +380,7 @@ namespace PPC.Service.Services
         {
             // Kiểm tra EnrollCourse
             var enroll = await _enrollCourseRepository.GetEnrollByCourseAndMemberAsync(courseId, memberId);
+            
 
             // Lấy dữ liệu Course
             var course = await _courseRepository.GetCourseWithAllDetailsAsync(courseId);
@@ -392,21 +393,32 @@ namespace PPC.Service.Services
             // Gán ChapterCount từ source
             dto.ChapterCount = course.Chapters?.Count ?? 0;
 
-            var doneChapterIds = await _processingRepository.GetProcessingChapterIdsByEnrollCourseIdAsync(enroll.Id);
-            var doneSet = doneChapterIds.ToHashSet();
-
-            // Bảo vệ null cho Chapters
-            dto.Chapters ??= new List<MemberChapterDto>();
-
-            foreach (var chapter in dto.Chapters)
+            if (enroll != null)
             {
-                chapter.IsDone = doneSet.Contains(chapter.Id);
+                var doneChapterIds = await _processingRepository.GetProcessingChapterIdsByEnrollCourseIdAsync(enroll.Id);
+                var doneSet = doneChapterIds.ToHashSet();
+
+                dto.Chapters ??= new List<MemberChapterDto>();
+
+                foreach (var chapter in dto.Chapters)
+                {
+                    chapter.IsDone = doneSet.Contains(chapter.Id);
+                }
+
+                // Gán số lượng đã làm
+                dto.ProcessingCount = doneSet.Count;
             }
 
-            // Gán số lượng đã làm
-            dto.ProcessingCount = doneSet.Count;
+            else
+            {
+                dto.ProcessingCount = 0;
+                foreach (var chapter in dto.Chapters)
+                {
+                    chapter.IsDone = false;
+                }
+            }
 
-            return ServiceResponse<MemberCourseDto>.SuccessResponse(dto);
+             return ServiceResponse<MemberCourseDto>.SuccessResponse(dto);
         }
 
         public async Task<ServiceResponse<string>> UpdateLectureByChapterIdAsync(UpdateLectureRequest request)
