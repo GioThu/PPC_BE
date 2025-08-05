@@ -90,7 +90,7 @@ namespace PPC.Service.Services
             result.Image = request.Image;
             result.Compatibility = request.Compatibility;
             result.CategoryId = request.CategoryId;
-            result.Weeknesses = request.Weeknesses;
+            result.Weaknesses = request.Weaknesses;
             result.StrongPoints = request.StrongPoints;
 
             await _resultPersonTypeRepo.UpdateAsync(result);

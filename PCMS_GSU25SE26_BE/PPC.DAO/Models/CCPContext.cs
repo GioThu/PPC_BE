@@ -1118,8 +1118,8 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(64)
                 .IsUnicode(false)
                 .HasColumnName("surveyId");
-            entity.Property(e => e.Weeknesses)
-                .HasColumnName("weeknesses")
+            entity.Property(e => e.Weaknesses)
+                .HasColumnName("Weaknesses")
                 .HasColumnType("nvarchar(max)");
 
             entity.Property(e => e.StrongPoints)

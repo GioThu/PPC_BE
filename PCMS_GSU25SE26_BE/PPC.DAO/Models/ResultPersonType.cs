@@ -28,7 +28,7 @@ public partial class ResultPersonType
     public DateTime? CreateAt { get; set; }
 
     public int? Status { get; set; }
-    public string? Weeknesses { get; set; }
+    public string? Weaknesses { get; set; }
     public string? StrongPoints { get; set; }
     public virtual Category Category { get; set; }
 
