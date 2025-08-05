@@ -65,12 +65,20 @@ namespace PPC.Service.Services
             if (member == null)
                 return ServiceResponse<string>.ErrorResponse("Member not found.");
 
-            // ❌ Không dùng mapper – update thủ công
-            member.Fullname = request.Fullname;
-            member.Avatar = request.Avatar;
-            member.Phone = request.Phone;
-            member.Dob = request.Dob;
-            member.Gender = request.Gender;
+            if (request.Fullname != null)
+                member.Fullname = request.Fullname;
+
+            if (request.Avatar != null)
+                member.Avatar = request.Avatar;
+
+            if (request.Phone != null)
+                member.Phone = request.Phone;
+
+            if (request.Dob != null)
+                member.Dob = request.Dob;
+
+            if (request.Gender != null)
+                member.Gender = request.Gender;
 
             await _memberRepository.UpdateAsync(member);
 

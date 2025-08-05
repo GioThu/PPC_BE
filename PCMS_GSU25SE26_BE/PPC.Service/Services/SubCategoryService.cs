@@ -61,7 +61,7 @@ namespace PPC.Service.Services
             if (subCategory == null)
                 return ServiceResponse<string>.ErrorResponse("Subcategory not found.");
 
-            subCategory.Status = 0; // Đánh dấu là inactive (blocked)
+            subCategory.Status = 0; 
             var result = await _subCategoryRepository.UpdateAsync(subCategory);
             if (result != 1)
                 return ServiceResponse<string>.ErrorResponse("Failed to update subcategory status.");
@@ -75,7 +75,7 @@ namespace PPC.Service.Services
             if (subCategory == null)
                 return ServiceResponse<string>.ErrorResponse("Subcategory not found.");
 
-            subCategory.Status = 1; // Đánh dấu là active (unblocked)
+            subCategory.Status = 1; 
             var result = await _subCategoryRepository.UpdateAsync(subCategory);
             if (result != 1)
                 return ServiceResponse<string>.ErrorResponse("Failed to unblock subcategory.");

@@ -247,6 +247,10 @@ namespace PPC.Repository.Repositories
         {
             return await _context.Bookings
                 .Where(b => b.Member2Id == memberId && b.IsCouple == false)
+                .Include(b => b.Member)
+                .Include(b => b.Member2)
+                .Include(b => b.Counselor)
+                .Include(b => b.BookingSubCategories)
                 .OrderByDescending(b => b.CreateAt)
                 .ToListAsync();
         }
