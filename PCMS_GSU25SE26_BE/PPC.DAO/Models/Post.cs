@@ -15,6 +15,8 @@ public partial class Post
 
     public string Description { get; set; }
 
+    public string? Image { get; set; }
+
     public DateTime? CreateAt { get; set; }
 
     public int? Status { get; set; }

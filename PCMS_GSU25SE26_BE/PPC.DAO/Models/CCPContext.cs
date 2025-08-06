@@ -946,6 +946,9 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.Title)
                 .HasMaxLength(1000)
                 .HasColumnName("title");
+            entity.Property(e => e.Image)
+                .HasMaxLength(1000)
+                .HasColumnName("image");
         });
 
         modelBuilder.Entity<Processing>(entity =>

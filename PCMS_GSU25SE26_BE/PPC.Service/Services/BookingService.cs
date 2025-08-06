@@ -61,23 +61,23 @@ namespace PPC.Service.Services
         public async Task<ServiceResponse<BookingResultDto>> BookCounselingAsync(string memberId, string accountId, BookingRequest request)
         {
             if (string.IsNullOrEmpty(memberId) || string.IsNullOrEmpty(accountId))
-                return ServiceResponse<BookingResultDto>.ErrorResponse("Unauthorized");
+                return ServiceResponse<BookingResultDto>.ErrorResponse("Không được phép truy cập");
 
             var member = await _memberRepository.GetByIdAsync(memberId);
             if (member == null)
-                return ServiceResponse<BookingResultDto>.ErrorResponse("Member not found");
+                return ServiceResponse<BookingResultDto>.ErrorResponse("Không tìm thấy thành viên");
 
             var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);
             if (counselor == null || counselor.Status == 0)
-                return ServiceResponse<BookingResultDto>.ErrorResponse("Counselor not found");
+                return ServiceResponse<BookingResultDto>.ErrorResponse("Không tìm thấy tư vấn viên");
 
             var account = await _accountRepository.GetByIdAsync(accountId);
             if (account == null || string.IsNullOrEmpty(account.WalletId))
-                return ServiceResponse<BookingResultDto>.ErrorResponse("Wallet not found");
+                return ServiceResponse<BookingResultDto>.ErrorResponse("Không tìm thấy ví");
 
             var wallet = await _walletRepository.GetByIdAsync(account.WalletId);
             if (wallet == null || wallet.Status != 1)
-                return ServiceResponse<BookingResultDto>.ErrorResponse("Wallet invalid or inactive");
+                return ServiceResponse<BookingResultDto>.ErrorResponse("Ví không hợp lệ hoặc đang không hoạt động");
 
             var durationMinutes = (request.TimeEnd - request.TimeStart).TotalMinutes + 10;
 
@@ -87,7 +87,7 @@ namespace PPC.Service.Services
             var finalPrice = Math.Round(basePrice * (1 - discount / 100.0), 0); 
 
             if ((wallet.Remaining ?? 0) < finalPrice)
-                return ServiceResponse<BookingResultDto>.ErrorResponse("Not enough balance");
+                return ServiceResponse<BookingResultDto>.ErrorResponse("Số dư không đủ");
 
             // Tạo booking
             var booking = new Booking
@@ -167,7 +167,7 @@ namespace PPC.Service.Services
         {
             var bookings = await _bookingRepository.GetBookingsByCounselorIdAsync(counselorId);
             if (bookings == null || !bookings.Any())
-                return ServiceResponse<List<BookingDto>>.ErrorResponse("No bookings found.");
+                return ServiceResponse<List<BookingDto>>.ErrorResponse("Không tìm thấy lượt đặt lịch nào");
 
             var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
             return ServiceResponse<List<BookingDto>>.SuccessResponse(bookingDtos);
@@ -176,7 +176,7 @@ namespace PPC.Service.Services
         {
             var bookings = await _bookingRepository.GetBookingsByMemberIdAsync(memberId);
             if (bookings == null || !bookings.Any())
-                return ServiceResponse<List<BookingDto>>.ErrorResponse("No bookings found.");
+                return ServiceResponse<List<BookingDto>>.ErrorResponse("Không tìm thấy lượt đặt lịch nào");
 
             var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
             return ServiceResponse<List<BookingDto>>.SuccessResponse(bookingDtos);
@@ -209,7 +209,7 @@ namespace PPC.Service.Services
         {
             var booking = await _bookingRepository.GetDtoByIdAsync(bookingId);
             if (booking == null)
-                return ServiceResponse<BookingDto>.ErrorResponse("Booking not found.");
+                return ServiceResponse<BookingDto>.ErrorResponse("Không tìm thấy lượt đặt lịch nào.");
 
             var bookingDto = _mapper.Map<BookingDto>(booking);
             return ServiceResponse<BookingDto>.SuccessResponse(bookingDto);
@@ -219,7 +219,7 @@ namespace PPC.Service.Services
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
             if (booking == null)
             {
-                return ServiceResponse<TokenLivekit>.ErrorResponse("Booking not found.");
+                return ServiceResponse<TokenLivekit>.ErrorResponse("Không tìm thấy lượt đặt lịch nào.");
             }
 
             string room = $"room_{bookingId}";
@@ -233,7 +233,7 @@ namespace PPC.Service.Services
                 var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
                 if (counselor == null)
                 {
-                    return ServiceResponse<TokenLivekit>.ErrorResponse("Counselor not found.");
+                    return ServiceResponse<TokenLivekit>.ErrorResponse("Không tìm thấy chuyên gia tư vấn");
                 }
 
                 id = counselor.Id;
@@ -244,7 +244,7 @@ namespace PPC.Service.Services
                 var member = await _memberRepository.GetByIdAsync(booking.MemberId);
                 if (member == null)
                 {
-                    return ServiceResponse<TokenLivekit>.ErrorResponse("Member not found.");
+                    return ServiceResponse<TokenLivekit>.ErrorResponse("Không tìm thấy thành viên");
                 }
 
                 id = member.Id;
@@ -252,7 +252,7 @@ namespace PPC.Service.Services
             }
             else
             {
-                return ServiceResponse<TokenLivekit>.ErrorResponse("Invalid role.");
+                return ServiceResponse<TokenLivekit>.ErrorResponse("Vai trò không hợp lệ");
             }
 
             var token = _liveKitService.GenerateLiveKitToken(room, id, name, startTime, endTime);
@@ -279,7 +279,7 @@ namespace PPC.Service.Services
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
             if (booking == null)
             {
-                return ServiceResponse<RoomResponse>.ErrorResponse("Booking not found.");
+                return ServiceResponse<RoomResponse>.ErrorResponse("Không tìm thấy lượt đặt lịch nào.");
             }
 
             string roomName = $"room_{bookingId}";
@@ -292,7 +292,7 @@ namespace PPC.Service.Services
                 var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
                 if (counselor == null)
                 {
-                    return ServiceResponse<RoomResponse>.ErrorResponse("Counselor not found.");
+                    return ServiceResponse<RoomResponse>.ErrorResponse("Không tìm thấy chuyên gia tư vấn.");
                 }
 
                 userName = counselor.Fullname;
@@ -302,14 +302,14 @@ namespace PPC.Service.Services
                 var member = await _memberRepository.GetByIdAsync(booking.MemberId);
                 if (member == null)
                 {
-                    return ServiceResponse<RoomResponse>.ErrorResponse("Member not found.");
+                    return ServiceResponse<RoomResponse>.ErrorResponse("Không tìm thấy thành viên");
                 }
 
                 userName = member.Fullname;
             }
             else
             {
-                return ServiceResponse<RoomResponse>.ErrorResponse("Invalid role.");
+                return ServiceResponse<RoomResponse>.ErrorResponse("Vai trò không hợp lệ");
             }
 
             var request = new CreateRoomRequest2
@@ -328,7 +328,7 @@ namespace PPC.Service.Services
         {
             var booking = await _bookingRepository.GetByIdAsync(bookingId);
             if (booking == null)
-                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy lượt đặt lịch");
 
             if (status == 2)
             {
@@ -345,7 +345,7 @@ namespace PPC.Service.Services
 
                 var member = await _memberRepository.GetByIdWithWalletAsync(booking.MemberId);
                 if (member?.Account?.Wallet == null)
-                    return ServiceResponse<string>.ErrorResponse("Member or wallet not found.");
+                    return ServiceResponse<string>.ErrorResponse("Không tìm thấy thành viên");
 
                 member.Account.Wallet.Remaining += booking.Price / 2;
                 await _walletRepository.UpdateAsync(member.Account.Wallet);
@@ -366,7 +366,7 @@ namespace PPC.Service.Services
             {
                 var member = await _memberRepository.GetByIdWithWalletAsync(booking.MemberId);
                 if (member?.Account?.Wallet == null)
-                    return ServiceResponse<string>.ErrorResponse("Member or wallet not found.");
+                    return ServiceResponse<string>.ErrorResponse("Không tìm thấy thành viên");
 
                 member.Account.Wallet.Remaining += booking.Price;
                 await _walletRepository.UpdateAsync(member.Account.Wallet);
@@ -387,7 +387,7 @@ namespace PPC.Service.Services
             {
                 var counselor = await _counselorRepository.GetByIdWithWalletAsync(booking.CounselorId);
                 if (counselor?.Account?.Wallet == null)
-                    return ServiceResponse<string>.ErrorResponse("Counselor or wallet not found.");
+                    return ServiceResponse<string>.ErrorResponse("Không tìm thấy chuyên gia tư vấn");
 
                 counselor.Account.Wallet.Remaining += booking.Price * 7 / 10;
                 await _walletRepository.UpdateAsync(counselor.Account.Wallet);
@@ -417,17 +417,17 @@ namespace PPC.Service.Services
 
             return booking.Status switch
             {
-                4 => ServiceResponse<string>.SuccessResponse("Booking cancelled successfully."),
-                6 => ServiceResponse<string>.SuccessResponse("Booking refunded successfully."),
-                7 => ServiceResponse<string>.SuccessResponse("Booking completed successfully."),
-                _ => ServiceResponse<string>.SuccessResponse("Booking status updated successfully.")
+                4 => ServiceResponse<string>.SuccessResponse("Đặt lịch đã được hủy thành công."),
+                6 => ServiceResponse<string>.SuccessResponse("Hoàn tiền cho lượt đặt lịch thành công."),
+                7 => ServiceResponse<string>.SuccessResponse("Lượt đặt lịch đã hoàn tất thành công."),
+                _ => ServiceResponse<string>.SuccessResponse("Trạng thái đặt lịch đã được cập nhật thành công.")
             };
         }
         public async Task<ServiceResponse<string>> ReportBookingAsync(BookingReportRequest request)
         {
             var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
             if (booking == null)
-                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy lượt đặt lịch");
 
             booking.IsReport = true;
             booking.ReportMessage = request.ReportMessage;

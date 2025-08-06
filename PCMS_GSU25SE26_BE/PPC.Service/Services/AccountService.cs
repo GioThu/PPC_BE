@@ -50,7 +50,7 @@ namespace PPC.Service.Services
                     account.Counselors == null ||
                     !account.Counselors.Any())
                 {
-                    return ServiceResponse<string>.ErrorResponse("Invalid login or counselor not found.");
+                    return ServiceResponse<string>.ErrorResponse("Sai tài khoản hoặc mật khẩu");
                 }
 
                 var counselor = account.Counselors.First();
@@ -59,7 +59,7 @@ namespace PPC.Service.Services
             }
             catch (Exception ex)
             {
-                return ServiceResponse<string>.ErrorResponse("Login failed: " + ex.Message);
+                return ServiceResponse<string>.ErrorResponse("Đăng nhập thất bại: " + ex.Message);
             }
         }
 
@@ -69,7 +69,7 @@ namespace PPC.Service.Services
             {
                 if (await _accountRepository.IsEmailExistAsync(accountRegister.Email))
                 {
-                    return ServiceResponse<int>.ErrorResponse("Email already exists.");
+                    return ServiceResponse<int>.ErrorResponse("Email đã tồn tại");
                 }
 
                 var wallet = WalletMappers.ToCreateWallet();
@@ -96,7 +96,7 @@ namespace PPC.Service.Services
             {
                 if (await _accountRepository.IsEmailExistAsync(accountRegister.Email))
                 {
-                    return ServiceResponse<int>.ErrorResponse("Email already exists.");
+                    return ServiceResponse<int>.ErrorResponse("Email đã tồn tại");
                 }
 
                 var wallet = WalletMappers.ToCreateWallet();
@@ -126,7 +126,7 @@ namespace PPC.Service.Services
                     account.Members == null ||
                     !account.Members.Any())
                 {
-                    return ServiceResponse<string>.ErrorResponse("Invalid login or member not found.");
+                    return ServiceResponse<string>.ErrorResponse("Sai tài khoản hoặc mật khẩu");
                 }
 
                 var member = account.Members.First();
@@ -135,7 +135,7 @@ namespace PPC.Service.Services
             }
             catch (Exception ex)
             {
-                return ServiceResponse<string>.ErrorResponse("Login failed: " + ex.Message);
+                return ServiceResponse<string>.ErrorResponse("Đăng nhập thất bại: " + ex.Message);
             }
         }
 
@@ -146,7 +146,7 @@ namespace PPC.Service.Services
                 var account = await _accountRepository.AdminLogin(loginRequest.Email, loginRequest.Password);
                 if (account == null || account.Role != 1)
                 {
-                    return ServiceResponse<string>.ErrorResponse("Invalid login or admin not found.");
+                    return ServiceResponse<string>.ErrorResponse("Sai tài khoản hoặc mất khẩu");
                 }
 
                 var token = _jwtService.GenerateAdminToken(account.Id, account.Role);
@@ -154,7 +154,7 @@ namespace PPC.Service.Services
             }
             catch (Exception ex)
             {
-                return ServiceResponse<string>.ErrorResponse("Login failed: " + ex.Message);
+                return ServiceResponse<string>.ErrorResponse("Đăng nhập thất bại: " + ex.Message);
             }
         }
 
@@ -176,7 +176,7 @@ namespace PPC.Service.Services
             var counselor = await _counselorRepository.GetByIdAsync(counselorId);
             if (counselor == null)
             {
-                return ServiceResponse<CounselorDto>.ErrorResponse("Counselor not found.");
+                return ServiceResponse<CounselorDto>.ErrorResponse("Không tìm thấy Tư Vấn Viên");
             }
 
             var counselorDto = _mapper.Map<CounselorDto>(counselor);
@@ -188,7 +188,7 @@ namespace PPC.Service.Services
             var counselor = await _counselorRepository.GetByIdAsync(counselorId);
             if (counselor == null)
             {
-                return ServiceResponse<string>.ErrorResponse("Counselor not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy tư vấn viên");
             }
 
             // Update fields based on the request
@@ -201,7 +201,7 @@ namespace PPC.Service.Services
 
             await _counselorRepository.UpdateAsync(counselor);
 
-            return ServiceResponse<string>.SuccessResponse("Profile updated successfully.");
+            return ServiceResponse<string>.SuccessResponse("Hồ sơ đã được cập nhật thành công");
         }
 
         public async Task<ServiceResponse<WalletBalanceDto>> GetWalletBalanceAsync(string accountId)
@@ -209,7 +209,7 @@ namespace PPC.Service.Services
             var remaining = await _accountRepository.GetRemainingBalanceByAccountIdAsync(accountId);
 
             if (remaining == null)
-                return ServiceResponse<WalletBalanceDto>.ErrorResponse("Wallet not found or no balance data.");
+                return ServiceResponse<WalletBalanceDto>.ErrorResponse("Không tìm thấy ví hoặc không có dữ liệu số dư");
 
             return ServiceResponse<WalletBalanceDto>.SuccessResponse(new WalletBalanceDto { Remaining = remaining });
         }
