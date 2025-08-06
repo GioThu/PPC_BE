@@ -28,27 +28,27 @@ namespace PPC.Service.Services
         {
             if (await _categoryRepository.IsCategoryNameExistsAsync(request.Name))
             {
-                return ServiceResponse<string>.ErrorResponse("Category name already exists.");
+                return ServiceResponse<string>.ErrorResponse("Tên chuyên môn đã tồn tại");
             }
 
             var category = request.ToCreateCategory();
             await _categoryRepository.CreateAsync(category);
 
-            return ServiceResponse<string>.SuccessResponse("Category created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Chuyên môn đã được tạo thành công");
         }
 
         public async Task<ServiceResponse<string>> UpdateCategoryAsync(CategoryUpdateRequest request)
         {
             var category = await _categoryRepository.GetByIdAsync(request.Id);
             if (category == null)
-                return ServiceResponse<string>.ErrorResponse("Category not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy chuyên môn");
 
             if (!string.IsNullOrWhiteSpace(request.Name) &&
                 !string.Equals(category.Name, request.Name, StringComparison.OrdinalIgnoreCase))
             {
                 if (await _categoryRepository.IsCategoryNameExistsAsync(request.Name))
                 {
-                    return ServiceResponse<string>.ErrorResponse("Category name already exists.");
+                    return ServiceResponse<string>.ErrorResponse("Tên chuyên môn đã tồn tại");
                 }
 
                 category.Name = request.Name;
@@ -57,7 +57,7 @@ namespace PPC.Service.Services
             category.Status = request.Status;
 
             await _categoryRepository.UpdateAsync(category);
-            return ServiceResponse<string>.SuccessResponse("Category updated successfully.");
+            return ServiceResponse<string>.SuccessResponse("Chuyên môn đã được cập nhật thành công");
         }
 
         public async Task<ServiceResponse<List<CategoryDto>>> GetAllCategoriesAsync()
@@ -71,15 +71,15 @@ namespace PPC.Service.Services
         {
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
-                return ServiceResponse<string>.ErrorResponse("Category not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy chuyên môn");
 
             category.Status = 0;
 
             var result = await _categoryRepository.UpdateAsync(category);
             if (result != 1)
-                return ServiceResponse<string>.ErrorResponse("Failed to update category status.");
+                return ServiceResponse<string>.ErrorResponse("Không thể cập nhật trạng thái chuyên môn");
 
-            return ServiceResponse<string>.SuccessResponse("Category status updated to inactive (deleted).");
+            return ServiceResponse<string>.SuccessResponse("Trạng thái chuyên môn đã được cập nhật thành không hoạt động");
         }
 
         public async Task<ServiceResponse<List<CategoryDto>>> GetActiveCategoriesWithSubAsync()
@@ -93,15 +93,15 @@ namespace PPC.Service.Services
         {
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
-                return ServiceResponse<string>.ErrorResponse("Category not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy chuyên môn");
 
             category.Status = 1;
 
             var result = await _categoryRepository.UpdateAsync(category);
             if (result != 1)
-                return ServiceResponse<string>.ErrorResponse("Failed to unblock category.");
+                return ServiceResponse<string>.ErrorResponse("Không thể bỏ chặn chuyên môn");
 
-            return ServiceResponse<string>.SuccessResponse("Category unblocked successfully.");
+            return ServiceResponse<string>.SuccessResponse("Chuyên môn đã được bỏ chặn thành công");
         }
     }
 }

@@ -62,17 +62,17 @@ namespace PPC.Service.Services
                 await _cscRepo.CreateAsync(link);
             }
 
-            return ServiceResponse<string>.SuccessResponse("Certification and subcategories submitted for approval.");
+            return ServiceResponse<string>.SuccessResponse("Chứng chỉ và các chuyên môn phụ đã được gửi để phê duyệt");
         }
 
         public async Task<ServiceResponse<string>> ApproveCertificationAsync(string certificationId)
         {
             var certification = await _certRepo.GetByIdAsync(certificationId);
             if (certification == null)
-                return ServiceResponse<string>.ErrorResponse("Certification not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy chứng chỉ");
 
             if (certification.Status == 1)
-                return ServiceResponse<string>.ErrorResponse("Certification already approved.");
+                return ServiceResponse<string>.ErrorResponse("Chứng chỉ đã được phê duyệt");
 
             certification.Status = 1;
             certification.RejectReason = null;
@@ -87,17 +87,17 @@ namespace PPC.Service.Services
             }
             await _counselorService.CheckAndUpdateCounselorStatusAsync(certification.CounselorId);
 
-            return ServiceResponse<string>.SuccessResponse("Certification approved.");
+            return ServiceResponse<string>.SuccessResponse("Chứng chỉ đã được phê duyệt");
         }
 
         public async Task<ServiceResponse<string>> RejectCertificationAsync(RejectCertificationRequest request)
         {
             var certification = await _certRepo.GetByIdAsync(request.CertificationId);
             if (certification == null)
-                return ServiceResponse<string>.ErrorResponse("Certification not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy chứng chỉ");
 
             if (certification.Status == 2)
-                return ServiceResponse<string>.ErrorResponse("Certification already rejected.");
+                return ServiceResponse<string>.ErrorResponse("Chứng chỉ đã bị từ chối");
 
             certification.Status = 2;
             certification.RejectReason = request.RejectReason;
@@ -110,7 +110,7 @@ namespace PPC.Service.Services
                 await _cscRepo.UpdateAsync(csc);
             }
 
-            return ServiceResponse<string>.SuccessResponse("Certification rejected with reason.");
+            return ServiceResponse<string>.SuccessResponse("Đã từ chối chứng chỉ");
         }
 
         public async Task<ServiceResponse<List<CertificationWithSubDto>>> GetMyCertificationsAsync(string counselorId)
@@ -138,7 +138,7 @@ namespace PPC.Service.Services
                         .Select(group => new CategoryWithSubDto
                         {
                             CategoryId = group.Key,
-                            CategoryName = group.First().Category?.Name ?? "Unknown", 
+                            CategoryName = group.First().Category?.Name ?? "Vô danh", 
                             SubCategories = _mapper.Map<List<SubCategoryDto>>(group.ToList())
                         })
                         .ToList();
@@ -188,7 +188,7 @@ namespace PPC.Service.Services
 
             if (certification == null)
             {
-                return ServiceResponse<CertificationWithSubDto>.ErrorResponse("Certification not found.");
+                return ServiceResponse<CertificationWithSubDto>.ErrorResponse("Không tìm thấy chứng chỉ");
             }
 
             var dto = _mapper.Map<CertificationWithSubDto>(certification);
@@ -216,10 +216,10 @@ namespace PPC.Service.Services
         {
             var certification = await _certRepo.GetByIdAsync(request.CertificationId);
             if (certification == null)
-                return ServiceResponse<string>.ErrorResponse("Certification not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy chứng chỉ");
 
             if (certification.CounselorId != counselorId)
-                return ServiceResponse<string>.ErrorResponse("You are not authorized to update this certification.");
+                return ServiceResponse<string>.ErrorResponse("Bạn không có quyền cập nhật chứng chỉ này");
 
             certification.Name = request.Name;
             certification.Image = request.Image;
@@ -250,7 +250,7 @@ namespace PPC.Service.Services
             }
             await _counselorService.CheckAndUpdateCounselorStatusAsync(certification.CounselorId);
 
-            return ServiceResponse<string>.SuccessResponse("Certification updated and sent for re-approval.");
+            return ServiceResponse<string>.SuccessResponse("Chứng chỉ đã được cập nhật và gửi lại để phê duyệt");
         }
         public async Task<ServiceResponse<PagingResponse<CertificationWithSubDto>>> GetAllCertificationsAsync(int pageNumber, int pageSize, int? status)
         {

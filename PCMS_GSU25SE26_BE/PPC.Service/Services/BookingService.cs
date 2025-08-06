@@ -412,15 +412,15 @@ namespace PPC.Service.Services
                     x => x.AutoCompleteBookingIfStillPending(booking.Id),
                     TimeSpan.FromDays(1)
                 );
-                return ServiceResponse<string>.SuccessResponse("Booking ended.");
+                return ServiceResponse<string>.SuccessResponse("Booking ended");
             }
 
             return booking.Status switch
             {
-                4 => ServiceResponse<string>.SuccessResponse("Đặt lịch đã được hủy thành công."),
-                6 => ServiceResponse<string>.SuccessResponse("Hoàn tiền cho lượt đặt lịch thành công."),
-                7 => ServiceResponse<string>.SuccessResponse("Lượt đặt lịch đã hoàn tất thành công."),
-                _ => ServiceResponse<string>.SuccessResponse("Trạng thái đặt lịch đã được cập nhật thành công.")
+                4 => ServiceResponse<string>.SuccessResponse("Đặt lịch đã được hủy thành công"),
+                6 => ServiceResponse<string>.SuccessResponse("Hoàn tiền cho lượt đặt lịch thành công"),
+                7 => ServiceResponse<string>.SuccessResponse("Lượt đặt lịch đã hoàn tất thành công"),
+                _ => ServiceResponse<string>.SuccessResponse("Trạng thái đặt lịch đã được cập nhật thành công")
             };
         }
         public async Task<ServiceResponse<string>> ReportBookingAsync(BookingReportRequest request)
@@ -435,9 +435,9 @@ namespace PPC.Service.Services
 
             var result = await _bookingRepository.UpdateAsync(booking);
             if (result == 0)
-                return ServiceResponse<string>.ErrorResponse("Failed to report booking.");
+                return ServiceResponse<string>.ErrorResponse("Báo cáo thất bại");
 
-            return ServiceResponse<string>.SuccessResponse("Booking reported successfully.");
+            return ServiceResponse<string>.SuccessResponse("Báo cáo thành công");
         }
         public async Task AutoCompleteBookingIfStillPending(string bookingId)
         {
@@ -485,22 +485,22 @@ namespace PPC.Service.Services
         {
             var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
             if (booking == null)
-                return ServiceResponse<string>.ErrorResponse("Booking not found");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy buổi đặt lịch");
 
             if (booking.Status != 1)
-                return ServiceResponse<string>.ErrorResponse("Không thể hủy booking này");
+                return ServiceResponse<string>.ErrorResponse("Không thể hủy buổi đặt lịch này");
 
             booking.CancelReason = request.CancelReason;
             booking.Status = 6;
 
             var member = await _memberRepository.GetByIdWithWalletAsync(booking.MemberId);
             if (member?.Account?.Wallet == null)
-                return ServiceResponse<string>.ErrorResponse("Member's wallet not found");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy người dùng");
 
             member.Account.Wallet.Remaining += booking.Price;
             var walletUpdateResult = await _walletRepository.UpdateAsync(member.Account.Wallet);
             if (walletUpdateResult == 0)
-                return ServiceResponse<string>.ErrorResponse("Failed to refund member wallet");
+                return ServiceResponse<string>.ErrorResponse("Không thể hoàn trả giao dịch này");
 
             var transaction = new SysTransaction
             {
@@ -515,9 +515,9 @@ namespace PPC.Service.Services
             // Cập nhật trạng thái booking
             var result = await _bookingRepository.UpdateAsync(booking);
             if (result == 0)
-                return ServiceResponse<string>.ErrorResponse("Failed to cancel booking.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy buổi đặt lịch");
 
-            return ServiceResponse<string>.SuccessResponse("Booking cancelled by counselor.");
+            return ServiceResponse<string>.SuccessResponse("Buổi đặt lịch đã được hủy bởi chuyên gia tư vấn");
         }
         public async Task<ServiceResponse<PagingResponse<BookingAdminResponse>>> GetAllAdminPagingAsync(BookingPagingRequest request)
         {
@@ -531,7 +531,7 @@ namespace PPC.Service.Services
         {
             var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
             if (booking == null)
-                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy buổi đặt lịch");
 
             booking.ProblemSummary = request.ProblemSummary;
             booking.ProblemAnalysis = request.ProblemAnalysis;
@@ -539,18 +539,18 @@ namespace PPC.Service.Services
 
             var result = await _bookingRepository.UpdateAsync(booking);
             if (result == 0)
-                return ServiceResponse<string>.ErrorResponse("Failed to update booking notes.");
+                return ServiceResponse<string>.ErrorResponse("Không thể cập nhật ghi chú đặt lịch");
 
-            return ServiceResponse<string>.SuccessResponse("Booking notes updated successfully.");
+            return ServiceResponse<string>.SuccessResponse("Ghi chú đặt lịch đã được cập nhật thành công");
         }
         public async Task<ServiceResponse<string>> RateBookingAsync(BookingRatingRequest request)
         {
             var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
             if (booking == null)
-                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy buổi đặt lịch");
 
             if (booking.Status == 1 || booking.Status == 3 || booking.Status == 4 || booking.Status == 6)
-                return ServiceResponse<string>.ErrorResponse("Only completed bookings can be rated.");
+                return ServiceResponse<string>.ErrorResponse("Chỉ những buổi đặt lịch đã hoàn tất mới có thể được đánh giá.");
 
 
             booking.Rating = request.Rating;
@@ -560,7 +560,7 @@ namespace PPC.Service.Services
             // Cập nhật Counselor.Rating trung bình & số lượng đánh giá
             var counselor = await _counselorRepository.GetByIdAsync(booking.CounselorId);
             if (counselor == null)
-                return ServiceResponse<string>.ErrorResponse("Counselor not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy chuyên viên tư vấn");
 
             var (average, count) = await _bookingRepository.GetRatingStatsByCounselorIdAsync(counselor.Id);
             counselor.Rating = average;
@@ -569,7 +569,7 @@ namespace PPC.Service.Services
             await _counselorRepository.UpdateAsync(counselor);
 
 
-            return ServiceResponse<string>.SuccessResponse("Rating submitted successfully.");
+            return ServiceResponse<string>.SuccessResponse("Đánh giá đã được gửi thành công");
         }
         public async Task<ServiceResponse<List<BookingRatingFeedbackDto>>> GetRatingFeedbackByCounselorAsync(string counselorId)
         {
@@ -598,13 +598,13 @@ namespace PPC.Service.Services
             var isMemberValid = await _memberRepository.IsMemberExistsAsync(fullMemberId);
             if (!isMemberValid)
             {
-                return ServiceResponse<string>.ErrorResponse("Member not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy người dùng");
             }
 
             try
             {
                 await _bookingRepository.UpdateMember2Async(bookingId, memberCode);
-                return ServiceResponse<string>.SuccessResponse("Updated Member2 successfully.");
+                return ServiceResponse<string>.SuccessResponse("Đã cập nhật Người dùng 2 thành công");
             }
             catch (Exception ex)
             {
@@ -623,27 +623,27 @@ namespace PPC.Service.Services
         {
             var success = await _bookingRepository.AcceptInvitationAsync(bookingId, memberId);
             if (!success)
-                return ServiceResponse<string>.ErrorResponse("Invitation not found or already accepted/declined.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy lời mời");
 
-            return ServiceResponse<string>.SuccessResponse("Invitation accepted.");
+            return ServiceResponse<string>.SuccessResponse("Chấp nhận lời mời thành công");
         }
 
         public async Task<ServiceResponse<string>> DeclineInvitationAsync(string bookingId, string memberId)
         {
             var success = await _bookingRepository.DeclineInvitationAsync(bookingId, memberId);
             if (!success)
-                return ServiceResponse<string>.ErrorResponse("Invitation not found or already accepted/declined.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy lời mời");
 
-            return ServiceResponse<string>.SuccessResponse("Invitation declined.");
+            return ServiceResponse<string>.SuccessResponse("Từ chối lời mời thành công");
         }
 
         public async Task<ServiceResponse<string>> CancelInvitationAsync(string bookingId, string creatorMemberId)
         {
             var success = await _bookingRepository.CancelInvitationAsync(bookingId, creatorMemberId);
             if (!success)
-                return ServiceResponse<string>.ErrorResponse("Invitation not found or already accepted.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy lời mời");
 
-            return ServiceResponse<string>.SuccessResponse("Invitation has been canceled.");
+            return ServiceResponse<string>.SuccessResponse("Lời mời đã bị hủy");
         }
     }
 }

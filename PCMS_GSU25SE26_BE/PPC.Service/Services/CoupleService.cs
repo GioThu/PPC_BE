@@ -40,16 +40,16 @@ public class CoupleService : ICoupleService
 
         var couple = await _coupleRepository.GetByAccessCodeAsync(accessCode);
         if (couple == null)
-            return ServiceResponse<string>.ErrorResponse("Room not found.");
+            return ServiceResponse<string>.ErrorResponse("Không tìm thấy phòng");
 
         if (couple.IsVirtual == true)
-            return ServiceResponse<string>.ErrorResponse("This is a virtual room. Cannot join.");
+            return ServiceResponse<string>.ErrorResponse("Đây là phòng cho người ảo. Không thể tham gia");
 
         if (couple.Member == memberId)
-            return ServiceResponse<string>.ErrorResponse("You cannot join your own room.");
+            return ServiceResponse<string>.ErrorResponse("Bạn không thể tham gia phòng của chính mình");
 
         if (!string.IsNullOrEmpty(couple.Member1))
-            return ServiceResponse<string>.ErrorResponse("This room already has a partner.");
+            return ServiceResponse<string>.ErrorResponse("Phòng này đã có người tham gia cùng");
 
         var ownerLatestCouple = await _coupleRepository.GetLatestCoupleByMemberIdAsync(couple.Member);
         if (ownerLatestCouple == null || ownerLatestCouple.Id != couple.Id || ownerLatestCouple.Status != 1)
@@ -60,7 +60,7 @@ public class CoupleService : ICoupleService
         couple.Member1 = memberId;
         await _coupleRepository.UpdateAsync(couple);
 
-        return ServiceResponse<string>.SuccessResponse("Joined room successfully.");
+        return ServiceResponse<string>.SuccessResponse("Tham gia phòng thành công");
     }
 
     public async Task<ServiceResponse<CoupleDetailResponse>> GetCoupleDetailAsync(string coupleId)
@@ -68,7 +68,7 @@ public class CoupleService : ICoupleService
         var couple = await _coupleRepository.GetCoupleByIdWithMembersAsync(coupleId);
 
         if (couple == null)
-            return ServiceResponse<CoupleDetailResponse>.ErrorResponse("Couple not found.");
+            return ServiceResponse<CoupleDetailResponse>.ErrorResponse("Không tìm thấy cặp đôi");
 
         var dto = _mapper.Map<CoupleDetailResponse>(couple);
 
@@ -80,7 +80,7 @@ public class CoupleService : ICoupleService
         var hasActive = await _coupleRepository.HasActiveCoupleAsync(memberId);
         if (hasActive)
         {
-            return ServiceResponse<string>.ErrorResponse("You already have an active room. Cannot create a new one.");
+            return ServiceResponse<string>.ErrorResponse("Bạn đã có một phòng đang hoạt động. Không thể tạo phòng mới");
         }
 
         var couple = new Couple
@@ -168,14 +168,14 @@ public class CoupleService : ICoupleService
     {
         var couple = await _coupleRepository.GetLatestCoupleByMemberIdAsync(memberId);
         if (couple == null)
-            return ServiceResponse<string>.ErrorResponse("Couple not found.");
+            return ServiceResponse<string>.ErrorResponse("Không tìm thấy cặp đôi");
 
         var personTypes = await _personTypeRepo.GetPersonTypesBySurveyAsync(request.SurveyId);
         var personTypeDict = personTypes.ToDictionary(x => x.Name, x => x);
         string resultType = null;
         string description = "";
         if (request.Answers == null || !request.Answers.Any())
-            return ServiceResponse<string>.ErrorResponse("No answers provided.");
+            return ServiceResponse<string>.ErrorResponse("Không có câu trả lời nào");
 
         var detail = string.Join(",", request.Answers
             .Where(a => !string.IsNullOrEmpty(a.Tag))
@@ -302,6 +302,10 @@ public class CoupleService : ICoupleService
             IsVirtual = couple.IsVirtual,
             VirtualName = couple.VirtualName,
             VirtualDob = couple.VirtualDob,
+            VirtualAvatar = couple.VirtualAvatar,
+            VirtualDescription = couple.VirtualDescription,
+            VirtualGender = couple.VirtualGender,
+            VirtualRelationship = couple.VirtualRelationship,
             CreateAt = couple.CreateAt,
             Rec1 = couple.Rec1,
             Rec2 = couple.Rec2,

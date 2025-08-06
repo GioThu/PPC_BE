@@ -88,7 +88,7 @@ namespace PPC.Service.Services
             var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);
             if (counselor == null)
             {
-                return ServiceResponse<AvailableScheduleOverviewDto>.ErrorResponse("Counselor not found.");
+                return ServiceResponse<AvailableScheduleOverviewDto>.ErrorResponse("Không tìm thấy chuyên gia");
             }
 
             var counselorDto = _mapper.Map<CounselorDto>(counselor);
@@ -224,13 +224,13 @@ namespace PPC.Service.Services
         {
             var counselor = await _counselorRepository.GetByIdAsync(request.CounselorId);
             if (counselor == null)
-                return ServiceResponse<string>.ErrorResponse("Counselor not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy chuyên gia");
 
             counselor.Status = request.Status;
 
             var result = await _counselorRepository.UpdateAsync(counselor);
             if (result == 0)
-                return ServiceResponse<string>.ErrorResponse("Failed to update status.");
+                return ServiceResponse<string>.ErrorResponse("Không thể cập nhật trạng thái");
 
             string action = request.Status == 0 ? "blocked" : "unblocked";
             return ServiceResponse<string>.SuccessResponse($"Counselor {action} successfully.");
@@ -240,7 +240,7 @@ namespace PPC.Service.Services
         {
             var member = await _memberRepo.GetByIdAsync(memberId);
             if (member == null)
-                return ServiceResponse<List<CounselorWithSubDto>>.ErrorResponse("Member not found.");
+                return ServiceResponse<List<CounselorWithSubDto>>.ErrorResponse("Không tìm thấy người dùng");
 
             var categoryIds = new List<string>();
             if (!string.IsNullOrEmpty(member.Rec1)) categoryIds.Add(member.Rec1);
