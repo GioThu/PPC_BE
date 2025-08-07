@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Identity.Client;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
@@ -9,6 +10,7 @@ using PPC.Service.ModelRequest.DepositRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.CounselorResponse;
 using PPC.Service.ModelResponse.DepositResponse;
+using PPC.Service.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -208,6 +210,46 @@ namespace PPC.Service.Services
             await _depositRepository.UpdateAsync(deposit);
 
             return ServiceResponse<string>.SuccessResponse("Deposit status updated successfully.");
+        }
+
+        public async Task<ServiceResponse<string>> CreateVNPayDepositAsync(HttpContext context, string accountId, VnPayRequest request)
+        {
+            var (walletId, _) = await _accountRepository.GetWalletInfoByAccountIdAsync(accountId);
+            if (string.IsNullOrEmpty(walletId))
+            {
+                return ServiceResponse<string>.ErrorResponse("Wallet not found.");
+            }
+
+            // 👇 Lưu accountId và amount vào return URL
+            var returnUrl = $"https://ppcbackend.azurewebsites.net/api/Deposit/vnpay-return?accountId={accountId}&amount={request.Amount}";
+
+            string vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+            string vnp_TmnCode = "ULVE3NUK";
+            string vnp_HashSecret = "REFWL616A23MJOFK118BV7GA6FBS0609";
+
+            TimeZoneInfo vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var orderId = DateTime.Now.Ticks.ToString();
+            var createdDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
+
+            VnPayLib vnpay = new VnPayLib();
+            vnpay.AddRequestData("vnp_Version", VnPayLib.VERSION);
+            vnpay.AddRequestData("vnp_Command", "pay");
+            vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
+            vnpay.AddRequestData("vnp_Amount", ((int)(request.Amount * 100)).ToString());
+            vnpay.AddRequestData("vnp_BankCode", "VNBANK");
+            vnpay.AddRequestData("vnp_CreateDate", createdDate.ToString("yyyyMMddHHmmss"));
+            vnpay.AddRequestData("vnp_CurrCode", "VND");
+            vnpay.AddRequestData("vnp_IpAddr", Utilss.GetIpAddress(context));
+            vnpay.AddRequestData("vnp_Locale", "vn");
+            vnpay.AddRequestData("vnp_OrderInfo", $"Nạp tiền {request.Amount} VND - Order {orderId}");
+            vnpay.AddRequestData("vnp_OrderType", "other");
+
+            // 👇 Set return URL chứa accountId và amount
+            vnpay.AddRequestData("vnp_ReturnUrl", returnUrl);
+            vnpay.AddRequestData("vnp_TxnRef", orderId);
+
+            var paymentUrl = vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
+            return ServiceResponse<string>.SuccessResponse(paymentUrl);
         }
     }
 }

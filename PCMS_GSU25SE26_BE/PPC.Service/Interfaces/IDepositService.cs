@@ -1,4 +1,5 @@
-﻿using PPC.Service.ModelRequest.DepositRequest;
+﻿using Microsoft.AspNetCore.Http;
+using PPC.Service.ModelRequest.DepositRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.DepositResponse;
 using System;
@@ -16,5 +17,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<List<DepositDto>>> GetDepositsByStatusAsync(int status);
         Task<ServiceResponse<List<DepositDto>>> GetMyDepositsAsync(string accountId);
         Task<ServiceResponse<string>> ChangeDepositStatusAsync(DepositChangeStatusRequest request);
+        Task<ServiceResponse<string>> CreateVNPayDepositAsync(HttpContext context, string accountId, VnPayRequest request);
+
     }
 }
