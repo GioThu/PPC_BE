@@ -38,13 +38,13 @@ namespace PPC.Service.Services
         {
             var member = await _memberRepository.GetByIdAsync(request.MemberId);
             if (member == null)
-                return ServiceResponse<string>.ErrorResponse("Member not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy người dùng");
 
             member.Status = request.Status;
 
             var result = await _memberRepository.UpdateAsync(member);
             if (result == 0)
-                return ServiceResponse<string>.ErrorResponse("Failed to update status.");
+                return ServiceResponse<string>.ErrorResponse("Cập nhật trạng thái thất bại");
 
             var action = request.Status == 0 ? "blocked" : "unblocked";
             return ServiceResponse<string>.SuccessResponse($"Member {action} successfully.");
@@ -54,7 +54,7 @@ namespace PPC.Service.Services
         {
             var member = await _memberRepository.GetByAccountIdAsync(accountId);
             if (member == null)
-                return ServiceResponse<MemberProfileDto>.ErrorResponse("Member not found.");
+                return ServiceResponse<MemberProfileDto>.ErrorResponse("Không tìm thấy người dùng");
 
             return ServiceResponse<MemberProfileDto>.SuccessResponse(member.ToMemberProfileDto());
         }
@@ -63,7 +63,7 @@ namespace PPC.Service.Services
         {
             var member = await _memberRepository.GetByAccountIdAsync(accountId);
             if (member == null)
-                return ServiceResponse<string>.ErrorResponse("Member not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy người dùng");
 
             if (request.Fullname != null)
                 member.Fullname = request.Fullname;
@@ -82,7 +82,7 @@ namespace PPC.Service.Services
 
             await _memberRepository.UpdateAsync(member);
 
-            return ServiceResponse<string>.SuccessResponse("Profile updated successfully.");
+            return ServiceResponse<string>.SuccessResponse("Hồ sơ đã được cập nhật thành công");
         }
     }
 }

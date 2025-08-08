@@ -28,7 +28,7 @@ namespace PPC.Service.Services
         {
             var post = request.ToCreatePost(userId);
             await _postRepository.CreateAsync(post);
-            return ServiceResponse<string>.SuccessResponse("Post created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Bài đăng đã được tạo thành công");
         }
 
         public async Task<ServiceResponse<List<PostDto>>> GetAllPostsAsync()
@@ -42,7 +42,7 @@ namespace PPC.Service.Services
         {
             var post = await _postRepository.GetByIdAsync(id);
             if (post == null)
-                return ServiceResponse<PostDto>.ErrorResponse("Post not found");
+                return ServiceResponse<PostDto>.ErrorResponse("Không tìm thấy bài đăng");
 
             var dto = _mapper.Map<PostDto>(post);
             return ServiceResponse<PostDto>.SuccessResponse(dto);
@@ -52,22 +52,22 @@ namespace PPC.Service.Services
         {
             var post = await _postRepository.GetByIdAsync(request.Id);
             if (post == null)
-                return ServiceResponse<string>.ErrorResponse("Post not found");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy bài đăng");
 
             post.MapUpdate(request);
             await _postRepository.UpdateAsync(post);
 
-            return ServiceResponse<string>.SuccessResponse("Post updated successfully.");
+            return ServiceResponse<string>.SuccessResponse("Bài đăng đã được cập nhật thành công");
         }
 
         public async Task<ServiceResponse<string>> DeletePostAsync(string id)
         {
             var post = await _postRepository.GetByIdAsync(id);
             if (post == null)
-                return ServiceResponse<string>.ErrorResponse("Post not found");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy bài đăng");
 
             await _postRepository.RemoveAsync(post);
-            return ServiceResponse<string>.SuccessResponse("Post deleted successfully.");
+            return ServiceResponse<string>.SuccessResponse("Bài đăng đã được xóa thành công");
         }
     }
 }

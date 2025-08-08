@@ -24,26 +24,26 @@ namespace PPC.Service.Services
         {
             if (await _subCategoryRepository.IsNameExistInCategoryAsync(request.Name))
             {
-                return ServiceResponse<string>.ErrorResponse("Subcategory name already exists in this category.");
+                return ServiceResponse<string>.ErrorResponse("Tên danh mục phụ đã tồn tại trong danh mục này");
             }
 
             var subCategory = request.ToCreateSubCategory();
             await _subCategoryRepository.CreateAsync(subCategory);
 
-            return ServiceResponse<string>.SuccessResponse("Subcategory created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Danh mục phụ đã được tạo thành công");
         }
 
         public async Task<ServiceResponse<string>> UpdateSubCategoryAsync(SubCategoryUpdateRequest request)
         {
             var subCategory = await _subCategoryRepository.GetByIdAsync(request.Id);
             if (subCategory == null)
-                return ServiceResponse<string>.ErrorResponse("Subcategory not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy danh mục phụ");
 
             if (!string.Equals(subCategory.Name, request.Name, StringComparison.OrdinalIgnoreCase))
             {
                 if (await _subCategoryRepository.IsNameExistInCategoryAsync(request.Name))
                 {
-                    return ServiceResponse<string>.ErrorResponse("Subcategory name already exists in this category.");
+                    return ServiceResponse<string>.ErrorResponse("Tên danh mục phụ đã tồn tại trong danh mục này");
                 }
 
                 subCategory.Name = request.Name;
@@ -52,35 +52,35 @@ namespace PPC.Service.Services
             subCategory.Status = request.Status;
             await _subCategoryRepository.UpdateAsync(subCategory);
 
-            return ServiceResponse<string>.SuccessResponse("Subcategory updated successfully.");
+            return ServiceResponse<string>.SuccessResponse("Đã cập nhật danh mục con thành công");
         }
 
         public async Task<ServiceResponse<string>> BlockSubCategoryAsync(string id)
         {
             var subCategory = await _subCategoryRepository.GetByIdAsync(id);
             if (subCategory == null)
-                return ServiceResponse<string>.ErrorResponse("Subcategory not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy danh mục con");
 
             subCategory.Status = 0; 
             var result = await _subCategoryRepository.UpdateAsync(subCategory);
             if (result != 1)
-                return ServiceResponse<string>.ErrorResponse("Failed to update subcategory status.");
+                return ServiceResponse<string>.ErrorResponse("Cập nhật trạng thái danh mục con thất bại");
 
-            return ServiceResponse<string>.SuccessResponse("Subcategory status updated to blocked.");
+            return ServiceResponse<string>.SuccessResponse("Trạng thái danh mục con đã được cập nhật thành bị chặn");
         }
 
         public async Task<ServiceResponse<string>> UnblockSubCategoryAsync(string id)
         {
             var subCategory = await _subCategoryRepository.GetByIdAsync(id);
             if (subCategory == null)
-                return ServiceResponse<string>.ErrorResponse("Subcategory not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy danh mục con");
 
             subCategory.Status = 1; 
             var result = await _subCategoryRepository.UpdateAsync(subCategory);
             if (result != 1)
-                return ServiceResponse<string>.ErrorResponse("Failed to unblock subcategory.");
+                return ServiceResponse<string>.ErrorResponse("Không thể bỏ chặn danh mục con");
 
-            return ServiceResponse<string>.SuccessResponse("Subcategory unblocked successfully.");
+            return ServiceResponse<string>.SuccessResponse("Đã bỏ chặn danh mục con thành công");
         }
     }
 }

@@ -232,10 +232,10 @@ namespace PPC.Repository.Repositories
         {
             var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId);
             if (booking == null)
-                throw new Exception("Booking not found.");
+                throw new Exception("Không tìm thấy đặt chỗ");
 
             if (!string.IsNullOrEmpty(booking.Member2Id))
-                throw new Exception("This booking already has a member invited.");
+                throw new Exception("Đặt chỗ này đã có thành viên được mời");
 
             booking.Member2Id = $"Member_{memberCode}";
             booking.IsCouple = false;

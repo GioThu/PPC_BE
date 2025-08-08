@@ -37,11 +37,11 @@ namespace PPC.Service.Services
         {
             var category = await _categoryRepository.GetByIdAsync(request.CategoryId);
             if (category == null)
-                return ServiceResponse<string>.ErrorResponse("Category not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy danh mục");
 
             var survey = await _surveyRepository.GetByIdAsync(request.SurveyId);
             if (survey == null)
-                return ServiceResponse<string>.ErrorResponse("Survey not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy khảo sát");
 
             var personType = new PersonType
             {
@@ -57,7 +57,7 @@ namespace PPC.Service.Services
 
             await _personTypeRepository.CreateAsync(personType);
 
-            return ServiceResponse<string>.SuccessResponse("PersonType created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Kiểu người đã được tạo thành công");
         }
 
         public async Task<ServiceResponse<List<PersonTypeDto>>> GetPersonTypesBySurveyAsync(string surveyId)
@@ -71,7 +71,7 @@ namespace PPC.Service.Services
         {
             var pt = await _personTypeRepository.GetPersonTypeByIdAsync(id);
             if (pt == null)
-                return ServiceResponse<PersonTypeDto>.ErrorResponse("PersonType not found");
+                return ServiceResponse<PersonTypeDto>.ErrorResponse("Không tìm thấy kiểu người");
 
             var dto = _mapper.Map<PersonTypeDto>(pt);
             return ServiceResponse<PersonTypeDto>.SuccessResponse(dto);
@@ -81,7 +81,7 @@ namespace PPC.Service.Services
         {
             var entity = await _personTypeRepository.GetPersonTypeByIdAsync(request.Id);
             if (entity == null)
-                return ServiceResponse<string>.ErrorResponse("PersonType not found");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy kiểu người");
 
             entity.Description = request.Description;
             entity.Detail = request.Detail;
@@ -89,7 +89,7 @@ namespace PPC.Service.Services
             entity.CategoryId = request.CategoryId;
 
             await _personTypeRepository.UpdatePersonTypeAsync(entity);
-            return ServiceResponse<string>.SuccessResponse("Update successful");
+            return ServiceResponse<string>.SuccessResponse("Cập nhật thành công");
         }
 
         public async Task<ServiceResponse<MyPersonTypeResponse>> GetMyPersonTypeAsync(string memberId, string surveyId)
@@ -97,7 +97,7 @@ namespace PPC.Service.Services
             // Lấy Member
             var member = await _memberRepo.GetByIdAsync(memberId);
             if (member == null)
-                return ServiceResponse<MyPersonTypeResponse>.ErrorResponse("Member not found");
+                return ServiceResponse<MyPersonTypeResponse>.ErrorResponse("Không tìm thấy người dùng");
 
             // Xác định name theo surveyId
             string personTypeName = surveyId switch
@@ -110,7 +110,7 @@ namespace PPC.Service.Services
             };
 
             if (string.IsNullOrEmpty(personTypeName))
-                return ServiceResponse<MyPersonTypeResponse>.ErrorResponse("No person type found for this survey.");
+                return ServiceResponse<MyPersonTypeResponse>.ErrorResponse("Không tìm thấy kiểu người nào cho khảo sát này");
 
             // Tìm trong PersonType table
             var personType = await _personTypeRepository
@@ -120,7 +120,7 @@ namespace PPC.Service.Services
                 .FirstOrDefault(pt => pt.Name == personTypeName);
 
             if (matched == null)
-                return ServiceResponse<MyPersonTypeResponse>.ErrorResponse("PersonType not found in system.");
+                return ServiceResponse<MyPersonTypeResponse>.ErrorResponse("Không tìm thấy kiểu người trong hệ thống");
 
             // Map sang DTO
             var dto = _mapper.Map<MyPersonTypeResponse>(matched);
@@ -142,7 +142,7 @@ namespace PPC.Service.Services
             var histories = await _resultHistoryRepo.GetResultHistoriesByMemberAndSurveyAsync(memberId, surveyId);
 
             if (!histories.Any())
-                return ServiceResponse<List<ResultHistoryResponse>>.ErrorResponse("No history found.");
+                return ServiceResponse<List<ResultHistoryResponse>>.ErrorResponse("Không tìm thấy lịch sử tư vấn");
 
             var responses = new List<ResultHistoryResponse>();
 
@@ -182,7 +182,7 @@ namespace PPC.Service.Services
         {
             var personType = await _personTypeRepository.GetByNameAndSurveyIdAsync(request.Name, request.SurveyId);
             if (personType == null)
-                return ServiceResponse<PersonTypeDto>.ErrorResponse("Person type not found.");
+                return ServiceResponse<PersonTypeDto>.ErrorResponse("Không tìm thấy kiểu người");
 
             var dto = _mapper.Map<PersonTypeDto>(personType);
             return ServiceResponse<PersonTypeDto>.SuccessResponse(dto);

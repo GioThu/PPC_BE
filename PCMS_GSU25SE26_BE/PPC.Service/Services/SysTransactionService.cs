@@ -116,7 +116,7 @@ namespace PPC.Service.Services
                         break;
 
                     default:
-                        description = "(Unknown transaction type)";
+                        description = "(Loại giao dịch không xác định)";
                         break;
                 }
 

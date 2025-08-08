@@ -31,13 +31,13 @@ namespace PPC.Service.Services
         {
             if (await _memberShipRepository.IsNameDuplicatedAsync(request.MemberShipName))
             {
-                return ServiceResponse<string>.ErrorResponse("Membership name already exists.");
+                return ServiceResponse<string>.ErrorResponse("Tên gói thành viên đã tồn tại");
             }
 
             var memberShip = request.ToCreateMemberShip();
             await _memberShipRepository.CreateAsync(memberShip);
 
-            return ServiceResponse<string>.SuccessResponse("Membership created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Gói thành viên đã được tạo thành công");
         }
 
         public async Task<ServiceResponse<List<MemberShipDto>>> GetAllMemberShipsAsync()
@@ -52,21 +52,21 @@ namespace PPC.Service.Services
             var memberShip = await _memberShipRepository.GetByIdAsync(request.Id);
             if (memberShip == null || memberShip.Status == 0)
             {
-                return ServiceResponse<string>.ErrorResponse("Membership not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy gói thành viên");
             }
 
             if (!string.Equals(memberShip.MemberShipName, request.MemberShipName, StringComparison.OrdinalIgnoreCase))
             {
                 if (await _memberShipRepository.IsNameDuplicatedAsync(request.MemberShipName))
                 {
-                    return ServiceResponse<string>.ErrorResponse("Membership name already exists.");
+                    return ServiceResponse<string>.ErrorResponse("Tên gói thành viên đã tồn tại");
                 }
             }
 
             request.MapToEntity(memberShip);
             await _memberShipRepository.UpdateAsync(memberShip);
 
-            return ServiceResponse<string>.SuccessResponse("Membership updated successfully.");
+            return ServiceResponse<string>.SuccessResponse("");
         }
 
         public async Task<ServiceResponse<string>> DeleteMemberShipAsync(string id)
@@ -74,45 +74,45 @@ namespace PPC.Service.Services
             var memberShip = await _memberShipRepository.GetByIdAsync(id);
             if (memberShip == null || memberShip.Status == 0)
             {
-                return ServiceResponse<string>.ErrorResponse("Membership not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy gói thành viên");
             }
 
             memberShip.Status = 0;
             await _memberShipRepository.UpdateAsync(memberShip);
 
-            return ServiceResponse<string>.SuccessResponse("Membership deleted (status set to 0).");
+            return ServiceResponse<string>.SuccessResponse("Đã xóa gói thành viên");
         }
 
         public async Task<ServiceResponse<MemberBuyMemberShipResponse>> BuyMemberShipAsync(string memberId, string accountId, MemberBuyMemberShipRequest request)
         {
             if (string.IsNullOrEmpty(accountId))
-                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Unauthorized");
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Không được phép truy cập");
             if (string.IsNullOrEmpty(memberId))
-                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Unauthorized");
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Không được phép truy cập");
 
             var member = await _memberRepository.GetByIdAsync(memberId);
             if (member == null)
-                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Member not found");
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Không tìm thấy người dùng");
 
             var membership = await _memberShipRepository.GetByIdAsync(request.MemberShipId);
             if (membership == null || membership.Status != 1)
-                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Membership not found or inactive");
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Không tìm thấy gói thành viên hoặc gói đang không hoạt động");
 
             var account = await _accountRepository.GetByIdAsync(accountId);
             if (account == null || string.IsNullOrEmpty(account.WalletId))
-                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Wallet not found");
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Không tìm thấy ví");
 
             var wallet = await _walletRepository.GetByIdAsync(account.WalletId);
             if (wallet == null || wallet.Status != 1)
-                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Wallet not found or inactive");
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Không tìm thấy ví");
 
             var price = membership.Price ?? 0;
             if ((wallet.Remaining ?? 0) < price)
-                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Not enough balance");
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Số dư không đủ");
 
             if (await _memberMemberShipRepository.MemberHasActiveMemberShipAsync(memberId, membership.Id))
             {
-                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Member already owns this membership and it is not yet expire.");
+                return ServiceResponse<MemberBuyMemberShipResponse>.ErrorResponse("Thành viên đã sở hữu gói thành viên này và gói vẫn chưa hết hạn");
             }
 
             wallet.Remaining -= price;

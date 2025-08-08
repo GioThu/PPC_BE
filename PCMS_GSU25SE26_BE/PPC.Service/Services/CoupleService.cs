@@ -201,9 +201,9 @@ public class CoupleService : ICoupleService
         }
 
         if (string.IsNullOrEmpty(resultType) || !personTypeDict.ContainsKey(resultType))
-            return ServiceResponse<string>.ErrorResponse("Unable to determine result.");
+            return ServiceResponse<string>.ErrorResponse("Không thể xác định kết quả");
 
-        description = personTypeDict[resultType].Description ?? "No description available.";
+        description = personTypeDict[resultType].Description ?? "Không có mô tả";
 
         if (couple.Member == memberId)
         {
@@ -271,7 +271,7 @@ public class CoupleService : ICoupleService
     {
         var couple = await _coupleRepository.GetCoupleWithMembersByIdAsync(coupleId);
         if (couple == null)
-            return ServiceResponse<CoupleResultDto>.ErrorResponse("Couple not found.");
+            return ServiceResponse<CoupleResultDto>.ErrorResponse("Không tìm thấy cặp đôi");
 
         var result = new CoupleResultDto
         {
@@ -333,7 +333,7 @@ public class CoupleService : ICoupleService
         var couple = await _coupleRepository.GetLatestCoupleByMemberIdAsync(memberId);
         if (couple == null)
         {
-            return ServiceResponse<PartnerSurveySimpleProgressDto>.ErrorResponse("Couple not found.");
+            return ServiceResponse<PartnerSurveySimpleProgressDto>.ErrorResponse("Không tìm thấy cặp đôi");
         }
 
         bool isMember = couple.Member == memberId;
@@ -398,12 +398,12 @@ public class CoupleService : ICoupleService
     {
         var couple = await _coupleRepository.GetByIdAsync(coupleId);
         if (couple == null)
-            return ServiceResponse<string>.ErrorResponse("Couple not found.");
+            return ServiceResponse<string>.ErrorResponse("Không tìm thấy cặp đôi");
 
         couple.Status = 2;
         await _coupleRepository.UpdateAsync(couple);
 
-        return ServiceResponse<string>.SuccessResponse("Couple marked as completed.");
+        return ServiceResponse<string>.SuccessResponse("Cặp đôi đã được đánh dấu là hoàn tất");
     }
 
     public async Task<ServiceResponse<string>> CreateVirtualCoupleAsync(string memberId, VirtualCoupleCreateRequest request)
@@ -411,7 +411,7 @@ public class CoupleService : ICoupleService
         var hasActive = await _coupleRepository.HasActiveCoupleAsync(memberId);
         if (hasActive)
         {
-            return ServiceResponse<string>.ErrorResponse("You already have an active room. Cannot create a new one.");
+            return ServiceResponse<string>.ErrorResponse("Bạn đã có một phòng đang hoạt động, không thể tạo phòng mới");
         }
 
         var couple = new Couple
@@ -466,7 +466,7 @@ public class CoupleService : ICoupleService
     {
         var couple = await _coupleRepository.GetLatestCoupleByMemberIdAsync(memberId);
         if (couple == null || couple.IsVirtual != true)
-            return ServiceResponse<string>.ErrorResponse("Virtual couple not found.");
+            return ServiceResponse<string>.ErrorResponse("Không tìm thấy cặp đôi ảo");
 
         var personTypes = await _personTypeRepo.GetPersonTypesBySurveyAsync(request.SurveyId);
         var personTypeDict = personTypes.ToDictionary(x => x.Name, x => x);
@@ -474,7 +474,7 @@ public class CoupleService : ICoupleService
         string description = "";
 
         if (request.Answers == null || !request.Answers.Any())
-            return ServiceResponse<string>.ErrorResponse("No answers provided.");
+            return ServiceResponse<string>.ErrorResponse("Không có câu trả lời nào được cung cấp");
 
         var detail = string.Join(",", request.Answers
             .Where(a => !string.IsNullOrEmpty(a.Tag))
@@ -499,9 +499,9 @@ public class CoupleService : ICoupleService
         }
 
         if (string.IsNullOrEmpty(resultType) || !personTypeDict.ContainsKey(resultType))
-            return ServiceResponse<string>.ErrorResponse("Unable to determine result.");
+            return ServiceResponse<string>.ErrorResponse("Không thể xác định kết quả");
 
-        description = personTypeDict[resultType].Description ?? "No description available.";
+        description = personTypeDict[resultType].Description ?? "Không có mô tả.";
 
         // ✅ Ghi kết quả vào Virtual (tức là Member1)
         switch (request.SurveyId)
@@ -557,11 +557,11 @@ public class CoupleService : ICoupleService
     {
         var couple = await _coupleRepository.GetLatestCoupleByMemberIdAsync(memberId);
         if (couple == null)
-            return ServiceResponse<string>.ErrorResponse("Couple not found.");
+            return ServiceResponse<string>.ErrorResponse("Không tìm thấy cặp đôi");
 
         var history = await _resultHistoryRepo.GetLatestResultAsync(memberId, surveyId);
         if (history == null)
-            return ServiceResponse<string>.ErrorResponse("No recent result found for this survey.");
+            return ServiceResponse<string>.ErrorResponse("Không tìm thấy kết quả gần đây cho khảo sát này");
 
         // Ghi kết quả vào cặp
         if (couple.Member == memberId)
@@ -630,6 +630,6 @@ public class CoupleService : ICoupleService
         couple.Status = allCompleted ? 2 : 1;
         await _coupleRepository.UpdateAsync(couple);
 
-        return ServiceResponse<string>.SuccessResponse($"Applied result '{history.Result}' to Couple successfully.");
+        return ServiceResponse<string>.SuccessResponse($"Áp dụng kết quả '{history.Result}' cho cặp đôi thành công.");
     }
 }

@@ -42,7 +42,7 @@ namespace PPC.Controller.Controllers
         public async Task<IActionResult> SubmitResult([FromBody] SurveyResultRequest request)
         {
             var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
-            if (string.IsNullOrEmpty(memberId)) return Unauthorized("Member not found");
+            if (string.IsNullOrEmpty(memberId)) return Unauthorized("Không tìm thấy người dùng");
 
             var response = await _surveyService.SubmitResultAsync(memberId, request);
             return response.Success ? Ok(response) : BadRequest(response);

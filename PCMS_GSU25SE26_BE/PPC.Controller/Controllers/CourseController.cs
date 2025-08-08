@@ -165,7 +165,7 @@ namespace PPC.Controller.Controllers
         {
             var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value;
             if (string.IsNullOrEmpty(accountId))
-                return Unauthorized("Account not found.");
+                return Unauthorized("Không tìm thấy tài khoản");
 
             var result = await _courseService.EnrollCourseAsync(courseId, accountId);
             if (result.Success)
@@ -179,7 +179,7 @@ namespace PPC.Controller.Controllers
         {
             var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
             if (string.IsNullOrEmpty(memberId))
-                return Unauthorized("Member not found.");
+                return Unauthorized("Không tìm thấy người dùng");
 
             var response = await _courseService.GetEnrolledCoursesWithProgressAsync(memberId);
             return response.Success ? Ok(response) : BadRequest(response);

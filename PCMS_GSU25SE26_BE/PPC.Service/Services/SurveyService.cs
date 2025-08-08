@@ -42,7 +42,7 @@ namespace PPC.Service.Services
         {
             var member = await _memberRepo.GetByIdAsync(memberId);
             if (member == null)
-                return ServiceResponse<string>.ErrorResponse("Member not found");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy người dùng");
 
             var personTypes = await _personTypeRepo.GetPersonTypesBySurveyAsync(request.SurveyId);
             var allPersonTypes = await _personTypeRepo.GetAllPersonTypesAsync();
@@ -90,7 +90,7 @@ namespace PPC.Service.Services
 
                 description = !string.IsNullOrEmpty(matched.Description)
                   ? matched.Description
-                  : "No description available.";
+                  : "Không có mô tả.";
 
                 member.Mbti = matched.Name;
                 resultType = matched.Name;
@@ -117,7 +117,7 @@ namespace PPC.Service.Services
                         }
                         description = !string.IsNullOrEmpty(matched.Description)
                   ? matched.Description
-                  : "No description available.";
+                  : "Không có mô tả.";
                         resultType = matched.Name;
                         categoryId = matched.CategoryId;
                     }
@@ -125,7 +125,7 @@ namespace PPC.Service.Services
             }
 
             if (resultType == null)
-                return ServiceResponse<string>.ErrorResponse("Unable to determine result.");
+                return ServiceResponse<string>.ErrorResponse("Không thể xác định kết quả");
 
             await _memberRepo.UpdateAsync(member);
 

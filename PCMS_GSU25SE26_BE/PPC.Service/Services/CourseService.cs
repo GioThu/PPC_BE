@@ -57,14 +57,14 @@ namespace PPC.Service.Services
         {
             if (await _courseRepository.IsCourseNameExistAsync(request.Name))
             {
-                return ServiceResponse<string>.ErrorResponse("Course name already exists.");
+                return ServiceResponse<string>.ErrorResponse("Tên khóa học đã tồn tại.");
             }
 
             var course = request.ToCreateCourse();
             course.CreateBy = creatorId;
 
             await _courseRepository.CreateAsync(course);
-            return ServiceResponse<string>.SuccessResponse("Course created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Khóa học đã được tạo thành công.");
         }
 
         public async Task<ServiceResponse<List<CourseDto>>> GetAllCoursesAsync()
@@ -79,7 +79,7 @@ namespace PPC.Service.Services
         {
             if (await _courseSubCategoryRepository.ExistsAsync(request.CourseId, request.SubCategoryId))
             {
-                return ServiceResponse<string>.ErrorResponse("Sub-category already exists in course.");
+                return ServiceResponse<string>.ErrorResponse("Danh mục phụ đã tồn tại trong khóa học.");
             }
 
             var entry = new CourseSubCategory
@@ -90,7 +90,7 @@ namespace PPC.Service.Services
             };
 
             await _courseSubCategoryRepository.CreateAsync(entry);
-            return ServiceResponse<string>.SuccessResponse("Sub-category added to course successfully.");
+            return ServiceResponse<string>.SuccessResponse("Danh mục phụ đã được thêm vào khóa học thành công");
         }
 
         public async Task<ServiceResponse<string>> RemoveSubCategoryAsync(CourseSubCategoryRequest request)
@@ -98,11 +98,11 @@ namespace PPC.Service.Services
             var entry = await _courseSubCategoryRepository.GetAsync(request.CourseId, request.SubCategoryId);
             if (entry == null)
             {
-                return ServiceResponse<string>.ErrorResponse("Sub-category not found in course.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy danh mục phụ trong khóa học");
             }
 
             await _courseSubCategoryRepository.RemoveAsync(entry);
-            return ServiceResponse<string>.SuccessResponse("Sub-category removed from course successfully.");
+            return ServiceResponse<string>.SuccessResponse("Danh mục phụ đã được xóa khỏi khóa học thành công.");
         }
 
         public async Task<ServiceResponse<string>> CreateLectureWithChapterAsync(LectureWithChapterCreateRequest request)
@@ -166,7 +166,7 @@ namespace PPC.Service.Services
         {
             var course = await _courseRepository.GetCourseWithAllDetailsAsync(courseId);
             if (course == null)
-                return ServiceResponse<CourseDto>.ErrorResponse("Course not found.");
+                return ServiceResponse<CourseDto>.ErrorResponse("Không tìm thấy khóa học");
 
             var dto = _mapper.Map<CourseDto>(course);
             return ServiceResponse<CourseDto>.SuccessResponse(dto);
@@ -517,12 +517,12 @@ namespace PPC.Service.Services
         {
             // Validate input status
             if (newStatus < 0 || newStatus > 2)
-                return ServiceResponse<string>.ErrorResponse("Invalid status. Must be 0, 1 or 2.");
+                return ServiceResponse<string>.ErrorResponse("Trạng thái không hợp lệ. Phải là 0, 1 hoặc 2");
 
             // Get course by id
             var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null)
-                return ServiceResponse<string>.ErrorResponse("Course not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy khóa học");
 
             // Update status
             course.Status = newStatus;
@@ -530,7 +530,7 @@ namespace PPC.Service.Services
 
             await _courseRepository.UpdateAsync(course);
 
-            return ServiceResponse<string>.SuccessResponse("Course status updated successfully.");
+            return ServiceResponse<string>.SuccessResponse("Trạng thái khóa học đã được cập nhật thành công");
         }
 
         public async Task<ServiceResponse<string>> DeleteChapterAsync(string chapterId)
@@ -558,9 +558,9 @@ namespace PPC.Service.Services
             var success = await _courseRepository.RateCourseAsync(courseId, memberId, rating, feedback);
 
             if (!success)
-                return ServiceResponse<string>.ErrorResponse("Member has not enrolled in the course or an error occurred.");
+                return ServiceResponse<string>.ErrorResponse("Thành viên chưa đăng ký khóa học hoặc đã xảy ra lỗi");
 
-            return ServiceResponse<string>.SuccessResponse("Course rated successfully.");
+            return ServiceResponse<string>.SuccessResponse("Khóa học đã được đánh giá thành công");
         }
 
         public async Task<ServiceResponse<List<ReviewDto>>> GetCourseReviewsAsync(string courseId)
@@ -568,7 +568,7 @@ namespace PPC.Service.Services
             var enrollCourses = await _courseRepository.GetEnrollCoursesByCourseIdAsync(courseId);
 
             if (enrollCourses == null || !enrollCourses.Any())
-                return ServiceResponse<List<ReviewDto>>.ErrorResponse("No reviews available for this course.");
+                return ServiceResponse<List<ReviewDto>>.ErrorResponse("Không có đánh giá nào cho khóa học này");
 
             var reviews = enrollCourses.Select(e => new ReviewDto
             {

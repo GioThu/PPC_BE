@@ -44,7 +44,7 @@ namespace PPC.Service.Services
             );
 
             if (isOverlapping)
-                return ServiceResponse<string>.ErrorResponse("Work schedule overlaps with an existing one.");
+                return ServiceResponse<string>.ErrorResponse("Lịch làm việc bị trùng với một lịch hiện có");
 
             var toMerge = sameDaySchedules
                 .Where(ws => ws.EndTime == startTime || ws.StartTime == endTime)
@@ -70,7 +70,7 @@ namespace PPC.Service.Services
 
                 await _workScheduleRepository.UpdateAsync(mainSchedule);
 
-                return ServiceResponse<string>.SuccessResponse("Schedule merged successfully.");
+                return ServiceResponse<string>.SuccessResponse("Đã hợp nhất lịch thành công");
             }
             else
             {
@@ -78,7 +78,7 @@ namespace PPC.Service.Services
                 schedule.CounselorId = counselorId;
 
                 await _workScheduleRepository.CreateAsync(schedule);
-                return ServiceResponse<string>.SuccessResponse("Schedule created successfully.");
+                return ServiceResponse<string>.SuccessResponse("Đã tạo lịch thành công");
             }
         }
 
@@ -95,13 +95,13 @@ namespace PPC.Service.Services
             var schedule = schedules.FirstOrDefault(s => s.Id == scheduleId);
 
             if (schedule == null)
-                return ServiceResponse<string>.ErrorResponse("Schedule not found or access denied.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy lịch hoặc bị từ chối quyền truy cập");
 
             var success = await _workScheduleRepository.DeleteScheduleByIdAsync(scheduleId);
             if (!success)
-                return ServiceResponse<string>.ErrorResponse("Failed to delete schedule.");
+                return ServiceResponse<string>.ErrorResponse("Xóa lịch thất bại");
 
-            return ServiceResponse<string>.SuccessResponse("Schedule deleted successfully.");
+            return ServiceResponse<string>.SuccessResponse("Đã xóa lịch thành công");
         }
     }
 }

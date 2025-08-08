@@ -30,27 +30,27 @@ namespace PPC.Service.Services
         public async Task<ServiceResponse<string>> CreateQuestionAsync(SurveyQuestionCreateRequest request)
         {
             if (string.IsNullOrEmpty(request.SurveyId) || string.IsNullOrEmpty(request.Description))
-                return ServiceResponse<string>.ErrorResponse("Invalid request data.");
+                return ServiceResponse<string>.ErrorResponse("Dữ liệu yêu cầu không hợp lệ");
 
             var question = request.ToCreateSurveyQuestion();
             var answers = request.Answers.ToCreateSurveyAnswers(question.Id);
 
             await _questionRepository.CreateQuestionWithAnswersAsync(question, answers);
 
-            return ServiceResponse<string>.SuccessResponse("Question with answers created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Câu hỏi cùng các câu trả lời đã được tạo thành công");
         }
 
         public async Task<ServiceResponse<string>> CreateQuestion1Async(QuestionCreateRequest request)
         {
             if (string.IsNullOrEmpty(request.QuizId) || string.IsNullOrEmpty(request.Description))
-                return ServiceResponse<string>.ErrorResponse("Invalid request data.");
+                return ServiceResponse<string>.ErrorResponse("Dữ liệu yêu cầu không hợp lệ");
 
             var question = request.ToCreateQuestion();
             var answers = request.Answers.ToCreateAnswers(question.Id);
 
             await _questionRepository.CreateQuestionWithAnswersAsync(question, answers);
 
-            return ServiceResponse<string>.SuccessResponse("Question with answers created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Câu hỏi cùng các câu trả lời đã được tạo thành công");
         }
 
         public async Task<ServiceResponse<PagingResponse<SurveyQuestionDto>>> GetPagingAsync(PagingSurveyQuestionRequest request)
@@ -87,7 +87,7 @@ namespace PPC.Service.Services
         {
             var question = await _questionRepository.GetQuestionWithAnswersAsync(questionId);
             if (question == null)
-                return ServiceResponse<string>.ErrorResponse("Question not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy câu hỏi");
 
             question.Description = request.Description;
 
@@ -101,7 +101,7 @@ namespace PPC.Service.Services
             }).ToList();
 
             await _questionRepository.UpdateQuestionAndAnswersAsync(question, newAnswers);
-            return ServiceResponse<string>.SuccessResponse("Updated successfully.");
+            return ServiceResponse<string>.SuccessResponse("Cập nhật thành công");
         }
 
 
@@ -109,8 +109,8 @@ namespace PPC.Service.Services
         {
             var result = await _questionRepository.DeleteWithAnswersAsync(questionId);
             return result
-                ? ServiceResponse<string>.SuccessResponse("Deleted successfully.")
-                : ServiceResponse<string>.ErrorResponse("Question not found.");
+                ? ServiceResponse<string>.SuccessResponse("Xóa thành công")
+                : ServiceResponse<string>.ErrorResponse("Không tìm thấy câu hỏi");
         }
 
         public async Task<ServiceResponse<List<SurveyQuestionDto>>> GetRandomQuestionsAsync(string surveyId, int count)

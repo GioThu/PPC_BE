@@ -55,7 +55,7 @@ namespace PPC.Controller.Controllers
         {
             var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
             if (string.IsNullOrEmpty(memberId))
-                return Unauthorized("Member not found.");
+                return Unauthorized("Không tìm thấy người dùng");
 
             var result = await _personTypeService.GetMyPersonTypeAsync(memberId, surveyId);
             return Ok(result);

@@ -83,7 +83,7 @@ namespace PPC.Service.Services
         {
             var result = await _resultPersonTypeRepo.GetByIdAsync(request.Id);
             if (result == null)
-                return ServiceResponse<string>.ErrorResponse("Result not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy kết quả");
 
             result.Description = request.Description;
             result.Detail = request.Detail;
@@ -94,7 +94,7 @@ namespace PPC.Service.Services
             result.StrongPoints = request.StrongPoints;
 
             await _resultPersonTypeRepo.UpdateAsync(result);
-            return ServiceResponse<string>.SuccessResponse("Update successful.");
+            return ServiceResponse<string>.SuccessResponse("Cập nhật thành công");
         }
     }
 }

@@ -46,7 +46,7 @@ namespace PPC.Service.Services
             var (walletId, remaining) = await _accountRepository.GetWalletInfoByAccountIdAsync(accountId);
             if (walletId == null)
             {
-                return ServiceResponse<string>.ErrorResponse("Account does not have a wallet.");
+                return ServiceResponse<string>.ErrorResponse("Tài khoản không có ví");
             }
 
             var deposit = request.ToCreateDeposit(walletId);
@@ -55,7 +55,7 @@ namespace PPC.Service.Services
             var wallet = await _walletRepository.GetByIdAsync(walletId);
             if (wallet == null)
             {
-                return ServiceResponse<string>.ErrorResponse("Wallet not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy ví");
             }
 
             if (wallet.Remaining == null)
@@ -76,7 +76,7 @@ namespace PPC.Service.Services
             };
             await _sysTransactionRepository.CreateAsync(transaction);
 
-            return ServiceResponse<string>.SuccessResponse("Deposit created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Giao dịch nạp tiền thành công");
         }
 
         public async Task<ServiceResponse<string>> CreateWithdrawAsync(string accountId, WithdrawCreateRequest request)
@@ -84,18 +84,18 @@ namespace PPC.Service.Services
             var (walletId, remaining) = await _accountRepository.GetWalletInfoByAccountIdAsync(accountId);
             if (walletId == null)
             {
-                return ServiceResponse<string>.ErrorResponse("Account does not have a wallet.");
+                return ServiceResponse<string>.ErrorResponse("Tài khoản không có ví");
             }
 
             if (remaining == null || remaining < request.Total)
             {
-                return ServiceResponse<string>.ErrorResponse("Insufficient balance for withdrawal.");
+                return ServiceResponse<string>.ErrorResponse("Giao dịch nạp tiền thành công");
             }
 
             var withdraw = request.ToCreateWithdraw(walletId);
             await _depositRepository.CreateAsync(withdraw);
 
-            return ServiceResponse<string>.SuccessResponse("Withdrawal request created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Yêu cầu rút tiền đã được tạo thành công");
         }
 
         public async Task<ServiceResponse<List<DepositDto>>> GetDepositsByStatusAsync(int status)
@@ -130,12 +130,12 @@ namespace PPC.Service.Services
             var account = await _accountRepository.GetByIdAsync(accountId);
             if (account == null)
             {
-                return ServiceResponse<List<DepositDto>>.ErrorResponse("Account not found.");
+                return ServiceResponse<List<DepositDto>>.ErrorResponse("Không tìm thấy tài khoản");
             }
 
             if (string.IsNullOrEmpty(account.WalletId))
             {
-                return ServiceResponse<List<DepositDto>>.ErrorResponse("Account does not have a wallet.");
+                return ServiceResponse<List<DepositDto>>.ErrorResponse("Tài khoản không có ví");
             }
 
             var deposits = await _depositRepository.GetDepositsByWalletIdAsync(account.WalletId);
@@ -161,12 +161,12 @@ namespace PPC.Service.Services
             var deposit = await _depositRepository.GetByIdAsync(request.DepositId);
             if (deposit == null)
             {
-                return ServiceResponse<string>.ErrorResponse("Deposit not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy giao dịch");
             }
 
             if (deposit.Status == 2 || deposit.Status == 3)
             {
-                return ServiceResponse<string>.ErrorResponse("Deposit already processed.");
+                return ServiceResponse<string>.ErrorResponse("Giao dịch đã được xử lý");
             }
 
             if (request.NewStatus == 2)
@@ -174,21 +174,21 @@ namespace PPC.Service.Services
                 var wallet = await _walletRepository.GetWithAccountByIdAsync(deposit.WalletId);
                 if (wallet == null)
                 {
-                    return ServiceResponse<string>.ErrorResponse("Wallet not found.");
+                    return ServiceResponse<string>.ErrorResponse("Không tìm thấy ví");
                 }
 
                 var withdrawAmount = deposit.Total ?? 0;
 
                 if (withdrawAmount <= 0)
                 {
-                    return ServiceResponse<string>.ErrorResponse("Invalid withdrawal amount.");
+                    return ServiceResponse<string>.ErrorResponse("Số tiền rút không hợp lệ");
                 }
 
                 wallet.Remaining ??= 0;
 
                 if (wallet.Remaining < withdrawAmount)
                 {
-                    return ServiceResponse<string>.ErrorResponse("Insufficient balance for withdrawal approval.");
+                    return ServiceResponse<string>.ErrorResponse("Số dư không đủ để phê duyệt yêu cầu rút tiền");
                 }
 
                 wallet.Remaining -= withdrawAmount;
@@ -209,7 +209,7 @@ namespace PPC.Service.Services
             deposit.CancelReason = request.CancelReason;
             await _depositRepository.UpdateAsync(deposit);
 
-            return ServiceResponse<string>.SuccessResponse("Deposit status updated successfully.");
+            return ServiceResponse<string>.SuccessResponse("Trạng thái giao dịch nạp tiền đã được cập nhật thành công");
         }
 
         public async Task<ServiceResponse<string>> CreateVNPayDepositAsync(HttpContext context, string accountId, VnPayRequest request)
@@ -217,7 +217,7 @@ namespace PPC.Service.Services
             var (walletId, _) = await _accountRepository.GetWalletInfoByAccountIdAsync(accountId);
             if (string.IsNullOrEmpty(walletId))
             {
-                return ServiceResponse<string>.ErrorResponse("Wallet not found.");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy ví");
             }
 
             // 👇 Lưu accountId và amount vào return URL
