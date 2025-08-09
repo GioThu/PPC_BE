@@ -122,13 +122,13 @@ namespace PPC.Service.Services
 
             await _chapterRepository.UpdateAsync(chapter);
 
-            return ServiceResponse<string>.SuccessResponse("Lecture and chapter created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Đã tạo Lecture thành công");
         }
 
         public async Task<ServiceResponse<string>> CreateVideoWithChapterAsync(VideoWithChapterCreateRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Name))
-                return ServiceResponse<string>.ErrorResponse("Name is required.");
+                return ServiceResponse<string>.ErrorResponse("Thiếu tên của video");
 
             var nextChapNum = await _chapterRepository.GetNextChapterNumberAsync(request.CourseId);
 
@@ -142,13 +142,13 @@ namespace PPC.Service.Services
 
             await _chapterRepository.UpdateAsync(chapter);
 
-            return ServiceResponse<string>.SuccessResponse("Lecture and chapter created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Đã tạo lecture thành công");
         }
 
         public async Task<ServiceResponse<string>> CreateQuizWithChapterAsync(QuizWithChapterCreateRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Name))
-                return ServiceResponse<string>.ErrorResponse("Name is required.");
+                return ServiceResponse<string>.ErrorResponse("Cần phải có tên");
 
             var nextChapNum = await _chapterRepository.GetNextChapterNumberAsync(request.CourseId);
             var chapter = request.ToChapter(nextChapNum);
@@ -159,7 +159,7 @@ namespace PPC.Service.Services
             chapter.ChapNo = quiz.Id;
             await _chapterRepository.UpdateAsync(chapter);
 
-            return ServiceResponse<string>.SuccessResponse("Quiz and Chapter created successfully.");
+            return ServiceResponse<string>.SuccessResponse("Đã tạo quiz thành công");
         }
 
         public async Task<ServiceResponse<CourseDto>> GetCourseDetailByIdAsync(string courseId)
@@ -176,7 +176,7 @@ namespace PPC.Service.Services
         {
             var chapter = await _chapterRepository.GetByIdAsync(chapterId);
             if (chapter == null)
-                return ServiceResponse<ChapterDetailDto>.ErrorResponse("Chapter not found.");
+                return ServiceResponse<ChapterDetailDto>.ErrorResponse("Không tìm thấy chapter");
 
             var dto = _mapper.Map<ChapterDetailDto>(chapter);
 
@@ -360,7 +360,7 @@ namespace PPC.Service.Services
         {
             var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null)
-                return ServiceResponse<string>.ErrorResponse("Course not found");
+                return ServiceResponse<string>.ErrorResponse("Không tìm thấy khóa học");
 
             course.Name = request.Name?.Trim();
             course.Thumble = request.Thumble;
@@ -371,9 +371,9 @@ namespace PPC.Service.Services
 
             var result = await _courseRepository.UpdateAsync(course);
             if (result == 0)
-                return ServiceResponse<string>.ErrorResponse("Update failed");
+                return ServiceResponse<string>.ErrorResponse("Cập nhật thất bại");
 
-            return ServiceResponse<string>.SuccessResponse("Course updated successfully");
+            return ServiceResponse<string>.SuccessResponse("Cập nhật khóa học thành công");
         }
 
         public async Task<ServiceResponse<MemberCourseDto>> GetMemberCourseDetailAsync(string courseId, string memberId)

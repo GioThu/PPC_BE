@@ -18,6 +18,7 @@ namespace PPC.Service.Mappers
                 Title = request.Title,
                 Description = request.Description,
                 CreateAt = Utils.Utils.GetTimeNow(),
+                Image = request.Image,
                 CreateBy = userId,
                 Status = 1
             };
@@ -28,6 +29,7 @@ namespace PPC.Service.Mappers
             post.Title = request.Title ?? post.Title;
             post.Description = request.Description ?? post.Description;
             post.Status = request.Status ?? post.Status;
+            post.Image = request.Image ?? post.Image;
         }
     }
 }
