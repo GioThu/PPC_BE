@@ -127,5 +127,23 @@ namespace PPC.Repository.Repositories
                 .Include(e => e.Member)  // Include Member for MemberName
                 .ToListAsync();
         }
+
+        public async Task<List<Course>> GetCoursesByCategoriesAsync(List<string> categoryIds)
+        {
+            return await _context.Courses
+                .Where(c => c.CourseSubCategories.Any(cs => categoryIds.Contains(cs.SubCategory.CategoryId)) && c.Status == 1)
+                .Include(c => c.CourseSubCategories)
+                    .ThenInclude(cs => cs.SubCategory)
+                .ToListAsync();
+        }
+
+        // Get top-rated courses
+        public async Task<List<Course>> GetTopRatedCoursesAsync(int topN)
+        {
+            return await _context.Courses
+                .OrderByDescending(c => c.Rating)
+                .Take(topN)
+                .ToListAsync();
+        }
     }
 }

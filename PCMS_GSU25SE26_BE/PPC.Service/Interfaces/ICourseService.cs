@@ -33,5 +33,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> DeleteChapterAsync(string chapterId);
         Task<ServiceResponse<string>> RateCourseAsync(string courseId, string memberId, int rating, string feedback);
         Task<ServiceResponse<List<ReviewDto>>> GetCourseReviewsAsync(string courseId);
+        Task<ServiceResponse<List<CourseWithSubCategoryDto>>> GetRecommendedCoursesAsync(string memberId);
+        Task<ServiceResponse<List<CourseWithSubCategoryDto>>> GetRecommendedCoursesByCoupleIdAsync(string coupleId);
     }
 }

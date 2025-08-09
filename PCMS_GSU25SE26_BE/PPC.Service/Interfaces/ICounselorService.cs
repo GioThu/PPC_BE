@@ -22,6 +22,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<PagingResponse<CounselorDto>>> GetAllPagingAsync(PagingRequest request);
         Task<ServiceResponse<string>> UpdateStatusAsync(CounselorStatusUpdateRequest request);
         Task<ServiceResponse<List<CounselorWithSubDto>>> GetRecommendedCounselorsAsync(string memberId);
-
+        Task<ServiceResponse<List<CounselorWithSubDto>>> GetRecommendedCounselorsByCoupleIdAsync(string coupleId);
     }
 }

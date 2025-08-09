@@ -7,6 +7,7 @@ using PPC.Service.Interfaces;
 using PPC.Service.Mappers;
 using PPC.Service.ModelRequest.CourseRequest;
 using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.CategoryResponse;
 using PPC.Service.ModelResponse.CourseResponse;
 using System;
 using System.Collections.Generic;
@@ -32,10 +33,11 @@ namespace PPC.Service.Services
         private readonly IMemberMemberShipRepository _memberMemberShipRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly IProcessingRepository _processingRepository;
+        private readonly ICoupleRepository _coupleRepository;
 
 
 
-        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository, IAccountRepository accountRepository, IEnrollCourseRepository enrollCourseRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IMemberMemberShipRepository memberMemberShipRepository, IMemberRepository memberRepository, IProcessingRepository processingRepository)
+        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository, IAccountRepository accountRepository, IEnrollCourseRepository enrollCourseRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IMemberMemberShipRepository memberMemberShipRepository, IMemberRepository memberRepository, IProcessingRepository processingRepository, ICoupleRepository coupleRepository)
         {
             _courseRepository = courseRepository;
             _mapper = mapper;
@@ -51,6 +53,7 @@ namespace PPC.Service.Services
             _memberMemberShipRepository = memberMemberShipRepository;
             _memberRepository = memberRepository;
             _processingRepository = processingRepository;
+            _coupleRepository = coupleRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateCourseAsync(string creatorId, CourseCreateRequest request)
@@ -578,6 +581,180 @@ namespace PPC.Service.Services
             }).ToList();
 
             return ServiceResponse<List<ReviewDto>>.SuccessResponse(reviews);
+        }
+
+        public async Task<ServiceResponse<List<CourseWithSubCategoryDto>>> GetRecommendedCoursesAsync(string memberId)
+        {
+            var member = await _memberRepository.GetByIdAsync(memberId);
+            if (member == null)
+                return ServiceResponse<List<CourseWithSubCategoryDto>>.ErrorResponse("Member not found.");
+
+            // Extract categories that the member prefers
+            var categoryIds = new List<string>();
+            if (!string.IsNullOrEmpty(member.Rec1)) categoryIds.Add(member.Rec1);
+            if (!string.IsNullOrEmpty(member.Rec2)) categoryIds.Add(member.Rec2);
+
+            List<Course> recommendedCourses;
+
+            if (categoryIds.Any())
+            {
+                recommendedCourses = await _courseRepository.GetCoursesByCategoriesAsync(categoryIds);
+            }
+            else
+            {
+                recommendedCourses = await _courseRepository.GetTopRatedCoursesAsync(5); // Fallback to top-rated courses
+            }
+
+            var rankedCourses = recommendedCourses.Select(course =>
+            {
+                var subCategories = course.CourseSubCategories
+                    .Where(cs => cs.SubCategory.Status == 1 && cs.SubCategory.Category.Status == 1 && categoryIds.Contains(cs.SubCategory.CategoryId))
+                    .GroupBy(sc => sc.SubCategory.Id)
+                    .Select(g => new SubCategoryDto
+                    {
+                        Id = g.Key,
+                        Name = g.First().SubCategory.Name
+                    })
+                    .ToList();
+
+                var matchedSubCategories = subCategories.Count;
+
+                double reviewsCount = course.Reviews ?? 0.0; // now always a double
+                double score =  (double) (course.Rating * Math.Max(1, Math.Log(reviewsCount + 1)) * (1 + matchedSubCategories));
+
+
+                return new
+                {
+                    Course = course,
+                    SubCategories = subCategories,
+                    Score = score
+                };
+            })
+            .OrderByDescending(x => x.Score)
+            .Take(5)  // Top 5 courses
+            .Select(x => new CourseWithSubCategoryDto
+            {
+                Id = x.Course.Id,
+                Name = x.Course.Name,
+                Thumble = x.Course.Thumble,
+                Description = x.Course.Description,
+                Price = x.Course.Price,
+                Rating = x.Course.Rating,
+                Reviews = x.Course.Reviews,
+                SubCategories = x.SubCategories
+            })
+            .ToList();
+
+            if (!rankedCourses.Any())
+            {
+                rankedCourses = await GetTopRatedCoursesFallbackAsync();
+            }
+
+            return ServiceResponse<List<CourseWithSubCategoryDto>>.SuccessResponse(rankedCourses);
+        }
+
+        public async Task<ServiceResponse<List<CourseWithSubCategoryDto>>> GetRecommendedCoursesByCoupleIdAsync(string coupleId)
+        {
+            var couple = await _coupleRepository.GetByIdAsync(coupleId);
+            if (couple == null)
+                return ServiceResponse<List<CourseWithSubCategoryDto>>.ErrorResponse("Couple not found.");
+
+            // Rec1 từ Couple.Rec1
+            // Rec2 từ Member.Rec2 (member chính của cặp)
+            Member member = null;
+            if (!string.IsNullOrWhiteSpace(couple.Member))
+            {
+                member = await _memberRepository.GetByIdAsync(couple.Member);
+            }
+
+            var categoryIds = new List<string>();
+            if (!string.IsNullOrEmpty(couple.Rec1)) categoryIds.Add(couple.Rec1);
+            if (!string.IsNullOrEmpty(member?.Rec2)) categoryIds.Add(member.Rec2);
+
+            List<Course> recommendedCourses;
+            if (categoryIds.Any())
+            {
+                recommendedCourses = await _courseRepository.GetCoursesByCategoriesAsync(categoryIds);
+            }
+            else
+            {
+                recommendedCourses = await _courseRepository.GetTopRatedCoursesAsync(5); // Fallback to top-rated courses
+            }
+
+            var rankedCourses = recommendedCourses.Select(course =>
+            {
+                var subCategories = course.CourseSubCategories
+                    .Where(cs => cs.SubCategory.Status == 1
+                              && cs.SubCategory.Category.Status == 1
+                              && (categoryIds.Count == 0 || categoryIds.Contains(cs.SubCategory.CategoryId)))
+                    .GroupBy(sc => sc.SubCategory.Id)
+                    .Select(g => new SubCategoryDto
+                    {
+                        Id = g.Key,
+                        Name = g.First().SubCategory.Name
+                    })
+                    .ToList();
+
+                var matchedSubCategories = (categoryIds.Count == 0) ? 0 : subCategories.Count;
+
+                double reviewsCount = course.Reviews ?? 0.0; // always a double
+                double score = (double)(course.Rating * Math.Max(1, Math.Log(reviewsCount + 1)) * (1 + matchedSubCategories));
+
+                return new
+                {
+                    Course = course,
+                    SubCategories = subCategories,
+                    Score = score
+                };
+            })
+            .OrderByDescending(x => x.Score)
+            .Take(5)  // Top 5 courses
+            .Select(x => new CourseWithSubCategoryDto
+            {
+                Id = x.Course.Id,
+                Name = x.Course.Name,
+                Thumble = x.Course.Thumble,
+                Description = x.Course.Description,
+                Price = x.Course.Price,
+                Rating = x.Course.Rating,
+                Reviews = x.Course.Reviews,
+                SubCategories = x.SubCategories
+            })
+            .ToList();
+
+            if (!rankedCourses.Any())
+            {
+                rankedCourses = await GetTopRatedCoursesFallbackAsync();
+            }
+
+            return ServiceResponse<List<CourseWithSubCategoryDto>>.SuccessResponse(rankedCourses);
+        }
+
+        private async Task<List<CourseWithSubCategoryDto>> GetTopRatedCoursesFallbackAsync()
+        {
+            var courses = await _courseRepository.GetTopRatedCoursesAsync(5);
+
+            var result = courses.Select(course => new CourseWithSubCategoryDto
+            {
+                Id = course.Id,
+                Name = course.Name,
+                Thumble = course.Thumble,
+                Description = course.Description,
+                Price = course.Price,
+                Rating = course.Rating,
+                Reviews = course.Reviews,
+                SubCategories = course.CourseSubCategories
+                    .Where(cs => cs.SubCategory.Status == 1 && cs.SubCategory.Category.Status == 1)
+                    .GroupBy(sc => sc.SubCategory.Id)
+                    .Select(g => new SubCategoryDto
+                    {
+                        Id = g.Key,
+                        Name = g.First().SubCategory.Name
+                    })
+                    .ToList()
+            }).ToList();
+
+            return result;
         }
     }
 }

@@ -89,5 +89,15 @@ namespace PPC.Controller.Controllers
             var result = await _counselorService.GetRecommendedCounselorsAsync(memberId);
             return Ok(result);
         }
+
+        [HttpGet("recommendations/by-couple/{coupleId}")]
+        public async Task<IActionResult> GetRecommendationsByCoupleId(string coupleId)
+        {
+            var response = await _counselorService.GetRecommendedCounselorsByCoupleIdAsync(coupleId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

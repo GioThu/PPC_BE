@@ -14,13 +14,14 @@ namespace PPC.Controller.Controllers
     {
         private readonly ICourseService _courseService;
         private readonly IQuestionService _questionService;
+        private readonly ICounselorService _counselorService;
 
 
-        public CourseController(ICourseService courseService, IQuestionService questionService)
+        public CourseController(ICourseService courseService, IQuestionService questionService, ICounselorService counselorService)
         {
             _courseService = courseService;
             _questionService = questionService;
-
+            _counselorService = counselorService;
         }
 
         [HttpPost]
@@ -318,6 +319,37 @@ namespace PPC.Controller.Controllers
                 return Ok(result);
 
             return BadRequest(result);
+        }
+
+        [HttpPost("recommend")]
+        public async Task<IActionResult> RecommendCourses()
+        {
+            // Lấy memberId từ token
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+
+            if (string.IsNullOrEmpty(memberId))
+            {
+                return Unauthorized("MemberId not found in token.");
+            }
+
+            // Gọi service với memberId đã lấy từ token
+            var response = await _courseService.GetRecommendedCoursesAsync(memberId);
+
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
+
+
+        [HttpGet("recommendations/by-couple/{coupleId}")]
+        public async Task<IActionResult> GetRecommendationsByCoupleId(string coupleId)
+        {
+            var response = await _courseService.GetRecommendedCoursesByCoupleIdAsync(coupleId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
         }
     }
 }

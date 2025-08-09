@@ -250,17 +250,35 @@ public class CoupleService : ICoupleService
 
         if (allCompleted)
         {
+            // Gom các result đã tìm được của những cặp hoàn chỉnh
+            var successfulResults = new List<ResultPersonType>();
+
             foreach (var survey in surveyMap)
             {
                 if (survey.Type1 == null || survey.Type2 == null ||
-                    survey.Type1 == "false" || survey.Type2 == "false") continue;
+                    survey.Type1 == "false" || survey.Type2 == "false")
+                    continue;
 
                 var result = await _resultPersonTypeRepo.FindResultAsync(survey.SurveyId, survey.Type1, survey.Type2);
                 if (result != null)
                 {
                     survey.SetResult(result.Id);
+                    successfulResults.Add(result);
                 }
             }
+
+            var recCats = successfulResults
+                .Where(r => !string.IsNullOrWhiteSpace(r.CategoryId))
+                .GroupBy(r => r.CategoryId)
+                .Select(g => g.OrderBy(x => x.Compatibility).First())
+                .OrderBy(r => r.Compatibility)
+                .ThenBy(r => r.Id)
+                .Take(2)
+                .Select(r => r.CategoryId)
+                .ToList();
+
+            if (recCats.Count > 0) couple.Rec1 = recCats[0];
+            if (recCats.Count > 1) couple.Rec2 = recCats[1];
         }
         await _coupleRepository.UpdateAsync(couple);
 
@@ -536,17 +554,35 @@ public class CoupleService : ICoupleService
 
         if (allCompleted)
         {
+            // Gom các result đã tìm được của những cặp hoàn chỉnh
+            var successfulResults = new List<ResultPersonType>();
+
             foreach (var survey in surveyMap)
             {
                 if (survey.Type1 == null || survey.Type2 == null ||
-                    survey.Type1 == "false" || survey.Type2 == "false") continue;
+                    survey.Type1 == "false" || survey.Type2 == "false")
+                    continue;
 
                 var result = await _resultPersonTypeRepo.FindResultAsync(survey.SurveyId, survey.Type1, survey.Type2);
                 if (result != null)
                 {
                     survey.SetResult(result.Id);
+                    successfulResults.Add(result);
                 }
             }
+
+            var recCats = successfulResults
+                .Where(r => !string.IsNullOrWhiteSpace(r.CategoryId))
+                .GroupBy(r => r.CategoryId)
+                .Select(g => g.OrderBy(x => x.Compatibility).First())
+                .OrderBy(r => r.Compatibility)
+                .ThenBy(r => r.Id)
+                .Take(2)
+                .Select(r => r.CategoryId)
+                .ToList();
+
+            if (recCats.Count > 0) couple.Rec1 = recCats[0];
+            if (recCats.Count > 1) couple.Rec2 = recCats[1];
         }
 
         await _coupleRepository.UpdateAsync(couple);
@@ -613,6 +649,9 @@ public class CoupleService : ICoupleService
 
         if (allCompleted)
         {
+            // Gom các result đã tìm được của những cặp hoàn chỉnh
+            var successfulResults = new List<ResultPersonType>();
+
             foreach (var survey in surveyMap)
             {
                 if (survey.Type1 == null || survey.Type2 == null ||
@@ -623,13 +662,28 @@ public class CoupleService : ICoupleService
                 if (result != null)
                 {
                     survey.SetResult(result.Id);
+                    successfulResults.Add(result);
                 }
             }
+
+            var recCats = successfulResults
+                .Where(r => !string.IsNullOrWhiteSpace(r.CategoryId))
+                .GroupBy(r => r.CategoryId)                    
+                .Select(g => g.OrderBy(x => x.Compatibility).First())
+                .OrderBy(r => r.Compatibility)
+                .ThenBy(r => r.Id)                               
+                .Take(2)
+                .Select(r => r.CategoryId)
+                .ToList();
+
+            if (recCats.Count > 0) couple.Rec1 = recCats[0];
+            if (recCats.Count > 1) couple.Rec2 = recCats[1];
         }
 
-        couple.Status = allCompleted ? 2 : 1;
         await _coupleRepository.UpdateAsync(couple);
 
         return ServiceResponse<string>.SuccessResponse($"Áp dụng kết quả '{history.Result}' cho cặp đôi thành công.");
     }
+
+
 }
