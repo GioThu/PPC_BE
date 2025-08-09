@@ -46,8 +46,7 @@ namespace PPC.Repository.Repositories
             if (question == null) return false;
 
             _context.Answers.RemoveRange(question.Answers);
-            question.Status = 0;
-            _context.Questions.Update(question);
+            _context.Questions.Remove(question);
             await _context.SaveChangesAsync();
 
             return true;

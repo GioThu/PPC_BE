@@ -59,5 +59,12 @@ namespace PPC.Repository.Repositories
 
             return true;
         }
+
+        public async Task<EnrollCourse> GetByIdWithCourseAsync(string enrollCourseId)
+        {
+            return await _context.EnrollCourses
+                .Include(e => e.Course)
+                .FirstOrDefaultAsync(e => e.Id == enrollCourseId);
+        }
     }
 }

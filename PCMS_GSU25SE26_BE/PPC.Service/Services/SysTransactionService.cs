@@ -19,14 +19,16 @@ namespace PPC.Service.Services
         private readonly IBookingRepository _bookingRepository;
         private readonly IMemberMemberShipRepository _memberMemberShipRepository;
         private readonly IDepositRepository _depositRepository;
+        private readonly IEnrollCourseRepository _enrollCourseRepository;
 
 
-        public SysTransactionService(ISysTransactionRepository sysTransactionRepository, IBookingRepository bookingRepository, IMemberMemberShipRepository memberMemberShipRepository, IDepositRepository depositRepository)
+        public SysTransactionService(ISysTransactionRepository sysTransactionRepository, IBookingRepository bookingRepository, IMemberMemberShipRepository memberMemberShipRepository, IDepositRepository depositRepository, IEnrollCourseRepository enrollCourseRepository)
         {
             _sysTransactionRepository = sysTransactionRepository;
             _bookingRepository = bookingRepository;
             _memberMemberShipRepository = memberMemberShipRepository;
             _depositRepository = depositRepository;
+            _enrollCourseRepository = enrollCourseRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateTransactionAsync(SysTransactionCreateRequest request)
@@ -75,6 +77,15 @@ namespace PPC.Service.Services
                         {
                             description = $"Bạn đã được hoàn tiền từ buổi booking tư vấn {booking3.Counselor.Fullname} vào {booking3.TimeStart?.ToString("dd/MM/yyyy HH:mm")}";
                             amount = booking3.Price ?? 0;
+                        }
+                        break;
+
+                    case "4":
+                        var enrollCourse4 = await _enrollCourseRepository.GetByIdWithCourseAsync(trans.DocNo);
+                        if (enrollCourse4 != null)
+                        {
+                            description = $"Bạn đã được hoàn mua khóa học {enrollCourse4.Course.Name}";
+                            amount = enrollCourse4.Price ?? 0;
                         }
                         break;
 

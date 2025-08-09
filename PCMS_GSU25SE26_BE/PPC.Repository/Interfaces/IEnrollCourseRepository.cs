@@ -14,5 +14,6 @@ namespace PPC.Repository.Interfaces
         Task<List<EnrollCourse>> GetEnrolledCoursesWithProcessingAsync(string memberId);
         Task<EnrollCourse> GetEnrollByCourseAndMemberAsync(string courseId, string memberId);
         Task<bool> OpenCourseForMemberAsync(string courseId, string memberId);
+        Task<EnrollCourse> GetByIdWithCourseAsync(string enrollCourseId);
     }
 }

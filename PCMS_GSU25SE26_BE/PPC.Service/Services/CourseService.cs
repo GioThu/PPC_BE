@@ -308,15 +308,14 @@ namespace PPC.Service.Services
 
             // Nếu không free thì trừ tiền + tạo giao dịch
             string transactionId = null;
-            if (finalPrice > 0)
-            {
+            
                 wallet.Remaining -= finalPrice;
                 await _walletRepository.UpdateAsync(wallet);
 
                 var transaction = new SysTransaction
                 {
                     Id = Utils.Utils.GenerateIdModel("SysTransaction"),
-                    TransactionType = "4", // enroll course
+                    TransactionType = "4",
                     DocNo = enroll.Id,
                     CreateBy = accountId,
                     CreateDate = Utils.Utils.GetTimeNow()
@@ -324,7 +323,7 @@ namespace PPC.Service.Services
                 await _sysTransactionRepository.CreateAsync(transaction);
 
                 transactionId = transaction.Id;
-            }
+            
 
             return ServiceResponse<EnrollCourseResultDto>.SuccessResponse(new EnrollCourseResultDto
             {
