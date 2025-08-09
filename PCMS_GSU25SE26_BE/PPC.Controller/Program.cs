@@ -147,7 +147,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "https://www.ppccapstone.somee.com", "http://localhost:7013", "https://ccp-two.vercel.app")
+        policy.WithOrigins("http://localhost:3000", "https://www.ppccapstone.somee.com", "http://localhost:7013", "https://ccp-two.vercel.app", "https://ccp-mu.vercel.app")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
