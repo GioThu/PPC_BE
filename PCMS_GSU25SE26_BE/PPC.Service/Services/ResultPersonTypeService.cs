@@ -76,6 +76,21 @@ namespace PPC.Service.Services
         {
             var results = await _resultPersonTypeRepo.GetByPersonTypeIdAsync(personTypeId);
             var dtos = _mapper.Map<List<ResultPersonTypeDto>>(results);
+
+            foreach (var dto in dtos)
+            {
+                if (dto.PersonTypeId != personTypeId)
+                {
+                    var tempId = dto.PersonTypeId;
+                    dto.PersonTypeId = dto.PersonType2Id;
+                    dto.PersonType2Id = tempId;
+
+                    var tempType = dto.PersonType;
+                    dto.PersonType = dto.PersonType2;
+                    dto.PersonType2 = tempType;
+                }
+            }
+
             return ServiceResponse<List<ResultPersonTypeDto>>.SuccessResponse(dtos);
         }
 

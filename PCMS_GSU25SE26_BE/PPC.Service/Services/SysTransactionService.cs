@@ -85,7 +85,7 @@ namespace PPC.Service.Services
                         if (enrollCourse4 != null)
                         {
                             description = $"Bạn đã được hoàn mua khóa học {enrollCourse4.Course.Name}";
-                            amount = enrollCourse4.Price ?? 0;
+                            amount = - enrollCourse4.Price ?? 0;
                         }
                         break;
 
