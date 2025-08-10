@@ -19,7 +19,9 @@ namespace PPC.Repository.Repositories
         public async Task<List<string>> GetProcessingChapterIdsByEnrollCourseIdAsync(string enrollCourseId)
         {
             return await _context.Processings
-                .Where(p => p.EnrollCourseId == enrollCourseId && p.Status == 1)
+                .Where(p => p.EnrollCourseId == enrollCourseId
+                            && p.Status == 1
+                            && p.Chapter.Status == 1) 
                 .Select(p => p.ChapterId)
                 .Distinct()
                 .ToListAsync();
