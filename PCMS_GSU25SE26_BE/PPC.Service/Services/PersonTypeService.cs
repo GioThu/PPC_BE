@@ -21,9 +21,10 @@ namespace PPC.Service.Services
         private readonly IMapper _mapper;
         private readonly IMemberRepository _memberRepo;
         private readonly IResultHistoryRepository _resultHistoryRepo;
+        private readonly IBookingRepository _bookingRepo;
 
 
-        public PersonTypeService(IPersonTypeRepository personTypeRepository, ICategoryRepository categoryRepository, ISurveyRepository surveyRepository, IMapper mapper, IMemberRepository memberRepo, IResultHistoryRepository resultHistoryRepo)
+        public PersonTypeService(IPersonTypeRepository personTypeRepository, ICategoryRepository categoryRepository, ISurveyRepository surveyRepository, IMapper mapper, IMemberRepository memberRepo, IResultHistoryRepository resultHistoryRepo, IBookingRepository bookingRepo)
         {
             _personTypeRepository = personTypeRepository;
             _categoryRepository = categoryRepository;
@@ -31,6 +32,7 @@ namespace PPC.Service.Services
             _mapper = mapper;
             _memberRepo = memberRepo;
             _resultHistoryRepo = resultHistoryRepo;
+            _bookingRepo = bookingRepo;
         }
 
         public async Task<ServiceResponse<string>> CreatePersonTypeAsync(CreatePersonTypeRequest request)
@@ -186,6 +188,60 @@ namespace PPC.Service.Services
 
             var dto = _mapper.Map<PersonTypeDto>(personType);
             return ServiceResponse<PersonTypeDto>.SuccessResponse(dto);
+        }
+
+        public async Task<ServiceResponse<List<ResultHistoryResponse>>> GetHistoryByMemberAndSurveyAsync(string memberId, string surveyId, string bookingId)
+        {
+            var booking = await _bookingRepo.GetByIdAsync(bookingId);
+            if (booking == null)
+                return ServiceResponse<List<ResultHistoryResponse>>.ErrorResponse("Không tìm thấy lịch hẹn");
+
+            if (!booking.TimeStart.HasValue)
+                return ServiceResponse<List<ResultHistoryResponse>>.ErrorResponse("Lịch hẹn chưa có thời gian bắt đầu");
+
+            var cutoff = booking.TimeStart.Value;
+
+            var histories = await _resultHistoryRepo.GetResultHistoriesByMemberAndSurveyAsync(memberId, surveyId);
+
+            histories = histories
+                .Where(h => h.CreateAt.HasValue && h.CreateAt.Value <= cutoff)
+                .OrderBy(h => h.CreateAt!.Value)
+                .ToList();
+
+            if (!histories.Any())
+                return ServiceResponse<List<ResultHistoryResponse>>.ErrorResponse("Không có lịch sử trước thời điểm bắt đầu lịch hẹn");
+
+            var responses = new List<ResultHistoryResponse>();
+
+            foreach (var history in histories)
+            {
+                var scores = new Dictionary<string, int>();
+                if (!string.IsNullOrEmpty(history.Detail))
+                {
+                    scores = history.Detail
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(x => x.Split(':'))
+                        .Where(parts => parts.Length == 2 && int.TryParse(parts[1], out _))
+                        .ToDictionary(
+                            parts => parts[0],
+                            parts => int.Parse(parts[1])
+                        );
+                }
+
+                var dto = new ResultHistoryResponse
+                {
+                    SurveyId = history.Type,
+                    Result = history.Result,
+                    Description = history.Description,
+                    RawScores = history.Detail,
+                    Scores = scores,
+                    CreateAt = history.CreateAt
+                };
+
+                responses.Add(dto);
+            }
+
+            return ServiceResponse<List<ResultHistoryResponse>>.SuccessResponse(responses);
         }
     }
 

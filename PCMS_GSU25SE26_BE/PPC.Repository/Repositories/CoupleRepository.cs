@@ -94,5 +94,18 @@ namespace PPC.Repository.Repositories
                 .Include(c => c.Member1Navigation)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
+
+        public async Task<Couple> GetLatestCoupleByMembersWithIncludesAsync(string memberA, string memberB, int status)
+        {
+            return await _context.Couples
+                .Include(c => c.MemberNavigation)
+                .Include(c => c.Member1Navigation)
+                .Where(c => c.Status == status &&
+                            ((c.Member == memberA && c.Member1 == memberB) ||
+                             (c.Member == memberB && c.Member1 == memberA)))
+                .OrderByDescending(c => c.CreateAt ?? DateTime.MinValue)
+                .ThenByDescending(c => c.Id)
+                .FirstOrDefaultAsync();
+        }
     }
 }

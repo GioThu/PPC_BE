@@ -183,10 +183,28 @@ namespace PPC.Service.Services
                 {
                     if (currentDate == startDate)
                     {
-                        var now = Utils.Utils.GetTimeNow().TimeOfDay;
-                        availableSlots = availableSlots
-                            .Where(slot => slot.End > now)
-                            .ToList();
+                        var now = Utils.Utils.GetTimeNow();
+                        var roundedDown = new TimeSpan(now.Hour, 0, 0);
+                        var cutoffTime = roundedDown.Add(TimeSpan.FromHours(1));
+
+                        var trimmed = new List<AvailableTimeSlotDto>();
+                        foreach (var slot in availableSlots)
+                        {
+                            if (slot.End <= cutoffTime) continue;
+
+                            var newStart = slot.Start < cutoffTime ? cutoffTime : slot.Start;
+
+                            if (newStart < slot.End)
+                            {
+                                trimmed.Add(new AvailableTimeSlotDto
+                                {
+                                    Start = newStart,
+                                    End = slot.End
+                                });
+                            }
+                        }
+
+                        availableSlots = trimmed.OrderBy(s => s.Start).ToList();
                     }
 
                     if (availableSlots.Any())

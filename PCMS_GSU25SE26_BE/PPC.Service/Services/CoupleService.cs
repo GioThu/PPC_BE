@@ -18,9 +18,10 @@ public class CoupleService : ICoupleService
     private readonly IPersonTypeRepository _personTypeRepo;
     private readonly IResultPersonTypeRepository _resultPersonTypeRepo;
     private readonly IResultHistoryRepository _resultHistoryRepo;
+    private readonly IBookingRepository _bookingRepo;
 
 
-    public CoupleService(ICoupleRepository coupleRepository, IMapper mapper, IMemberRepository memberRepo, IPersonTypeRepository personTypeRepo, IResultPersonTypeRepository resultPersonTypeRepo, IResultHistoryRepository resultHistoryRepo)
+    public CoupleService(ICoupleRepository coupleRepository, IMapper mapper, IMemberRepository memberRepo, IPersonTypeRepository personTypeRepo, IResultPersonTypeRepository resultPersonTypeRepo, IResultHistoryRepository resultHistoryRepo, IBookingRepository bookingRepo)
     {
         _coupleRepository = coupleRepository;
         _mapper = mapper;
@@ -28,6 +29,7 @@ public class CoupleService : ICoupleService
         _personTypeRepo = personTypeRepo;
         _resultPersonTypeRepo = resultPersonTypeRepo;
         _resultHistoryRepo = resultHistoryRepo;
+        _bookingRepo = bookingRepo;
     }
 
     public async Task<ServiceResponse<string>> JoinCoupleByAccessCodeAsync(string memberId, string accessCode)
@@ -295,6 +297,79 @@ public class CoupleService : ICoupleService
         {
             Id = couple.Id,
             IsOwned = couple.Member == currentMemberId,
+            Member = _mapper.Map<MemberDto>(couple.MemberNavigation),
+            Member1 = _mapper.Map<MemberDto>(couple.Member1Navigation),
+            Mbti = couple.Mbti,
+            Disc = couple.Disc,
+            LoveLanguage = couple.LoveLanguage,
+            BigFive = couple.BigFive,
+            Mbti1 = couple.Mbti1,
+            Disc1 = couple.Disc1,
+            LoveLanguage1 = couple.LoveLanguage1,
+            BigFive1 = couple.BigFive1,
+            MbtiDescription = couple.MbtiDescription,
+            DiscDescription = couple.DiscDescription,
+            LoveLanguageDescription = couple.LoveLanguageDescription,
+            BigFiveDescription = couple.BigFiveDescription,
+            Mbti1Description = couple.Mbti1Description,
+            Disc1Description = couple.Disc1Description,
+            LoveLanguage1Description = couple.LoveLanguage1Description,
+            BigFive1Description = couple.BigFive1Description,
+            MbtiResult = couple.MbtiResult,
+            DiscResult = couple.DiscResult,
+            LoveLanguageResult = couple.LoveLanguageResult,
+            BigFiveResult = couple.BigFiveResult,
+            IsVirtual = couple.IsVirtual,
+            VirtualName = couple.VirtualName,
+            VirtualDob = couple.VirtualDob,
+            VirtualAvatar = couple.VirtualAvatar,
+            VirtualDescription = couple.VirtualDescription,
+            VirtualGender = couple.VirtualGender,
+            VirtualRelationship = couple.VirtualRelationship,
+            CreateAt = couple.CreateAt,
+            Rec1 = couple.Rec1,
+            Rec2 = couple.Rec2,
+            Status = couple.Status,
+            AccessCode = couple.AccessCode
+        };
+
+        async Task<ResultPersonTypeDto> LoadResult(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            var entity = await _resultPersonTypeRepo.GetByIdWithIncludesAsync(id);
+            return entity == null ? null : _mapper.Map<ResultPersonTypeDto>(entity);
+        }
+
+        result.MbtiDetail = await LoadResult(couple.MbtiResult);
+        result.DiscDetail = await LoadResult(couple.DiscResult);
+        result.LoveLanguageDetail = await LoadResult(couple.LoveLanguageResult);
+        result.BigFiveDetail = await LoadResult(couple.BigFiveResult);
+
+        return ServiceResponse<CoupleResultDto>.SuccessResponse(result);
+    }
+
+    public async Task<ServiceResponse<CoupleResultDto>> GetCoupleResultByBookingIdAsync(string bookingId)
+    {
+        var booking = await _bookingRepo.GetByIdAsync(bookingId);
+        if (booking == null)
+            return ServiceResponse<CoupleResultDto>.ErrorResponse("Không tìm thấy lịch hẹn");
+
+        if (string.IsNullOrWhiteSpace(booking.MemberId) || string.IsNullOrWhiteSpace(booking.Member2Id))
+            return ServiceResponse<CoupleResultDto>.ErrorResponse("Lịch hẹn không hợp lệ cho cặp đôi");
+
+        var memberA = booking.MemberId;
+        var memberB = booking.Member2Id;
+
+        // Lấy couple mới nhất của 2 người, status = 2
+        var couple = await _coupleRepository.GetLatestCoupleByMembersWithIncludesAsync(memberA, memberB, status: 2);
+        if (couple == null)
+            return ServiceResponse<CoupleResultDto>.ErrorResponse("Không tìm thấy bất kì lịch sử survey cặp đôi phù hợp");
+
+        var result = new CoupleResultDto
+        {
+            Id = couple.Id,
+            // Không có currentMemberId, set mặc định (nếu thuộc tính bắt buộc)
+            IsOwned = false,
             Member = _mapper.Map<MemberDto>(couple.MemberNavigation),
             Member1 = _mapper.Map<MemberDto>(couple.Member1Navigation),
             Mbti = couple.Mbti,

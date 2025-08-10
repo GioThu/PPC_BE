@@ -18,6 +18,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<MyPersonTypeResponse>> GetMyPersonTypeAsync(string memberId, string surveyId);
         Task<ServiceResponse<List<ResultHistoryResponse>>> GetHistoryByMemberAndSurveyAsync(string memberId, string surveyId);
         Task<ServiceResponse<PersonTypeDto>> GetByNameAndSurveyIdAsync(PersonTypeByNameRequest request);
+        Task<ServiceResponse<List<ResultHistoryResponse>>> GetHistoryByMemberAndSurveyAsync(string memberId, string surveyId, string bookingId);
 
     }
 }

@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.Couple;
 using PPC.Service.ModelRequest.SurveyRequest;
+using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.CoupleResponse;
 
 namespace PPC.Controller.Controllers
 {
@@ -213,5 +216,19 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpPost("by-booking")]
+     
+        public async Task<IActionResult> GetByBooking([FromBody] GetCoupleByBookingRequest req)
+        {
+            if (req == null || string.IsNullOrWhiteSpace(req.BookingId))
+                return BadRequest(ServiceResponse<CoupleResultDto>.ErrorResponse("Thiếu bookingId"));
+
+            var res = await _coupleService.GetCoupleResultByBookingIdAsync(req.BookingId);
+            if (res.Success)
+                return Ok(res);
+            return BadRequest(res);
+        }
     }
 }
+

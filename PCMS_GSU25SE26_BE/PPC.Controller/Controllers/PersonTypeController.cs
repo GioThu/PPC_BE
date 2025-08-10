@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.PersonTypeRequest;
+using PPC.Service.ModelResponse;
+using PPC.Service.ModelResponse.PersonTypeResponse;
 
 namespace PPC.Controller.Controllers
 {
@@ -89,6 +91,26 @@ namespace PPC.Controller.Controllers
                 return Ok(result);
 
             return NotFound(result);
+        }
+
+        [HttpPost("before-booking")]
+
+        public async Task<IActionResult> GetHistoriesBeforeBooking([FromBody] GetHistoryBeforeBookingRequest request)
+        {
+            if (request == null ||
+                string.IsNullOrWhiteSpace(request.MemberId) ||
+                string.IsNullOrWhiteSpace(request.SurveyId) ||
+                string.IsNullOrWhiteSpace(request.BookingId))
+            {
+                return BadRequest(ServiceResponse<List<ResultHistoryResponse>>
+                    .ErrorResponse("Thiếu tham số bắt buộc"));
+            }
+
+            var result = await _personTypeService
+                .GetHistoryByMemberAndSurveyAsync(request.MemberId, request.SurveyId, request.BookingId);
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result);
         }
     }
 }
