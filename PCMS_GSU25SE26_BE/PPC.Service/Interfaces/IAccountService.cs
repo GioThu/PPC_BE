@@ -18,6 +18,8 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<CounselorDto>> CounselorGetMyProfileAsync(string counselorId);
         Task<ServiceResponse<string>> CounselorEditMyProfileAsync(string counselorId, CounselorEditRequest request);
         Task<ServiceResponse<WalletBalanceDto>> GetWalletBalanceAsync(string accountId);
+        Task<ServiceResponse<string>> ChangePasswordAsync(string accountId, ChangePasswordRequest request);
+
 
     }
 }

@@ -110,5 +110,14 @@ namespace PPC.Repository.Repositories
                 .Include(a => a.Wallet)
                 .FirstOrDefaultAsync(a => a.Id == accountId && a.Status == 1);
         }
+
+        public async Task UpdatePasswordAsync(string accountId, string newPassword)
+        {
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == accountId);
+            if (account == null) return;
+
+            account.Password = newPassword;
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -133,5 +133,25 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Tuỳ bạn set claim gì trong token — ví dụ "accountId"
+            var accountId = User.Claims.FirstOrDefault(c => c.Type == "accountId")?.Value
+                            ?? User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+
+            if (string.IsNullOrEmpty(accountId))
+                return Unauthorized("Không tìm thấy AccountId trong token.");
+
+            var response = await _accountService.ChangePasswordAsync(accountId, request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

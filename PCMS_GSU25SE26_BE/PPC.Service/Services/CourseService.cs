@@ -348,9 +348,20 @@ namespace PPC.Service.Services
                 if (course != null)
                 {
                     var dto = _mapper.Map<MyCourseDto>(course);
-                    dto.ChapterCount = course.Chapters?.Count ?? 0;
-                    dto.ProcessingCount = enroll.Processings?.Count ?? 0;
+
+                    var validChapters = course.Chapters?
+                        .Where(c => c.Status == 1)
+                        .ToList() ?? new List<Chapter>();
+
+                    dto.ChapterCount = validChapters.Count;
+
+                    var validChapterIds = validChapters.Select(c => c.Id).ToHashSet();
+
+                    dto.ProcessingCount = enroll.Processings?
+                        .Count(p => p.Status == 1 && validChapterIds.Contains(p.ChapterId)) ?? 0;
+
                     dto.IsOpen = enroll.IsOpen ?? false;
+
                     courseDtos.Add(dto);
                 }
             }
@@ -380,11 +391,10 @@ namespace PPC.Service.Services
 
         public async Task<ServiceResponse<MemberCourseDto>> GetMemberCourseDetailAsync(string courseId, string memberId)
         {
-            // Kiểm tra EnrollCourse
+            // Lấy thông tin enroll của member với course
             var enroll = await _enrollCourseRepository.GetEnrollByCourseAndMemberAsync(courseId, memberId);
-            
 
-            // Lấy dữ liệu Course
+            // Lấy dữ liệu course với tất cả details
             var course = await _courseRepository.GetCourseWithAllDetailsAsync(courseId);
             if (course == null)
                 return ServiceResponse<MemberCourseDto>.ErrorResponse("Course không tồn tại");
@@ -392,9 +402,10 @@ namespace PPC.Service.Services
             // Map sang DTO
             var dto = _mapper.Map<MemberCourseDto>(course);
 
-            // Gán ChapterCount từ source
-            dto.ChapterCount = course.Chapters?.Count ?? 0;
+            // Tổng số chapter
+            dto.ChapterCount = course.Chapters?.Count(c => c.Status == 1) ?? 0;
 
+            // Xử lý Processing
             if (enroll != null)
             {
                 var doneChapterIds = await _processingRepository.GetProcessingChapterIdsByEnrollCourseIdAsync(enroll.Id);
@@ -407,20 +418,44 @@ namespace PPC.Service.Services
                     chapter.IsDone = doneSet.Contains(chapter.Id);
                 }
 
-                // Gán số lượng đã làm
                 dto.ProcessingCount = doneSet.Count;
             }
-
             else
             {
                 dto.ProcessingCount = 0;
+                dto.Chapters ??= new List<MemberChapterDto>();
                 foreach (var chapter in dto.Chapters)
                 {
                     chapter.IsDone = false;
                 }
             }
 
-             return ServiceResponse<MemberCourseDto>.SuccessResponse(dto);
+            // ===== Xử lý IsEnrolled, IsBuy, IsFree =====
+            dto.IsEnrolled = enroll?.IsOpen == true;
+            dto.IsBuy = enroll != null && (enroll.Status == 0 || enroll.Status == 1);
+
+            // Lấy rank member để check free course
+            var activeMemberships = await _memberShipRepository.GetActiveMemberShipsByMemberIdAsync(memberId);
+            var allMemberships = await _memberShipRepository.GetAllActiveAsync();
+
+            var rankToMembershipName = allMemberships
+                .Where(m => m.Rank.HasValue)
+                .ToDictionary(m => m.Rank.Value, m => m.MemberShipName);
+
+            var memberMaxRank = activeMemberships
+                .Where(m => m.MemberShip?.Rank != null)
+                .Select(m => m.MemberShip.Rank.Value)
+                .DefaultIfEmpty(0)
+                .Max();
+
+            dto.IsFree = dto.Rank.HasValue && memberMaxRank >= dto.Rank.Value;
+
+            if (dto.Rank.HasValue && rankToMembershipName.TryGetValue(dto.Rank.Value, out var name))
+            {
+                dto.FreeByMembershipName = name;
+            }
+
+            return ServiceResponse<MemberCourseDto>.SuccessResponse(dto);
         }
 
         public async Task<ServiceResponse<string>> UpdateLectureByChapterIdAsync(UpdateLectureRequest request)
@@ -601,13 +636,17 @@ namespace PPC.Service.Services
             }
             else
             {
-                recommendedCourses = await _courseRepository.GetTopRatedCoursesAsync(5); // Fallback to top-rated courses
+                recommendedCourses = await _courseRepository.GetTopRatedCoursesAsync(5); 
             }
 
             var rankedCourses = recommendedCourses.Select(course =>
             {
                 var subCategories = course.CourseSubCategories
-                    .Where(cs => cs.SubCategory.Status == 1 && cs.SubCategory.Category.Status == 1 && categoryIds.Contains(cs.SubCategory.CategoryId))
+                    .Where(cs => cs.SubCategory != null
+          && cs.SubCategory.Status == 1
+          && cs.SubCategory.Category != null
+          && cs.SubCategory.Category.Status == 1
+          && (categoryIds.Count == 0 || categoryIds.Contains(cs.SubCategory.CategoryId)))
                     .GroupBy(sc => sc.SubCategory.Id)
                     .Select(g => new SubCategoryDto
                     {
@@ -658,8 +697,7 @@ namespace PPC.Service.Services
             if (couple == null)
                 return ServiceResponse<List<CourseWithSubCategoryDto>>.ErrorResponse("Couple not found.");
 
-            // Rec1 từ Couple.Rec1
-            // Rec2 từ Member.Rec2 (member chính của cặp)
+
             Member member = null;
             if (!string.IsNullOrWhiteSpace(couple.Member))
             {
@@ -677,15 +715,17 @@ namespace PPC.Service.Services
             }
             else
             {
-                recommendedCourses = await _courseRepository.GetTopRatedCoursesAsync(5); // Fallback to top-rated courses
+                recommendedCourses = await _courseRepository.GetTopRatedCoursesAsync(5); 
             }
 
             var rankedCourses = recommendedCourses.Select(course =>
             {
                 var subCategories = course.CourseSubCategories
-                    .Where(cs => cs.SubCategory.Status == 1
-                              && cs.SubCategory.Category.Status == 1
-                              && (categoryIds.Count == 0 || categoryIds.Contains(cs.SubCategory.CategoryId)))
+                    .Where(cs => cs.SubCategory != null
+          && cs.SubCategory.Status == 1
+          && cs.SubCategory.Category != null
+          && cs.SubCategory.Category.Status == 1
+          && (categoryIds.Count == 0 || categoryIds.Contains(cs.SubCategory.CategoryId)))
                     .GroupBy(sc => sc.SubCategory.Id)
                     .Select(g => new SubCategoryDto
                     {

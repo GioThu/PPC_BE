@@ -214,5 +214,27 @@ namespace PPC.Service.Services
             return ServiceResponse<WalletBalanceDto>.SuccessResponse(new WalletBalanceDto { Remaining = remaining });
         }
 
+        public async Task<ServiceResponse<string>> ChangePasswordAsync(string accountId, ChangePasswordRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(accountId))
+                return ServiceResponse<string>.ErrorResponse("Không xác định được tài khoản.");
+
+            if (request.NewPassword == request.CurrentPassword)
+                return ServiceResponse<string>.ErrorResponse("Mật khẩu mới phải khác mật khẩu hiện tại.");
+
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            if (account == null)
+                return ServiceResponse<string>.ErrorResponse("Tài khoản không tồn tại.");
+
+            if (account.Status == 0)
+                return ServiceResponse<string>.ErrorResponse("Tài khoản đang bị vô hiệu.");
+
+            // So sánh chuỗi thuần (theo yêu cầu của bạn)
+            if (account.Password != request.CurrentPassword)
+                return ServiceResponse<string>.ErrorResponse("Mật khẩu hiện tại không đúng.");
+
+            await _accountRepository.UpdatePasswordAsync(accountId, request.NewPassword);
+            return ServiceResponse<string>.SuccessResponse("Đổi mật khẩu thành công.");
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using PPC.DAO.Models;
+using PPC.Service.ModelResponse.AccountResponse;
 using PPC.Service.ModelResponse.BookingResponse;
 using PPC.Service.ModelResponse.CategoryResponse;
 using PPC.Service.ModelResponse.CirtificationResponse;
@@ -27,6 +28,7 @@ namespace PPC.Service.Mappers
     {
         public MappingProfile()
         {
+            CreateMap<Account, AccountDto>();
             CreateMap<Course, MemberCourseDto>()
     .ForMember(dest => dest.ChapterCount, opt => opt.MapFrom(src => src.Chapters.Count))
     .ForMember(dest => dest.SubCategories, opt => opt.MapFrom(src => src.CourseSubCategories.Select(csc => csc.SubCategory)))

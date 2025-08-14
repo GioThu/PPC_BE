@@ -20,7 +20,7 @@ namespace PPC.Repository.Interfaces
         Task<(string walletId, double? remaining)> GetWalletInfoByAccountIdAsync(string accountId);
         Task<Account> GetAccountByWalletIdAsync(string walletId);
         Task<Account> GetAccountWithWalletAsync(string accountId);
-        
+        Task UpdatePasswordAsync(string accountId, string newPassword);
 
 
     }
