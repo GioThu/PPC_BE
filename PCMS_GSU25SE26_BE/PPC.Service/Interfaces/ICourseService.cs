@@ -35,5 +35,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<List<ReviewDto>>> GetCourseReviewsAsync(string courseId);
         Task<ServiceResponse<List<CourseWithSubCategoryDto>>> GetRecommendedCoursesAsync(string memberId);
         Task<ServiceResponse<List<CourseWithSubCategoryDto>>> GetRecommendedCoursesByCoupleIdAsync(string coupleId);
+        Task<ServiceResponse<int>> GetMaxCourseDiscountByMemberWrappedAsync(string memberId);
     }
 }

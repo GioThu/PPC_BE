@@ -229,6 +229,16 @@ namespace PPC.Controller.Controllers
                 return Ok(res);
             return BadRequest(res);
         }
+
+        [HttpGet("{coupleId}/subcategories")]
+        public async Task<IActionResult> GetSubCategoriesByCoupleId([FromRoute] string coupleId)
+        {
+            var response = await _coupleService.GetSubCategoryNamesByCoupleIdAsync(coupleId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }
 

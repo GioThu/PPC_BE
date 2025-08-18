@@ -28,5 +28,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> SubmitVirtualResultAsync(string memberId, SurveyResultRequest request);
         Task<ServiceResponse<string>> ApplyLatestResultToSelfAsync(string memberId, string surveyId);
         Task<ServiceResponse<CoupleResultDto>> GetCoupleResultByBookingIdAsync(string bookingId);
+        Task<ServiceResponse<List<string>>> GetSubCategoryNamesByCoupleIdAsync(string coupleId);
     }
 }

@@ -34,10 +34,11 @@ namespace PPC.Service.Services
         private readonly IMemberRepository _memberRepository;
         private readonly IProcessingRepository _processingRepository;
         private readonly ICoupleRepository _coupleRepository;
+        private readonly IMemberShipService _memberShipService;
 
 
 
-        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository, IAccountRepository accountRepository, IEnrollCourseRepository enrollCourseRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IMemberMemberShipRepository memberMemberShipRepository, IMemberRepository memberRepository, IProcessingRepository processingRepository, ICoupleRepository coupleRepository)
+        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository, IAccountRepository accountRepository, IEnrollCourseRepository enrollCourseRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IMemberMemberShipRepository memberMemberShipRepository, IMemberRepository memberRepository, IProcessingRepository processingRepository, ICoupleRepository coupleRepository, IMemberShipService memberShipService)
         {
             _courseRepository = courseRepository;
             _mapper = mapper;
@@ -54,6 +55,7 @@ namespace PPC.Service.Services
             _memberRepository = memberRepository;
             _processingRepository = processingRepository;
             _coupleRepository = coupleRepository;
+            _memberShipService = memberShipService;
         }
 
         public async Task<ServiceResponse<string>> CreateCourseAsync(string creatorId, CourseCreateRequest request)
@@ -761,6 +763,12 @@ namespace PPC.Service.Services
             }
 
             return ServiceResponse<List<CourseWithSubCategoryDto>>.SuccessResponse(rankedCourses);
+        }
+
+        public async Task<ServiceResponse<int>> GetMaxCourseDiscountByMemberWrappedAsync(string memberId)
+        {
+            var discount = await _memberShipService.GetMaxCourseDiscountByMemberAsync(memberId);
+            return ServiceResponse<int>.SuccessResponse(discount);
         }
 
 

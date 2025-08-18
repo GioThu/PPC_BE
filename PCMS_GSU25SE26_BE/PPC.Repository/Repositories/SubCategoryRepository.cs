@@ -26,5 +26,12 @@ namespace PPC.Repository.Repositories
                 .Where(sc => ids.Contains(sc.Id))
                 .ToListAsync();
         }
+
+        public async Task<List<SubCategory>> GetSubCategoriesByCategoryIdsAsync(List<string> categoryIds)
+        {
+            return await _context.SubCategories
+                .Where(sc => categoryIds.Contains(sc.CategoryId) && sc.Status == 1)
+                .ToListAsync();
+        }
     }
 }

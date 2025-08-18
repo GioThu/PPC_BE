@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
+using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.Couple;
 using PPC.Service.ModelRequest.SurveyRequest;
@@ -19,9 +20,11 @@ public class CoupleService : ICoupleService
     private readonly IResultPersonTypeRepository _resultPersonTypeRepo;
     private readonly IResultHistoryRepository _resultHistoryRepo;
     private readonly IBookingRepository _bookingRepo;
+    private readonly ISubCategoryRepository _subCategoryRepository;
 
 
-    public CoupleService(ICoupleRepository coupleRepository, IMapper mapper, IMemberRepository memberRepo, IPersonTypeRepository personTypeRepo, IResultPersonTypeRepository resultPersonTypeRepo, IResultHistoryRepository resultHistoryRepo, IBookingRepository bookingRepo)
+
+    public CoupleService(ICoupleRepository coupleRepository, IMapper mapper, IMemberRepository memberRepo, IPersonTypeRepository personTypeRepo, IResultPersonTypeRepository resultPersonTypeRepo, IResultHistoryRepository resultHistoryRepo, IBookingRepository bookingRepo, ISubCategoryRepository subCategoryRepository)
     {
         _coupleRepository = coupleRepository;
         _mapper = mapper;
@@ -30,6 +33,7 @@ public class CoupleService : ICoupleService
         _resultPersonTypeRepo = resultPersonTypeRepo;
         _resultHistoryRepo = resultHistoryRepo;
         _bookingRepo = bookingRepo;
+        _subCategoryRepository = subCategoryRepository;
     }
 
     public async Task<ServiceResponse<string>> JoinCoupleByAccessCodeAsync(string memberId, string accessCode)
@@ -760,5 +764,25 @@ public class CoupleService : ICoupleService
         return ServiceResponse<string>.SuccessResponse($"Áp dụng kết quả '{history.Result}' cho cặp đôi thành công.");
     }
 
+    public async Task<ServiceResponse<List<string>>> GetSubCategoryNamesByCoupleIdAsync(string coupleId)
+    {
+        if (string.IsNullOrWhiteSpace(coupleId))
+            return ServiceResponse<List<string>>.ErrorResponse("CoupleId is required.");
 
+        var couple = await _coupleRepository.GetByIdAsync(coupleId);
+        if (couple == null || couple.Status != 1)
+            return ServiceResponse<List<string>>.SuccessResponse(new List<string>());
+
+        var categoryIds = new List<string>();
+        if (!string.IsNullOrWhiteSpace(couple.Rec1)) categoryIds.Add(couple.Rec1);
+        if (!string.IsNullOrWhiteSpace(couple.Rec2)) categoryIds.Add(couple.Rec2);
+
+        if (!categoryIds.Any())
+            return ServiceResponse<List<string>>.SuccessResponse(new List<string>());
+
+        var subs = await _subCategoryRepository.GetSubCategoriesByCategoryIdsAsync(categoryIds);
+        var names = subs.Select(x => x.Name).ToList();
+
+        return ServiceResponse<List<string>>.SuccessResponse(names);
+    }
 }

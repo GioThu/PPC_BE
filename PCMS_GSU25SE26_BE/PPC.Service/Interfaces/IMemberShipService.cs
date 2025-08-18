@@ -18,6 +18,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<MemberBuyMemberShipResponse>> BuyMemberShipAsync(string memberId, string accountId, MemberBuyMemberShipRequest request);
         Task<ServiceResponse<List<MyMemberShipStatusResponse>>> GetMemberShipStatusAsync(string memberId);
         Task<int> GetMaxBookingDiscountByMemberAsync(string memberId);
-
+        Task<int> GetMaxCourseDiscountByMemberAsync(string memberId);
     }
 }

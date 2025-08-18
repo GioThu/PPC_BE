@@ -16,5 +16,6 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> UpdateStatusAsync(MemberStatusUpdateRequest request);
         Task<ServiceResponse<MemberProfileDto>> GetMyProfileAsync(string accountId);
         Task<ServiceResponse<string>> UpdateMyProfileAsync(string accountId, MemberProfileUpdateRequest request);
+        Task<ServiceResponse<List<string>>> GetRecommendedSubCategoriesAsync(string memberId);
     }
 }

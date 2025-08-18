@@ -74,5 +74,20 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [Authorize(Roles = "3")]
+        [HttpGet("my-subcategories")]
+        public async Task<IActionResult> GetMyRecommendedSubCategories()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _memberService.GetRecommendedSubCategoriesAsync(memberId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

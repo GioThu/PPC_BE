@@ -12,6 +12,6 @@ namespace PPC.Repository.Interfaces
     {
         Task<bool> IsNameExistInCategoryAsync(string name);
         Task<List<SubCategory>> GetByIdsAsync(List<string> ids);
-
+        Task<List<SubCategory>> GetSubCategoriesByCategoryIdsAsync(List<string> categoryIds);
     }
 }

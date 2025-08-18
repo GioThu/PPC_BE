@@ -215,5 +215,18 @@ namespace PPC.Service.Services
 
             return validDiscounts.Any() ? validDiscounts.Max() : 0;
         }
+
+        public async Task<int> GetMaxCourseDiscountByMemberAsync(string memberId)
+        {
+            var activeMemberships = await _memberMemberShipRepository
+                .GetActiveMemberShipsByMemberIdAsync(memberId);
+
+            return activeMemberships
+                .Where(mms => mms.MemberShip != null && mms.MemberShip.Status == 1)
+                .Select(mms => mms.MemberShip.DiscountCourse ?? 0)
+                .DefaultIfEmpty(0)
+                .Max();
+        }
+
     }
 }

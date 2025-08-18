@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using PPC.Repository.Interfaces;
+using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
 using PPC.Service.Mappers;
 using PPC.Service.ModelRequest;
@@ -17,12 +18,14 @@ namespace PPC.Service.Services
     public class MemberService : IMemberService
     {
         private readonly IMemberRepository _memberRepository;
+        private readonly ISubCategoryRepository _subCategoryRepository;
         private readonly IMapper _mapper;
 
-        public MemberService(IMemberRepository memberRepository, IMapper mapper)
+        public MemberService(IMemberRepository memberRepository, IMapper mapper, ISubCategoryRepository subCategoryRepository)
         {
             _memberRepository = memberRepository;
             _mapper = mapper;
+            _subCategoryRepository = subCategoryRepository;
         }
 
         public async Task<ServiceResponse<PagingResponse<MemberDto>>> GetAllPagingAsync(PagingRequest request)
@@ -83,6 +86,25 @@ namespace PPC.Service.Services
             await _memberRepository.UpdateAsync(member);
 
             return ServiceResponse<string>.SuccessResponse("Hồ sơ đã được cập nhật thành công");
+        }
+
+        public async Task<ServiceResponse<List<string>>> GetRecommendedSubCategoriesAsync(string memberId)
+        {
+            var member = await _memberRepository.GetByIdAsync(memberId);
+            if (member == null)
+                return ServiceResponse<List<string>>.ErrorResponse("Member not found");
+
+            var categoryIds = new List<string>();
+            if (!string.IsNullOrEmpty(member.Rec1)) categoryIds.Add(member.Rec1);
+            if (!string.IsNullOrEmpty(member.Rec2)) categoryIds.Add(member.Rec2);
+
+            if (!categoryIds.Any())
+                return ServiceResponse<List<string>>.SuccessResponse(new List<string>());
+
+            var subCategories = await _subCategoryRepository.GetSubCategoriesByCategoryIdsAsync(categoryIds);
+            var subCategoryNames = subCategories.Select(sc => sc.Name).ToList();
+
+            return ServiceResponse<List<string>>.SuccessResponse(subCategoryNames);
         }
     }
 }

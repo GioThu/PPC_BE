@@ -60,5 +60,7 @@ namespace PPC.Repository.Repositories
         {
             return await _context.Members.AnyAsync(m => m.Id == memberId && m.Status == 1);
         }
+
+
     }
 }

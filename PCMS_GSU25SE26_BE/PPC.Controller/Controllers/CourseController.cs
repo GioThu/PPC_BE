@@ -351,5 +351,19 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
+        [HttpGet("max-course-discount")]
+        public async Task<IActionResult> GetMaxCourseDiscount()
+        {
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            if (string.IsNullOrEmpty(memberId))
+                return Unauthorized("MemberId not found in token.");
+
+            var response = await _courseService.GetMaxCourseDiscountByMemberWrappedAsync(memberId);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }
