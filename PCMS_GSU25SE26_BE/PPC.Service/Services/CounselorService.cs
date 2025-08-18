@@ -294,7 +294,7 @@ namespace PPC.Service.Services
                 var matchedSubCategories = subCategories.Count;
 
                 // Tính score
-                double score =c.Rating * Math.Max(1,Math.Log(c.Reviews + 1)) * (1 + matchedSubCategories);
+                double score =(c.Rating+1) * Math.Max(1,Math.Log(c.Reviews + 1)) * (1 + matchedSubCategories);
 
                 return new
                 {
@@ -406,7 +406,7 @@ namespace PPC.Service.Services
                 var matchedSubCategories = subCategories.Count;
 
                 // Tính score (giữ nguyên form của bạn)
-                double score = c.Rating * Math.Max(1, Math.Log(c.Reviews + 1)) * (1 + matchedSubCategories);
+                double score = (c.Rating+1) * Math.Max(1, Math.Log(c.Reviews + 1)) * (1 + matchedSubCategories);
 
                 return new
                 {

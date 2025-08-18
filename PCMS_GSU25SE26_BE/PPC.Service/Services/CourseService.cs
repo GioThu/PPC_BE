@@ -623,65 +623,61 @@ namespace PPC.Service.Services
             if (member == null)
                 return ServiceResponse<List<CourseWithSubCategoryDto>>.ErrorResponse("Member not found.");
 
-            // Extract categories that the member prefers
+            // Extract preferred categories
             var categoryIds = new List<string>();
             if (!string.IsNullOrEmpty(member.Rec1)) categoryIds.Add(member.Rec1);
             if (!string.IsNullOrEmpty(member.Rec2)) categoryIds.Add(member.Rec2);
 
-            List<Course> recommendedCourses;
+            List<Course> recommendedCourses = categoryIds.Any()
+                ? await _courseRepository.GetCoursesByCategoriesAsync(categoryIds)
+                : await _courseRepository.GetTopRatedCoursesAsync(5);
 
-            if (categoryIds.Any())
-            {
-                recommendedCourses = await _courseRepository.GetCoursesByCategoriesAsync(categoryIds);
-            }
-            else
-            {
-                recommendedCourses = await _courseRepository.GetTopRatedCoursesAsync(5); 
-            }
-
-            var rankedCourses = recommendedCourses.Select(course =>
-            {
-                var subCategories = course.CourseSubCategories
-                    .Where(cs => cs.SubCategory != null
-          && cs.SubCategory.Status == 1
-          && cs.SubCategory.Category != null
-          && cs.SubCategory.Category.Status == 1
-          && (categoryIds.Count == 0 || categoryIds.Contains(cs.SubCategory.CategoryId)))
-                    .GroupBy(sc => sc.SubCategory.Id)
-                    .Select(g => new SubCategoryDto
-                    {
-                        Id = g.Key,
-                        Name = g.First().SubCategory.Name
-                    })
-                    .ToList();
-
-                var matchedSubCategories = subCategories.Count;
-
-                double reviewsCount = course.Reviews ?? 0.0; // now always a double
-                double score =  (double) (course.Rating * Math.Max(1, Math.Log(reviewsCount + 1)) * (1 + matchedSubCategories));
-
-
-                return new
+            var rankedCourses = recommendedCourses
+                .Select(course =>
                 {
-                    Course = course,
-                    SubCategories = subCategories,
-                    Score = score
-                };
-            })
-            .OrderByDescending(x => x.Score)
-            .Take(5)  // Top 5 courses
-            .Select(x => new CourseWithSubCategoryDto
-            {
-                Id = x.Course.Id,
-                Name = x.Course.Name,
-                Thumble = x.Course.Thumble,
-                Description = x.Course.Description,
-                Price = x.Course.Price,
-                Rating = x.Course.Rating,
-                Reviews = x.Course.Reviews,
-                SubCategories = x.SubCategories
-            })
-            .ToList();
+                    var subCategories = course.CourseSubCategories?
+                        .Where(cs =>
+                            cs.SubCategory != null &&
+                            cs.SubCategory.Status == 1 &&
+                            cs.SubCategory.Category != null &&
+                            cs.SubCategory.Category.Status == 1 &&
+                            (categoryIds.Count == 0 || categoryIds.Contains(cs.SubCategory.CategoryId)))
+                        .GroupBy(sc => sc.SubCategory.Id)
+                        .Select(g => new SubCategoryDto
+                        {
+                            Id = g.Key,
+                            Name = g.First().SubCategory.Name
+                        })
+                        .ToList() ?? new List<SubCategoryDto>();
+
+                    int matchedSubCategories = subCategories.Count;
+
+                    double rating = course.Rating ?? 0.0;   // null safe
+                    double reviewsCount = course.Reviews ?? 0.0; // null safe
+
+                    double score = rating * Math.Max(1, Math.Log(reviewsCount + 1)) * (1 + matchedSubCategories);
+
+                    return new
+                    {
+                        Course = course,
+                        SubCategories = subCategories,
+                        Score = score
+                    };
+                })
+                .OrderByDescending(x => x.Score)
+                .Take(5)
+                .Select(x => new CourseWithSubCategoryDto
+                {
+                    Id = x.Course.Id,
+                    Name = x.Course.Name,
+                    Thumble = x.Course.Thumble,
+                    Description = x.Course.Description,
+                    Price = x.Course.Price,
+                    Rating = x.Course.Rating ?? 0.0,
+                    Reviews = x.Course.Reviews ?? 0,
+                    SubCategories = x.SubCategories
+                })
+                .ToList();
 
             if (!rankedCourses.Any())
             {
@@ -691,12 +687,12 @@ namespace PPC.Service.Services
             return ServiceResponse<List<CourseWithSubCategoryDto>>.SuccessResponse(rankedCourses);
         }
 
+
         public async Task<ServiceResponse<List<CourseWithSubCategoryDto>>> GetRecommendedCoursesByCoupleIdAsync(string coupleId)
         {
             var couple = await _coupleRepository.GetByIdAsync(coupleId);
             if (couple == null)
                 return ServiceResponse<List<CourseWithSubCategoryDto>>.ErrorResponse("Couple not found.");
-
 
             Member member = null;
             if (!string.IsNullOrWhiteSpace(couple.Member))
@@ -708,58 +704,56 @@ namespace PPC.Service.Services
             if (!string.IsNullOrEmpty(couple.Rec1)) categoryIds.Add(couple.Rec1);
             if (!string.IsNullOrEmpty(member?.Rec2)) categoryIds.Add(member.Rec2);
 
-            List<Course> recommendedCourses;
-            if (categoryIds.Any())
-            {
-                recommendedCourses = await _courseRepository.GetCoursesByCategoriesAsync(categoryIds);
-            }
-            else
-            {
-                recommendedCourses = await _courseRepository.GetTopRatedCoursesAsync(5); 
-            }
+            List<Course> recommendedCourses = categoryIds.Any()
+                ? await _courseRepository.GetCoursesByCategoriesAsync(categoryIds)
+                : await _courseRepository.GetTopRatedCoursesAsync(5);
 
-            var rankedCourses = recommendedCourses.Select(course =>
-            {
-                var subCategories = course.CourseSubCategories
-                    .Where(cs => cs.SubCategory != null
-          && cs.SubCategory.Status == 1
-          && cs.SubCategory.Category != null
-          && cs.SubCategory.Category.Status == 1
-          && (categoryIds.Count == 0 || categoryIds.Contains(cs.SubCategory.CategoryId)))
-                    .GroupBy(sc => sc.SubCategory.Id)
-                    .Select(g => new SubCategoryDto
-                    {
-                        Id = g.Key,
-                        Name = g.First().SubCategory.Name
-                    })
-                    .ToList();
-
-                var matchedSubCategories = (categoryIds.Count == 0) ? 0 : subCategories.Count;
-
-                double reviewsCount = course.Reviews ?? 0.0; // always a double
-                double score = (double)(course.Rating * Math.Max(1, Math.Log(reviewsCount + 1)) * (1 + matchedSubCategories));
-
-                return new
+            var rankedCourses = recommendedCourses
+                .Select(course =>
                 {
-                    Course = course,
-                    SubCategories = subCategories,
-                    Score = score
-                };
-            })
-            .OrderByDescending(x => x.Score)
-            .Take(5)  // Top 5 courses
-            .Select(x => new CourseWithSubCategoryDto
-            {
-                Id = x.Course.Id,
-                Name = x.Course.Name,
-                Thumble = x.Course.Thumble,
-                Description = x.Course.Description,
-                Price = x.Course.Price,
-                Rating = x.Course.Rating,
-                Reviews = x.Course.Reviews,
-                SubCategories = x.SubCategories
-            })
-            .ToList();
+                    var subCategories = course.CourseSubCategories?
+                        .Where(cs =>
+                            cs.SubCategory != null &&
+                            cs.SubCategory.Status == 1 &&
+                            cs.SubCategory.Category != null &&
+                            cs.SubCategory.Category.Status == 1 &&
+                            (categoryIds.Count == 0 || categoryIds.Contains(cs.SubCategory.CategoryId)))
+                        .GroupBy(sc => sc.SubCategory.Id)
+                        .Select(g => new SubCategoryDto
+                        {
+                            Id = g.Key,
+                            Name = g.First().SubCategory.Name
+                        })
+                        .ToList() ?? new List<SubCategoryDto>();
+
+                    int matchedSubCategories = (categoryIds.Count == 0) ? 0 : subCategories.Count;
+
+                    double rating = course.Rating ?? 0.0;
+                    double reviewsCount = course.Reviews ?? 0.0;
+
+                    double score = rating * Math.Max(1, Math.Log(reviewsCount + 1)) * (1 + matchedSubCategories);
+
+                    return new
+                    {
+                        Course = course,
+                        SubCategories = subCategories,
+                        Score = score
+                    };
+                })
+                .OrderByDescending(x => x.Score)
+                .Take(5)
+                .Select(x => new CourseWithSubCategoryDto
+                {
+                    Id = x.Course.Id,
+                    Name = x.Course.Name,
+                    Thumble = x.Course.Thumble,
+                    Description = x.Course.Description,
+                    Price = x.Course.Price,
+                    Rating = x.Course.Rating ?? 0.0,
+                    Reviews = x.Course.Reviews ?? 0,
+                    SubCategories = x.SubCategories
+                })
+                .ToList();
 
             if (!rankedCourses.Any())
             {
@@ -768,6 +762,7 @@ namespace PPC.Service.Services
 
             return ServiceResponse<List<CourseWithSubCategoryDto>>.SuccessResponse(rankedCourses);
         }
+
 
         private async Task<List<CourseWithSubCategoryDto>> GetTopRatedCoursesFallbackAsync()
         {
