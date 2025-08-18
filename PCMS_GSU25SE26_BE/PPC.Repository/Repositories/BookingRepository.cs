@@ -299,6 +299,15 @@ namespace PPC.Repository.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<List<Booking>> GetByCounselorAsync(string counselorId, DateTime? from = null, DateTime? to = null)
+        {
+            var q = _context.Bookings.AsQueryable()
+                     .Where(b => b.CounselorId == counselorId);
 
+            if (from.HasValue) q = q.Where(b => b.TimeStart >= from.Value);
+            if (to.HasValue) q = q.Where(b => b.TimeStart < to.Value);
+
+            return await q.ToListAsync();
+        }
     }
 }

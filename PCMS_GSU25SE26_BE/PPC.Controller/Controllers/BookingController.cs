@@ -399,5 +399,17 @@ namespace PPC.Controller.Controllers
             var response = await _bookingService.CancelInvitationAsync(bookingId, memberId);
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+        [HttpGet("my-dashboard")]
+        public async Task<IActionResult> GetMyDashboard()
+        {
+            var counselorId = User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
+            if (string.IsNullOrEmpty(counselorId))
+                return Unauthorized("CounselorId not found in token.");
+
+            var response = await _bookingService.GetMyDashboardAsync(counselorId);
+            if (response.Success) return Ok(response);
+            return BadRequest(response);
+        }
     }
 }

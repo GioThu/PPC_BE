@@ -29,6 +29,7 @@ namespace PPC.Repository.Interfaces
         Task<bool> AcceptInvitationAsync(string bookingId, string memberId);
         Task<bool> DeclineInvitationAsync(string bookingId, string memberId);
         Task<bool> CancelInvitationAsync(string bookingId, string creatorMemberId);
+        Task<List<Booking>> GetByCounselorAsync(string counselorId, DateTime? from = null, DateTime? to = null);
 
     }
 }

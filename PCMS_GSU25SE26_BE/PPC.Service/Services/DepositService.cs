@@ -89,7 +89,7 @@ namespace PPC.Service.Services
 
             if (remaining == null || remaining < request.Total)
             {
-                return ServiceResponse<string>.ErrorResponse("Giao dịch nạp tiền thành công");
+                return ServiceResponse<string>.ErrorResponse("Bạn không đủ số dư");
             }
 
             var withdraw = request.ToCreateWithdraw(walletId);

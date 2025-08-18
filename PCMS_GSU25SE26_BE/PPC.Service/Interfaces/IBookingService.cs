@@ -36,10 +36,10 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<int>> GetMaxBookingDiscountByMemberWrappedAsync(string memberId);
         Task<ServiceResponse<string>> UpdateMember2Async(string bookingId, string memberCode);
         Task<ServiceResponse<List<BookingDto>>> GetInvitationsForMemberAsync(string memberId);
-
         Task<ServiceResponse<string>> AcceptInvitationAsync(string bookingId, string memberId);
         Task<ServiceResponse<string>> DeclineInvitationAsync(string bookingId, string memberId);
         Task<ServiceResponse<string>> CancelInvitationAsync(string bookingId, string creatorMemberId);
+        Task<ServiceResponse<DashboardDto>> GetMyDashboardAsync(string counselorId);
 
     }
 }

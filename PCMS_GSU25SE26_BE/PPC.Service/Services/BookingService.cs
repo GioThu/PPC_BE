@@ -29,6 +29,9 @@ namespace PPC.Service.Services
         private readonly ILiveKitService _liveKitService;
         private readonly IRoomService _roomService;
 
+        private static readonly int[] CompletedStatuses = new[] { 2, 7 }; // Finish, Complete;
+        private static readonly int[] CancellableNoCount = new[] { 4, 6 };
+
         public BookingService(
             IBookingRepository bookingRepository,
             ICounselorRepository counselorRepository,
@@ -646,5 +649,79 @@ namespace PPC.Service.Services
             return ServiceResponse<string>.SuccessResponse("Lời mời đã bị hủy");
         }
 
+
+        public async Task<ServiceResponse<DashboardDto>> GetMyDashboardAsync(string counselorId)
+        {
+            var now = Utils.Utils.GetTimeNow();
+            var startOfWeek = StartOfWeek(now, DayOfWeek.Monday).Date; // Fixed: Correctly call the method StartOfWeek
+            var endOfWeek = startOfWeek.AddDays(7);
+
+            var startOfYear = new DateTime(now.Year, 1, 1);
+            var startOfNextYear = new DateTime(now.Year + 1, 1, 1);
+
+            // Lấy dữ liệu năm hiện tại cho biểu đồ/thống kê theo tuần
+            var bookingsYear = await _bookingRepository.GetByCounselorAsync(counselorId, startOfYear, startOfNextYear);
+            var bookingsWeek = bookingsYear.Where(b => b.TimeStart >= startOfWeek && b.TimeStart < endOfWeek).ToList();
+
+            // >>> NEW: Lấy toàn bộ booking để tính "Tổng thu nhập"
+            var allBookings = await _bookingRepository.GetByCounselorAsync(counselorId);
+
+            var mappedYear = _mapper.Map<List<BookingDashboardDto>>(bookingsYear);
+            var mappedWeek = _mapper.Map<List<BookingDashboardDto>>(bookingsWeek);
+            var mappedAll = _mapper.Map<List<BookingDashboardDto>>(allBookings);
+
+            // >>> Đổi rule: tổng thu nhập = tổng Price của TẤT CẢ booking (không loại trừ trạng thái nào)
+            double totalIncome = mappedAll.Sum(b => b.Price ?? 0);
+
+            // (giữ nguyên các phần còn lại)
+            int apptThisWeek = mappedWeek.Count(b => !(b.Status.HasValue && CancellableNoCount.Contains(b.Status.Value)));
+            int completedSessions = mappedYear.Count(b => b.Status.HasValue && CompletedStatuses.Contains(b.Status.Value));
+            var rated = mappedYear.Where(b => b.Rating.HasValue).Select(b => b.Rating.Value).ToList();
+            double avgRating = rated.Count == 0 ? 0 : Math.Round(rated.Average(), 1);
+
+            var monthlyIncome = Enumerable.Range(1, 12).Select(m => new MonthlyIncomePointDto
+            {
+                Month = m,
+                Income = mappedYear
+                    .Where(b => b.TimeStart.HasValue &&
+                                b.TimeStart.Value.Month == m &&
+                                b.TimeStart.Value.Year == now.Year &&
+                                b.Status.HasValue && CompletedStatuses.Contains(b.Status.Value))
+                    .Sum(b => b.Price ?? 0)
+            }).ToList();
+
+            var weeklyAppointments = Enumerable.Range(1, 7).Select(d => new WeekdayCountDto
+            {
+                DayOfWeek = d,
+                Count = mappedWeek.Count(b =>
+                    b.TimeStart.HasValue &&
+                    ToIsoDayOfWeek(b.TimeStart.Value.DayOfWeek) == d &&
+                    !(b.Status.HasValue && CancellableNoCount.Contains(b.Status.Value)))
+            }).ToList();
+
+            var dto = new DashboardDto
+            {
+                TotalIncome = totalIncome,
+                AppointmentsThisWeek = apptThisWeek,
+                CompletedSessions = completedSessions,
+                AverageRating = avgRating,
+                MonthlyIncome = monthlyIncome,
+                WeeklyAppointments = weeklyAppointments
+            };
+
+            return ServiceResponse<DashboardDto>.SuccessResponse(dto);
+        }
+
+        private DateTime StartOfWeek(DateTime date, DayOfWeek startDay)
+        {
+            int diff = (7 + (date.DayOfWeek - startDay)) % 7;
+            return date.AddDays(-1 * diff).Date;
+        }
+
+        private static int ToIsoDayOfWeek(DayOfWeek d)
+        {
+            // ISO: Monday=1 ... Sunday=7
+            return d == DayOfWeek.Sunday ? 7 : (int)d;
+        }
     }
 }

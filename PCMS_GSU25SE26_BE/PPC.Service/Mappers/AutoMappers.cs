@@ -106,6 +106,8 @@ namespace PPC.Service.Mappers
     .ForMember(dest => dest.SubCategories, opt =>
         opt.MapFrom(src => src.CourseSubCategories.Select(cs => cs.SubCategory)))
     .ForMember(dest => dest.Chapters, opt => opt.MapFrom(src => src.Chapters));
-        }
+
+            CreateMap<Booking, BookingDashboardDto>();
+    }
     }
 }
