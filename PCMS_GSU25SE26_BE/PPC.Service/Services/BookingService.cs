@@ -29,7 +29,7 @@ namespace PPC.Service.Services
         private readonly ILiveKitService _liveKitService;
         private readonly IRoomService _roomService;
 
-        private static readonly int[] CompletedStatuses = new[] { 2, 7 }; // Finish, Complete;
+        private static readonly int[] CompletedStatuses = new[] {  7 }; // Finish, Complete;
         private static readonly int[] CancellableNoCount = new[] { 4, 6 };
 
         public BookingService(
