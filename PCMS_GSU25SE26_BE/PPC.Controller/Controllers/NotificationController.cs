@@ -5,6 +5,7 @@ using PPC.Service.Interfaces;
 namespace PPC.Controller.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class NotificationController : ControllerBase
     {

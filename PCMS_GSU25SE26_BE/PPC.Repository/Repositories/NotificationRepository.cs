@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 
 namespace PPC.Repository.Repositories
 {
+
+
     public class NotificationRepository : GenericRepository<Notification>, INotificationRepository
     {
         public NotificationRepository(CCPContext context) : base(context)

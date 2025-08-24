@@ -689,7 +689,6 @@ namespace PPC.Service.Services
             return ServiceResponse<List<CourseWithSubCategoryDto>>.SuccessResponse(rankedCourses);
         }
 
-
         public async Task<ServiceResponse<List<CourseWithSubCategoryDto>>> GetRecommendedCoursesByCoupleIdAsync(string coupleId)
         {
             var couple = await _coupleRepository.GetByIdAsync(coupleId);

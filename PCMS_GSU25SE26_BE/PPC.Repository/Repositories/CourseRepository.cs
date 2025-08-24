@@ -141,6 +141,7 @@ namespace PPC.Repository.Repositories
         public async Task<List<Course>> GetTopRatedCoursesAsync(int topN)
         {
             return await _context.Courses
+                .Where(c => c.Status == 1)
                 .OrderByDescending(c => c.Rating)
                 .Take(topN)
                 .ToListAsync();
