@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using AutoMapper.Execution;
+using Azure.Core;
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
@@ -392,6 +394,32 @@ namespace PPC.Service.Services
                     CreateDate = Utils.Utils.GetTimeNow()
                 });
 
+
+                var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
+                var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
+
+                NotificationBackground.FireAndForgetCreateMany(
+                _scopeFactory,
+                new List<NotificationCreateItem>
+                {
+                    new NotificationCreateItem
+                    {
+                        CreatorId   = booking.CounselorId,
+                        NotiType    = "1",
+                        DocNo       = booking.Id,
+                        Description = $"Một lịch tư vấn từ {startStr} đến {endStr} của bạn đã bị hủy"
+                    },
+                    new NotificationCreateItem
+                    {
+                        CreatorId   = booking.MemberId,
+                        NotiType    = "1",
+                        DocNo       = booking.Id,
+                        Description = $"Bạn đã hủy một buổi tư vấn từ {startStr} đến {endStr} bạn được hoàn 50% số tiền tương đương {booking.Price / 2}VND"
+                    }
+                }
+
+            );
+
                 booking.Status = status;
             }
 
@@ -413,6 +441,57 @@ namespace PPC.Service.Services
                     CreateDate = Utils.Utils.GetTimeNow()
                 });
 
+                if (booking.IsReport == true)
+                {
+                    var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
+                    var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
+                    NotificationBackground.FireAndForgetCreateMany(
+                    _scopeFactory,
+                    new List<NotificationCreateItem>
+                    {
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = booking.CounselorId,
+                            NotiType    = "1",
+                            DocNo       = booking.Id,
+                            Description = $"Một lịch tư vấn từ {startStr} đến {endStr} của bạn đã không được hoàn thành tốt với lý do \n{booking.ReportMessage}"
+                        },
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = booking.MemberId,
+                            NotiType    = "1",
+                            DocNo       = booking.Id,
+                            Description = $"Buổi tư vấn từ {startStr} đến {endStr} bạn đã báo cáo thành công và bạn được hoàn tiền đầy đủ {booking.Price}VND"
+                        }
+                    }
+                );
+                }
+                else
+                {
+                    var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
+                    var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
+                    NotificationBackground.FireAndForgetCreateMany(
+                    _scopeFactory,
+                    new List<NotificationCreateItem>
+                    {
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = booking.MemberId,
+                            NotiType    = "1",
+                            DocNo       = booking.Id,
+                            Description = $"Buổi tư vấn từ {startStr} đến {endStr} của bạn đã hủy từ phía Tư Vấn Viên và bạn được hoàn tiền đầy đủ {booking.Price}VND"
+                        },
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = booking.MemberId,
+                            NotiType    = "1",
+                            DocNo       = booking.Id,
+                            Description = $"Buổi tư vấn từ {startStr} đến {endStr} của bạn đã hủy từ phía Tư Vấn Viên"
+                        }
+                    }
+                );
+                }
+
                 booking.Status = status;
             }
 
@@ -433,6 +512,41 @@ namespace PPC.Service.Services
                     CreateBy = counselor.Account.Id,
                     CreateDate = Utils.Utils.GetTimeNow()
                 });
+                var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
+                var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
+                NotificationBackground.FireAndForgetCreateMany(
+                _scopeFactory,
+                new List<NotificationCreateItem>
+                {
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = booking.CounselorId,
+                            NotiType    = "1",
+                            DocNo       = booking.Id,
+                            Description = $"Một lịch tư vấn từ {startStr} đến {endStr} của bạn đã được thanh toán vào ví. Số dư mới: {counselor.Account.Wallet.Remaining}"
+                        },
+                }
+                );
+
+                if(booking.IsReport == true)
+                {
+                    
+                    NotificationBackground.FireAndForgetCreateMany(
+                    _scopeFactory,
+                    new List<NotificationCreateItem>
+                        {
+                             new NotificationCreateItem
+                            {
+                                CreatorId   = booking.MemberId,
+                                NotiType    = "1",
+                                DocNo       = booking.Id,
+                                Description = $"Buổi tư vấn từ {startStr} đến {endStr} mà bạn đã báo cáo không thành công, chúng tôi không thấy bất kì sai phạm nào từ phía Tư Vấn Viên"
+                            },
+                        }
+                    );
+                 
+                }
+
 
                 booking.Status = status;
             }
@@ -445,7 +559,29 @@ namespace PPC.Service.Services
                     x => x.AutoCompleteBookingIfStillPending(booking.Id),
                     TimeSpan.FromDays(1)
                 );
+
+                var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
+                var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
+
+                NotificationBackground.FireAndForgetCreateMany(
+                    _scopeFactory,
+                    new List<NotificationCreateItem>
+                        {
+                             new NotificationCreateItem
+                            {
+                                CreatorId   = booking.MemberId,
+                                NotiType    = "1",
+                                DocNo       = booking.Id,
+                                Description = $"Buổi tư vấn từ {startStr} đến {endStr} đã kết thúc. Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi"
+                            },
+                        }
+                    );
+
+
+
+
                 return ServiceResponse<string>.SuccessResponse("Booking ended");
+
             }
 
             return booking.Status switch
@@ -469,7 +605,37 @@ namespace PPC.Service.Services
             var result = await _bookingRepository.UpdateAsync(booking);
             if (result == 0)
                 return ServiceResponse<string>.ErrorResponse("Báo cáo thất bại");
+            var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
+            var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
 
+            NotificationBackground.FireAndForgetCreateMany(
+                _scopeFactory,
+                new List<NotificationCreateItem>
+                {
+                    new NotificationCreateItem
+                    {
+                        CreatorId   = booking.CounselorId,
+                        NotiType    = "1",
+                        DocNo       = booking.Id,
+                        Description = $"Buổi tư vấn từ {startStr} đến {endStr} của bạn đã bị báo cáo với lý do: \n{booking.ReportMessage}"
+                    },
+                    new NotificationCreateItem
+                    {
+                        CreatorId   = booking.MemberId,
+                        NotiType    = "1",
+                        DocNo       = booking.Id,
+                        Description = $"Bạn đã báo cáo buổi tư vấn từ {startStr} đến {endStr} thành công, chúng tôi sẽ xem xét và phản hồi trong thời gian sớm nhất"
+                    },
+                    new NotificationCreateItem
+                    {
+                        CreatorId   = "1",
+                        NotiType    = "1",
+                        DocNo       = booking.Id,
+                        Description = $"Một buổi buổi tư vấn từ {startStr} đến {endStr} đã bị báo cáo với lý do: \n{booking.ReportMessage}"
+                    },
+
+                }
+            );
             return ServiceResponse<string>.SuccessResponse("Báo cáo thành công");
         }
         public async Task AutoCompleteBookingIfStillPending(string bookingId)
@@ -545,6 +711,28 @@ namespace PPC.Service.Services
             };
             await _sysTransactionRepository.CreateAsync(transaction);
 
+            var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
+            var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
+            NotificationBackground.FireAndForgetCreateMany(
+                    _scopeFactory,
+                    new List<NotificationCreateItem>
+                    {
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = booking.MemberId,
+                            NotiType    = "1",
+                            DocNo       = booking.Id,
+                            Description = $"Buổi tư vấn từ {startStr} đến {endStr} của bạn đã hủy từ phía Tư Vấn Viên và bạn được hoàn tiền đầy đủ {booking.Price}VND"
+                        },
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = booking.MemberId,
+                            NotiType    = "1",
+                            DocNo       = booking.Id,
+                            Description = $"Buổi tư vấn từ {startStr} đến {endStr} của bạn đã hủy từ phía Tư Vấn Viên"
+                        }
+                    }
+                    );
             // Cập nhật trạng thái booking
             var result = await _bookingRepository.UpdateAsync(booking);
             if (result == 0)

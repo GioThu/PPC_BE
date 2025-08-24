@@ -25,13 +25,11 @@ namespace PPC.Service.Services
         {
             var notifications = await _notificationRepository.GetNotificationsByMemberIdAsync(id);
 
-            // Cập nhật tất cả IsOpen = true
             foreach (var notification in notifications)
             {
                 notification.IsOpen = true;
             }
 
-            // Lưu lại thay đổi vào DB (nếu dùng EF hoặc repo có hỗ trợ update)
             await _notificationRepository.UpdateRangeAsync(notifications);
 
             var notificationDtos = _mapper.Map<List<NotificationDto>>(notifications);

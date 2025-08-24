@@ -18,10 +18,10 @@ namespace PPC.Repository.Repositories
         {
         }
 
-        public async Task<List<Notification>> GetNotificationsByMemberIdAsync(string memberId)
+        public async Task<List<Notification>> GetNotificationsByMemberIdAsync(string id)
         {
             return await _context.Notifications
-                .Where(n => n.CreateBy == memberId && n.Status == 1) 
+                .Where(n => n.CreateBy == id) 
                 .OrderByDescending(n => n.CreateDate)
                 .ToListAsync();
         }

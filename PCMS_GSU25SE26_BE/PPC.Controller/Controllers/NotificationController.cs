@@ -19,10 +19,8 @@ namespace PPC.Controller.Controllers
         [HttpGet("my-notifications")]
         public async Task<IActionResult> GetMyNotifications()
         {
-            var userClaims = User.Claims;
-
-            var memberId = userClaims.FirstOrDefault(c => c.Type == "memberId")?.Value;
-            var counselorId = userClaims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
+            var memberId = User.Claims.FirstOrDefault(c => c.Type == "memberId")?.Value;
+            var counselorId = User.Claims.FirstOrDefault(c => c.Type == "counselorId")?.Value;
 
             string idToUse;
 
@@ -39,7 +37,7 @@ namespace PPC.Controller.Controllers
                 idToUse = "1";
             }
 
-            var response = await _notificationService.GetNotificationsAsync(memberId);
+            var response = await _notificationService.GetNotificationsAsync(idToUse);
 
             if (response.Success)
                 return Ok(response);
