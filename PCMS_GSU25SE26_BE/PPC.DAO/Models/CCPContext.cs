@@ -871,6 +871,11 @@ public partial class CCPContext : DbContext
                 .HasMaxLength(64)
                 .IsUnicode(false)
                 .HasColumnName("docNo");
+            entity.Property(e => e.Description)
+                .HasMaxLength(255)
+                .HasColumnName("description");
+            entity.Property(e => e.IsRead).HasColumnName("isRead");
+            entity.Property(e => e.IsOpen).HasColumnName("isOpen");
             entity.Property(e => e.NotiType)
                 .HasMaxLength(50)
                 .IsUnicode(false)

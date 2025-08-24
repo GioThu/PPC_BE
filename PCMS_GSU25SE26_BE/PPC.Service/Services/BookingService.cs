@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
@@ -28,6 +29,8 @@ namespace PPC.Service.Services
         private readonly IMapper _mapper;
         private readonly ILiveKitService _liveKitService;
         private readonly IRoomService _roomService;
+        private readonly IServiceScopeFactory _scopeFactory;
+
 
         private static readonly int[] CompletedStatuses = new[] {  7 }; // Finish, Complete;
         private static readonly int[] CancellableNoCount = new[] { 4, 6 };
@@ -44,7 +47,8 @@ namespace PPC.Service.Services
             IBookingSubCategoryRepository bookingSubCategoryRepository,
             IMapper mapper,
             ILiveKitService liveKitService,
-            IRoomService roomService
+            IRoomService roomService,
+            IServiceScopeFactory scopeFactory
           )
         {
             _bookingRepository = bookingRepository;
@@ -59,6 +63,7 @@ namespace PPC.Service.Services
             _mapper = mapper;
             _liveKitService = liveKitService;
             _roomService = roomService;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task<ServiceResponse<BookingResultDto>> BookCounselingAsync(string memberId, string accountId, BookingRequest request)
@@ -156,6 +161,31 @@ namespace PPC.Service.Services
                     delay
             );
             }
+
+            var startStr = request.TimeStart.ToString("HH:mm dd/MM/yyyy");
+            var endStr = request.TimeEnd.ToString("HH:mm dd/MM/yyyy");
+
+            NotificationBackground.FireAndForgetCreateMany(
+                _scopeFactory,
+                new List<NotificationCreateItem>
+                {
+        new NotificationCreateItem
+        {
+            CreatorId   = memberId,
+            NotiType    = "1",
+            DocNo       = booking.Id,
+            Description = $"Bạn đã đặt lịch tư vấn với {counselor.Fullname} từ {startStr} đến {endStr}"
+        },
+        new NotificationCreateItem
+        {
+            CreatorId   = request.CounselorId,
+            NotiType    = "1",
+            DocNo       = booking.Id,
+            Description = $"Bạn có lịch tư vấn mới với {member.Fullname} từ {startStr} đến {endStr}"
+        }
+                }
+                
+            );
 
             return ServiceResponse<BookingResultDto>.SuccessResponse(new BookingResultDto
             {

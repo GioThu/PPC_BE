@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using PPC.DAO.Models;
+using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.AccountResponse;
 using PPC.Service.ModelResponse.BookingResponse;
 using PPC.Service.ModelResponse.CategoryResponse;
@@ -108,6 +109,8 @@ namespace PPC.Service.Mappers
     .ForMember(dest => dest.Chapters, opt => opt.MapFrom(src => src.Chapters));
 
             CreateMap<Booking, BookingDashboardDto>();
-    }
+            CreateMap<Notification, NotificationDto>();
+
+        }
     }
 }

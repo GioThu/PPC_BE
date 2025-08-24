@@ -11,6 +11,11 @@ public partial class Notification
 
     public string NotiType { get; set; }
 
+    public string Description { get; set; }
+
+    public bool? IsRead { get; set; }
+    public bool? IsOpen { get; set; }
+
     public string DocNo { get; set; }
 
     public string CreateBy { get; set; }
@@ -19,3 +24,4 @@ public partial class Notification
 
     public int? Status { get; set; }
 }
+
