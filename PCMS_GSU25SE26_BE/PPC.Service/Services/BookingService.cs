@@ -6,11 +6,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
+using PPC.Repository.Repositories;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.BookingRequest;
 using PPC.Service.ModelRequest.RoomRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.BookingResponse;
+using PPC.Service.ModelResponse.CoupleResponse;
+using PPC.Service.ModelResponse.MemberResponse;
+using PPC.Service.ModelResponse.PersonTypeResponse;
 using PPC.Service.ModelResponse.RoomResponse;
 using static Livekit.Server.Sdk.Dotnet.IngressState.Types;
 
@@ -32,6 +36,9 @@ namespace PPC.Service.Services
         private readonly ILiveKitService _liveKitService;
         private readonly IRoomService _roomService;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IResultHistoryRepository _resultHistoryRepository;
+        private readonly ICoupleRepository _coupleRepository;
+        private readonly IResultPersonTypeRepository _resultPersonTypeRepository;
 
 
         private static readonly int[] CompletedStatuses = new[] {  7 }; // Finish, Complete;
@@ -50,7 +57,12 @@ namespace PPC.Service.Services
             IMapper mapper,
             ILiveKitService liveKitService,
             IRoomService roomService,
-            IServiceScopeFactory scopeFactory
+            IServiceScopeFactory scopeFactory,
+            IResultHistoryRepository resultHistoryRepository,
+            ICoupleRepository coupleRepository,
+            IResultPersonTypeRepository resultPersonTypeRepository
+
+
           )
         {
             _bookingRepository = bookingRepository;
@@ -66,6 +78,9 @@ namespace PPC.Service.Services
             _liveKitService = liveKitService;
             _roomService = roomService;
             _scopeFactory = scopeFactory;
+            _resultHistoryRepository = resultHistoryRepository;
+            _coupleRepository = coupleRepository;
+            _resultPersonTypeRepository = resultPersonTypeRepository;
         }
 
         public async Task<ServiceResponse<BookingResultDto>> BookCounselingAsync(string memberId, string accountId, BookingRequest request)
@@ -943,5 +958,181 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("ReportMetadata updated successfully.");
         }
+        public async Task<ServiceResponse<PersonTypeBundleDto>> GetPersonTypeBundleByBookingAsync(string bookingId)
+        {
+            // Lấy booking + cutoff
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null)
+                return ServiceResponse<PersonTypeBundleDto>.ErrorResponse("Không tìm thấy lịch hẹn");
+
+            if (!booking.TimeStart.HasValue)
+                return ServiceResponse<PersonTypeBundleDto>.ErrorResponse("Lịch hẹn chưa có thời gian bắt đầu");
+
+            var cutoff = booking.TimeStart.Value;
+
+            // Validate theo code
+            var hasM1 = !string.IsNullOrWhiteSpace(booking.MemberId);
+            var hasM2 = !string.IsNullOrWhiteSpace(booking.Member2Id);
+
+            if (booking.ReportMetadata == "1" && !hasM1)
+                return ServiceResponse<PersonTypeBundleDto>.ErrorResponse("Lịch hẹn thiếu member 1");
+            if (booking.ReportMetadata == "2" && !hasM2)
+                return ServiceResponse<PersonTypeBundleDto>.ErrorResponse("Lịch hẹn thiếu member 2");
+            if (booking.ReportMetadata == "3" && (!hasM1 || !hasM2))
+                return ServiceResponse<PersonTypeBundleDto>.ErrorResponse("Lịch hẹn thiếu thành viên để lấy dữ liệu cặp đôi");
+            if (booking.ReportMetadata == "4" && (!hasM1 || !hasM2))
+                return ServiceResponse<PersonTypeBundleDto>.ErrorResponse("Lịch hẹn không hợp lệ cho cặp đôi");
+
+            async Task<List<ResultHistoryResponse>> BuildHistoryAsync(string memberId, string surveyId)
+            {
+                var histories = await _resultHistoryRepository.GetResultHistoriesByMemberAndSurveyAsync(memberId, surveyId);
+
+                var picked = histories
+                    .Where(h => h.CreateAt.HasValue && h.CreateAt.Value <= cutoff)
+                    .OrderByDescending(h => h.CreateAt!.Value)
+                    .Take(1)
+                    .OrderBy(h => h.CreateAt!.Value)
+                    .ToList();
+
+                var responses = new List<ResultHistoryResponse>(picked.Count);
+                foreach (var history in picked)
+                {
+                    // Parse detail: "k1:v1,k2:v2,..."
+                    var scores = new Dictionary<string, int>();
+                    if (!string.IsNullOrEmpty(history.Detail))
+                    {
+                        scores = history.Detail
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => x.Split(':'))
+                            .Where(parts => parts.Length == 2 && int.TryParse(parts[1], out _))
+                            .ToDictionary(
+                                parts => parts[0],
+                                parts => int.Parse(parts[1])
+                            );
+                    }
+
+                    var dto = new ResultHistoryResponse
+                    {
+                        SurveyId = history.Type,
+                        Result = history.Result,
+                        Description = history.Description,
+                        RawScores = history.Detail,
+                        Scores = scores,
+                        CreateAt = history.CreateAt
+                    };
+                    responses.Add(dto);
+                }
+                return responses;
+            }
+
+            // Helper: build block cho 1 member (4 bản ghi mới nhất mỗi survey)
+            async Task<MemberPersonTypeBlockDto> BuildMemberBlockAsync(string memberId)
+            {
+                return new MemberPersonTypeBlockDto
+                {
+                    Mbti = await BuildHistoryAsync(memberId, "SV001"),
+                    Disc = await BuildHistoryAsync(memberId, "SV002"),
+                    LoveLanguage = await BuildHistoryAsync(memberId, "SV003"),
+                    BigFive = await BuildHistoryAsync(memberId, "SV004")
+                };
+            }
+
+            async Task<CoupleResultDto> BuildCoupleAsync(string memberA, string memberB)
+            {
+                var couple = await _coupleRepository.GetLatestCoupleByMembersWithIncludesAsync(memberA, memberB, status: 2);
+                if (couple == null) return null;
+
+                var result = new CoupleResultDto
+                {
+                    Id = couple.Id,
+                    IsOwned = false,
+                    Member = _mapper.Map<MemberDto>(couple.MemberNavigation),
+                    Member1 = _mapper.Map<MemberDto>(couple.Member1Navigation),
+
+                    Mbti = couple.Mbti,
+                    Disc = couple.Disc,
+                    LoveLanguage = couple.LoveLanguage,
+                    BigFive = couple.BigFive,
+                    Mbti1 = couple.Mbti1,
+                    Disc1 = couple.Disc1,
+                    LoveLanguage1 = couple.LoveLanguage1,
+                    BigFive1 = couple.BigFive1,
+
+                    MbtiDescription = couple.MbtiDescription,
+                    DiscDescription = couple.DiscDescription,
+                    LoveLanguageDescription = couple.LoveLanguageDescription,
+                    BigFiveDescription = couple.BigFiveDescription,
+                    Mbti1Description = couple.Mbti1Description,
+                    Disc1Description = couple.Disc1Description,
+                    LoveLanguage1Description = couple.LoveLanguage1Description,
+                    BigFive1Description = couple.BigFive1Description,
+
+                    MbtiResult = couple.MbtiResult,
+                    DiscResult = couple.DiscResult,
+                    LoveLanguageResult = couple.LoveLanguageResult,
+                    BigFiveResult = couple.BigFiveResult,
+
+                    IsVirtual = couple.IsVirtual,
+                    VirtualName = couple.VirtualName,
+                    VirtualDob = couple.VirtualDob,
+                    VirtualAvatar = couple.VirtualAvatar,
+                    VirtualDescription = couple.VirtualDescription,
+                    VirtualGender = couple.VirtualGender,
+                    VirtualRelationship = couple.VirtualRelationship,
+
+                    CreateAt = couple.CreateAt,
+                    Rec1 = couple.Rec1,
+                    Rec2 = couple.Rec2,
+                    Status = couple.Status,
+                    AccessCode = couple.AccessCode
+                };
+
+                // Load detail từ *_Result
+                async Task<ResultPersonTypeDto> LoadResultAsync(string id)
+                {
+                    if (string.IsNullOrEmpty(id)) return null;
+                    var entity = await _resultPersonTypeRepository.GetByIdWithIncludesAsync(id);
+                    return entity == null ? null : _mapper.Map<ResultPersonTypeDto>(entity);
+                }
+
+                result.MbtiDetail = await LoadResultAsync(couple.MbtiResult);
+                result.DiscDetail = await LoadResultAsync(couple.DiscResult);
+                result.LoveLanguageDetail = await LoadResultAsync(couple.LoveLanguageResult);
+                result.BigFiveDetail = await LoadResultAsync(couple.BigFiveResult);
+
+                return result;
+            }
+
+            // Build theo code
+            var bundle = new PersonTypeBundleDto();
+
+            switch (booking.ReportMetadata)
+            {
+                case "1":
+                    bundle.Member1 = await BuildMemberBlockAsync(booking.MemberId);
+                    break;
+
+                case "2":
+                    bundle.Member2 = await BuildMemberBlockAsync(booking.Member2Id);
+                    break;
+
+                case "3":
+                    bundle.Member1 = await BuildMemberBlockAsync(booking.MemberId);
+                    bundle.Member2 = await BuildMemberBlockAsync(booking.Member2Id);
+                    break;
+
+                case "4":
+                    bundle.Couple = await BuildCoupleAsync(booking.MemberId, booking.Member2Id);
+                    if (bundle.Couple == null)
+                        return ServiceResponse<PersonTypeBundleDto>.ErrorResponse("Không tìm thấy bất kì lịch sử survey cặp đôi phù hợp");
+                    break;
+
+                default:
+                    return ServiceResponse<PersonTypeBundleDto>.ErrorResponse("Code không hợp lệ. Hãy dùng 1, 2, 3 hoặc 4.");
+            }
+
+            return ServiceResponse<PersonTypeBundleDto>.SuccessResponse(bundle);
+        }
     }
+
 }

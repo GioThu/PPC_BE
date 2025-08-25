@@ -151,7 +151,7 @@ namespace PPC.Repository.Repositories
                     .ThenInclude(cs => cs.SubCategory)
                     .ThenInclude(sc => sc.Category)
                 .OrderByDescending(c => c.Rating)
-                .ThenByDescending(c => c.Reviews) // nếu Course không có Reviews thì bỏ dòng này
+                .ThenByDescending(c => c.Reviews) 
                 .Take(topN);
 
             return await query.ToListAsync();

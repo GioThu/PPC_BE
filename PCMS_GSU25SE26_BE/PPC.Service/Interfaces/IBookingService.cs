@@ -41,6 +41,7 @@ namespace PPC.Service.Interfaces
         Task<ServiceResponse<string>> CancelInvitationAsync(string bookingId, string creatorMemberId);
         Task<ServiceResponse<DashboardDto>> GetMyDashboardAsync(string counselorId);
         Task<ServiceResponse<string>> UpdateReportMetadataAsync(string bookingId, string reportMetadata);
+        Task<ServiceResponse<PersonTypeBundleDto>> GetPersonTypeBundleByBookingAsync(string bookingId);
 
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.BookingRequest;
+using PPC.Service.ModelResponse.BookingResponse;
 using PPC.Service.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -428,6 +429,17 @@ namespace PPC.Controller.Controllers
                 return Ok(response);
 
             return BadRequest(response);
+        }
+
+        [HttpPost("person-type-bundle")]
+        public async Task<IActionResult> GetPersonTypeBundle([FromBody] GetPersonTypeBundleRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.BookingId))
+                return BadRequest("BookingId is required.");
+
+            var resp = await _bookingService.GetPersonTypeBundleByBookingAsync(request.BookingId);
+            if (resp.Success) return Ok(resp);
+            return BadRequest(resp);
         }
     }
 }
