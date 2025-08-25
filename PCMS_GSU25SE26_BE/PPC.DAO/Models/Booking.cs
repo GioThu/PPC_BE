@@ -43,6 +43,8 @@ public partial class Booking
 
     public string ReportMessage { get; set; }
 
+    public string ReportMetadata { get; set; }
+
     public int? Status { get; set; }
 
     public virtual ICollection<BookingSubCategory> BookingSubCategories { get; set; } = new List<BookingSubCategory>();

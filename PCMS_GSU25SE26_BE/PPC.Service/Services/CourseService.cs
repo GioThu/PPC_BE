@@ -435,6 +435,7 @@ namespace PPC.Service.Services
             // ===== Xử lý IsEnrolled, IsBuy, IsFree =====
             dto.IsEnrolled = enroll?.IsOpen == true;
             dto.IsBuy = enroll != null && (enroll.Status == 0 || enroll.Status == 1);
+            dto.Comment = enroll?.Feedback;
 
             // Lấy rank member để check free course
             var activeMemberships = await _memberShipRepository.GetActiveMemberShipsByMemberIdAsync(memberId);
@@ -630,9 +631,8 @@ namespace PPC.Service.Services
             if (!string.IsNullOrEmpty(member.Rec1)) categoryIds.Add(member.Rec1);
             if (!string.IsNullOrEmpty(member.Rec2)) categoryIds.Add(member.Rec2);
 
-            List<Course> recommendedCourses = categoryIds.Any()
-                ? await _courseRepository.GetCoursesByCategoriesAsync(categoryIds)
-                : await _courseRepository.GetTopRatedCoursesAsync(5);
+            List<Course> recommendedCourses = await _courseRepository.GetCoursesByCategoriesAsync(categoryIds);
+
 
             var rankedCourses = recommendedCourses
                 .Select(course =>
@@ -769,7 +769,6 @@ namespace PPC.Service.Services
             var discount = await _memberShipService.GetMaxCourseDiscountByMemberAsync(memberId);
             return ServiceResponse<int>.SuccessResponse(discount);
         }
-
 
         private async Task<List<CourseWithSubCategoryDto>> GetTopRatedCoursesFallbackAsync()
         {

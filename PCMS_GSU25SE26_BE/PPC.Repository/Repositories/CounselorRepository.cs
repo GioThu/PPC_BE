@@ -81,7 +81,5 @@ namespace PPC.Repository.Repositories
 
             return await query.ToListAsync();
         }
-
-
     }
 }

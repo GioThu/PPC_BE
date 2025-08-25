@@ -193,6 +193,9 @@ public partial class CCPContext : DbContext
             entity.Property(e => e.ProblemAnalysis)
                 .HasMaxLength(2000)
                 .HasColumnName("problemAnalysis");
+            entity.Property(e => e.ReportMetadata)
+                .HasMaxLength(255)
+                .HasColumnName("reportMetadata");
             entity.Property(e => e.ProblemSummary)
                 .HasMaxLength(2000)
                 .HasColumnName("problemSummary");

@@ -86,7 +86,9 @@ namespace PPC.Service.Mappers
 
             CreateMap<Course, CourseListDto>()
     .ForMember(dest => dest.IsEnrolled, opt => opt.Ignore())
-    .ForMember(dest => dest.FreeByMembershipName, opt => opt.Ignore());
+    .ForMember(dest => dest.FreeByMembershipName, opt => opt.Ignore())
+    .ForMember(dest => dest.SubCategories, opt => opt.MapFrom(src => src.CourseSubCategories.Select(csc => csc.SubCategory)));
+
 
             CreateMap<Chapter, ChapterDto>();
             CreateMap<Course, CourseDto>()

@@ -124,27 +124,37 @@ namespace PPC.Repository.Repositories
         {
             return await _context.EnrollCourses
                 .Where(e => e.CourseId == courseId && e.Status == 1 && e.Rating.HasValue)
-                .Include(e => e.Member)  // Include Member for MemberName
+                .Include(e => e.Member)  
                 .ToListAsync();
         }
 
         public async Task<List<Course>> GetCoursesByCategoriesAsync(List<string> categoryIds)
         {
             return await _context.Courses
-                .Where(c => c.CourseSubCategories.Any(cs => categoryIds.Contains(cs.SubCategory.CategoryId)) && c.Status == 1)
+                .Where(c => c.Status == 1)
                 .Include(c => c.CourseSubCategories)
                     .ThenInclude(cs => cs.SubCategory)
+                    .ThenInclude(sc => sc.Category)
+                .Where(c => c.CourseSubCategories.Any(cs =>
+                    categoryIds.Contains(cs.SubCategory.CategoryId)
+                    && cs.SubCategory.Status == 1
+                    && cs.SubCategory.Category.Status == 1
+                ))
                 .ToListAsync();
         }
 
-        // Get top-rated courses
         public async Task<List<Course>> GetTopRatedCoursesAsync(int topN)
         {
-            return await _context.Courses
+            var query = _context.Courses
                 .Where(c => c.Status == 1)
+                .Include(c => c.CourseSubCategories)
+                    .ThenInclude(cs => cs.SubCategory)
+                    .ThenInclude(sc => sc.Category)
                 .OrderByDescending(c => c.Rating)
-                .Take(topN)
-                .ToListAsync();
+                .ThenByDescending(c => c.Reviews) // nếu Course không có Reviews thì bỏ dòng này
+                .Take(topN);
+
+            return await query.ToListAsync();
         }
     }
 }

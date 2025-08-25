@@ -411,5 +411,23 @@ namespace PPC.Controller.Controllers
             if (response.Success) return Ok(response);
             return BadRequest(response);
         }
+
+        [HttpPut("report-metadata")]
+        public async Task<IActionResult> UpdateReportMetadata([FromBody] UpdateReportMetadataRequest request)
+        {
+            if (request == null
+                || string.IsNullOrWhiteSpace(request.BookingId)
+                || string.IsNullOrWhiteSpace(request.ReportMetadata))
+            {
+                return BadRequest("BookingId and ReportMetadata are required.");
+            }
+
+            var response = await _bookingService.UpdateReportMetadataAsync(request.BookingId, request.ReportMetadata);
+
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
+        }
     }
 }

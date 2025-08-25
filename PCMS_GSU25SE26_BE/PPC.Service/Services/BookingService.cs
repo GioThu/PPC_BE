@@ -811,7 +811,6 @@ namespace PPC.Service.Services
             var discount = await _memberShipService.GetMaxBookingDiscountByMemberAsync(memberId); 
             return ServiceResponse<int>.SuccessResponse(discount);
         }
-
         public async Task<ServiceResponse<string>> UpdateMember2Async(string bookingId, string memberCode)
         {
             var fullMemberId = $"Member_{memberCode}";
@@ -832,14 +831,12 @@ namespace PPC.Service.Services
                 return ServiceResponse<string>.ErrorResponse(ex.Message);
             }
         }
-
         public async Task<ServiceResponse<List<BookingDto>>> GetInvitationsForMemberAsync(string memberId)
         {
             var bookings = await _bookingRepository.GetInvitationsForMemberAsync(memberId);
             var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
             return ServiceResponse<List<BookingDto>>.SuccessResponse(bookingDtos);
         }
-
         public async Task<ServiceResponse<string>> AcceptInvitationAsync(string bookingId, string memberId)
         {
             var success = await _bookingRepository.AcceptInvitationAsync(bookingId, memberId);
@@ -848,7 +845,6 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Chấp nhận lời mời thành công");
         }
-
         public async Task<ServiceResponse<string>> DeclineInvitationAsync(string bookingId, string memberId)
         {
             var success = await _bookingRepository.DeclineInvitationAsync(bookingId, memberId);
@@ -857,7 +853,6 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Từ chối lời mời thành công");
         }
-
         public async Task<ServiceResponse<string>> CancelInvitationAsync(string bookingId, string creatorMemberId)
         {
             var success = await _bookingRepository.CancelInvitationAsync(bookingId, creatorMemberId);
@@ -866,8 +861,6 @@ namespace PPC.Service.Services
 
             return ServiceResponse<string>.SuccessResponse("Lời mời đã bị hủy");
         }
-
-
         public async Task<ServiceResponse<DashboardDto>> GetMyDashboardAsync(string counselorId)
         {
             var now = Utils.Utils.GetTimeNow();
@@ -929,17 +922,26 @@ namespace PPC.Service.Services
 
             return ServiceResponse<DashboardDto>.SuccessResponse(dto);
         }
-
         private DateTime StartOfWeek(DateTime date, DayOfWeek startDay)
         {
             int diff = (7 + (date.DayOfWeek - startDay)) % 7;
             return date.AddDays(-1 * diff).Date;
         }
-
         private static int ToIsoDayOfWeek(DayOfWeek d)
         {
             // ISO: Monday=1 ... Sunday=7
             return d == DayOfWeek.Sunday ? 7 : (int)d;
+        }
+        public async Task<ServiceResponse<string>> UpdateReportMetadataAsync(string bookingId, string reportMetadata)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            if (booking == null)
+                return ServiceResponse<string>.ErrorResponse("Booking not found.");
+
+            booking.ReportMetadata = reportMetadata;
+            await _bookingRepository.UpdateAsync(booking);  
+
+            return ServiceResponse<string>.SuccessResponse("ReportMetadata updated successfully.");
         }
     }
 }

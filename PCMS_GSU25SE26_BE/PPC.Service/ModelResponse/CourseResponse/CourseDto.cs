@@ -33,6 +33,7 @@ namespace PPC.Service.ModelResponse.CourseResponse
         public double? Rating { get; set; }
         public int ProcessingCount { get; set; }
         public int ChapterCount { get; set; }
+        public string? Comment { get; set; }
         public bool IsEnrolled { get; set; }
         public bool IsFree { get; set; }
         public bool IsBuy { get; set; }
