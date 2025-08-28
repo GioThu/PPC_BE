@@ -210,7 +210,7 @@ namespace PPC.Service.Services
                 Price = finalPrice,
                 Remaining = wallet.Remaining,
                 TransactionId = transaction.Id,
-                Message = "Booking successful"
+                Message = "Bạn đã đặt lịch tư vấn thành công"
             });
         }
         public async Task<ServiceResponse<List<BookingDto>>> GetBookingsByCounselorAsync(string counselorId)
@@ -380,12 +380,30 @@ namespace PPC.Service.Services
             if (booking == null)
                 return ServiceResponse<string>.ErrorResponse("Không tìm thấy lượt đặt lịch");
 
-            if (status == 2)
+            if (booking.Status == 2)
             {
-                if (booking.Status != 1)
-                    return ServiceResponse<string>.ErrorResponse("Buổi đặt lịch này không còn hoạt động.");
+                BackgroundJob.Schedule<IBookingService>(
+                    x => x.AutoCompleteBookingIfStillPending(booking.Id),
+                    TimeSpan.FromDays(1)
+                );
 
-                booking.Status = status;
+                var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
+                var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
+
+                NotificationBackground.FireAndForgetCreateMany(
+                    _scopeFactory,
+                    new List<NotificationCreateItem>
+                        {
+                             new NotificationCreateItem
+                            {
+                                CreatorId   = booking.MemberId,
+                                NotiType    = "1",
+                                DocNo       = booking.Id,
+                                Description = $"Buổi tư vấn từ {startStr} đến {endStr} đã kết thúc. Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi"
+                            },
+                        }
+                    );
+                return ServiceResponse<string>.SuccessResponse("Booking ended");
             }
 
             else if (status == 4)
@@ -567,37 +585,6 @@ namespace PPC.Service.Services
             }
 
             await _bookingRepository.UpdateAsync(booking);
-
-            if (booking.Status == 2)
-            {
-                BackgroundJob.Schedule<IBookingService>(
-                    x => x.AutoCompleteBookingIfStillPending(booking.Id),
-                    TimeSpan.FromDays(1)
-                );
-
-                var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
-                var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
-
-                NotificationBackground.FireAndForgetCreateMany(
-                    _scopeFactory,
-                    new List<NotificationCreateItem>
-                        {
-                             new NotificationCreateItem
-                            {
-                                CreatorId   = booking.MemberId,
-                                NotiType    = "1",
-                                DocNo       = booking.Id,
-                                Description = $"Buổi tư vấn từ {startStr} đến {endStr} đã kết thúc. Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi"
-                            },
-                        }
-                    );
-
-
-
-
-                return ServiceResponse<string>.SuccessResponse("Booking ended");
-
-            }
 
             return booking.Status switch
             {

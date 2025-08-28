@@ -9,6 +9,7 @@ namespace PPC.Service.ModelResponse.MemberResponse
     public class MemberProfileDto
     {
         public string Fullname { get; set; }
+        public string Email { get; set; }
         public string Avatar { get; set; }
         public string Phone { get; set; }
         public DateTime? Dob { get; set; }

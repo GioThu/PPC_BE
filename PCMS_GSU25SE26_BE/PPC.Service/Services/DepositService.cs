@@ -63,7 +63,7 @@ namespace PPC.Service.Services
                 wallet.Remaining = 0;
             }
 
-            wallet.Remaining += request.Total;
+            wallet.Remaining -= request.Total;
             await _walletRepository.UpdateAsync(wallet);
 
             var transaction = new SysTransaction
@@ -91,9 +91,22 @@ namespace PPC.Service.Services
             {
                 return ServiceResponse<string>.ErrorResponse("Bạn không đủ số dư");
             }
-
+            var wallet = await _walletRepository.GetWithAccountByIdAsync(walletId);
+            wallet.Remaining -= request.Total;
+            await _walletRepository.UpdateAsync(wallet);
             var withdraw = request.ToCreateWithdraw(walletId);
-            await _depositRepository.CreateAsync(withdraw);
+            var deposit = await _depositRepository.CreateAsync(withdraw);
+
+            var transaction = new SysTransaction
+            {
+                Id = Utils.Utils.GenerateIdModel("SysTransaction"),
+                TransactionType = "8",
+                DocNo = deposit.Id,
+                CreateBy = wallet.Accounts.FirstOrDefault()?.Id,
+                CreateDate = Utils.Utils.GetTimeNow()
+            };
+
+            await _sysTransactionRepository.CreateAsync(transaction);
 
             return ServiceResponse<string>.SuccessResponse("Yêu cầu rút tiền đã được tạo thành công");
         }
@@ -169,7 +182,7 @@ namespace PPC.Service.Services
                 return ServiceResponse<string>.ErrorResponse("Giao dịch đã được xử lý");
             }
 
-            if (request.NewStatus == 2)
+            if (request.NewStatus == 3)
             {
                 var wallet = await _walletRepository.GetWithAccountByIdAsync(deposit.WalletId);
                 if (wallet == null)
@@ -179,25 +192,15 @@ namespace PPC.Service.Services
 
                 var withdrawAmount = deposit.Total ?? 0;
 
-                if (withdrawAmount <= 0)
-                {
-                    return ServiceResponse<string>.ErrorResponse("Số tiền rút không hợp lệ");
-                }
-
                 wallet.Remaining ??= 0;
 
-                if (wallet.Remaining < withdrawAmount)
-                {
-                    return ServiceResponse<string>.ErrorResponse("Số dư không đủ để phê duyệt yêu cầu rút tiền");
-                }
-
-                wallet.Remaining -= withdrawAmount;
+                wallet.Remaining += deposit.Total;
 
                 await _walletRepository.UpdateAsync(wallet);
                 var transaction = new SysTransaction
                 {
                     Id = Utils.Utils.GenerateIdModel("SysTransaction"),
-                    TransactionType = "8",
+                    TransactionType = "10",
                     DocNo = deposit.Id,
                     CreateBy = wallet.Accounts.FirstOrDefault()?.Id,
                     CreateDate = Utils.Utils.GetTimeNow()

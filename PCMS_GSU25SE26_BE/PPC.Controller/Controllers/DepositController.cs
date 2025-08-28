@@ -130,12 +130,12 @@ namespace PPC.Controller.Controllers
                 var result = await _depositService.CreateDepositAsync(accountId, depositRequest);
 
                 if (!result.Success)
-                    return Redirect("https://v0-2-page-payment-website.vercel.app/failure");
+                    return Redirect("https://payment-noti.vercel.app/failure");
 
-                return Redirect("https://v0-2-page-payment-website.vercel.app/success");
+                return Redirect("https://payment-noti.vercel.app/success");
             }
 
-            return Redirect("https://v0-2-page-payment-website.vercel.app/failure");
+            return Redirect("https://payment-noti.vercel.app/failure");
         }
 
     }

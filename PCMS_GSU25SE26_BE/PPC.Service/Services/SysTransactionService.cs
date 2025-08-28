@@ -112,7 +112,7 @@ namespace PPC.Service.Services
                         var deposit8 = await _depositRepository.GetByIdAsync(trans.DocNo);
                         if (deposit8 != null && deposit8.CreateDate.HasValue)
                         {
-                            description = $"Bạn đã rút tiền vào lúc {deposit8.CreateDate?.ToString("dd/MM/yyyy HH:mm")}";
+                            description = $"Bạn đã tạo yêu cầu rút tiền vào lúc {deposit8.CreateDate?.ToString("dd/MM/yyyy HH:mm")}";
                             amount = - deposit8.Total ?? 0;
                         }
                         break;
@@ -123,6 +123,15 @@ namespace PPC.Service.Services
                         {
                             description = $"Bạn đã nạp tiền vào lúc {deposit9.CreateDate?.ToString("dd/MM/yyyy HH:mm")}";
                             amount = deposit9.Total ?? 0;
+                        }
+                        break;
+
+                    case "10":
+                        var deposit10 = await _depositRepository.GetByIdAsync(trans.DocNo);
+                        if (deposit10 != null && deposit10.CreateDate.HasValue)
+                        {
+                            description = $"Bạn không được duyệt yêu cầu rút tiền";
+                            amount = +deposit10.Total ?? 0;
                         }
                         break;
 
