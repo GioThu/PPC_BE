@@ -770,7 +770,7 @@ public class CoupleService : ICoupleService
             return ServiceResponse<List<string>>.ErrorResponse("CoupleId is required.");
 
         var couple = await _coupleRepository.GetByIdAsync(coupleId);
-        if (couple == null || couple.Status != 1)
+        if (couple == null)
             return ServiceResponse<List<string>>.SuccessResponse(new List<string>());
 
         var categoryIds = new List<string>();
