@@ -387,6 +387,7 @@ namespace PPC.Service.Services
                 if (booking.TimeStart > Utils.Utils.GetTimeNow())
                     return ServiceResponse<string>.ErrorResponse("Chưa đến giờ bắt đầu buổi tư vấn.");
                 booking.Status = status;
+                await _bookingRepository.UpdateAsync(booking);
             }
 
             if (booking.Status == 2)
@@ -412,7 +413,7 @@ namespace PPC.Service.Services
                             },
                         }
                     );
-                return ServiceResponse<string>.SuccessResponse("Booking ended");
+                return ServiceResponse<string>.SuccessResponse("Đã hoàn thành buổi tư vấn");
             }
 
             else if (status == 4)
