@@ -9,6 +9,7 @@ using PPC.Service.ModelResponse.CounselorResponse;
 using PPC.Service.ModelResponse.Couple;
 using PPC.Service.ModelResponse.CoupleResponse;
 using PPC.Service.ModelResponse.CourseResponse;
+using PPC.Service.ModelResponse.Dashborad;
 using PPC.Service.ModelResponse.DepositResponse;
 using PPC.Service.ModelResponse.MemberResponse;
 using PPC.Service.ModelResponse.PersonTypeResponse;
@@ -48,6 +49,7 @@ namespace PPC.Service.Mappers
             CreateMap<Question, SurveyQuestionDto>();
             CreateMap<Answer, SurveyAnswerDto>();
             CreateMap<Post, PostDto>();
+            CreateMap<DashboardSummary, DashboardSummaryDto>();
             CreateMap<Answer, AnswerDto>();
             CreateMap<PersonType, PersonTypeDto>();
             CreateMap<Deposit, DepositDto>();
@@ -112,6 +114,10 @@ namespace PPC.Service.Mappers
 
             CreateMap<Booking, BookingDashboardDto>();
             CreateMap<Notification, NotificationDto>();
+
+            CreateMap<AdminDashboardSummary, AdminDashboardSummaryDto>();
+            CreateMap<AdminBookingStatistic, AdminBookingStatisticDto>();
+            CreateMap<AdminDashboard, AdminDashboardDto>();
 
         }
     }

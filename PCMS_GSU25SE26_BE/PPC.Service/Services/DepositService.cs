@@ -63,7 +63,7 @@ namespace PPC.Service.Services
                 wallet.Remaining = 0;
             }
 
-            wallet.Remaining -= request.Total;
+            wallet.Remaining += request.Total;
             await _walletRepository.UpdateAsync(wallet);
 
             var transaction = new SysTransaction

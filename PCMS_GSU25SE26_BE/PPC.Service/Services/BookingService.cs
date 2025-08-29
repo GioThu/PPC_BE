@@ -380,6 +380,15 @@ namespace PPC.Service.Services
             if (booking == null)
                 return ServiceResponse<string>.ErrorResponse("Không tìm thấy lượt đặt lịch");
 
+            if (status == 2)
+            {
+                if (booking.Status != 1)
+                    return ServiceResponse<string>.ErrorResponse("Buổi đặt lịch này không còn hoạt động.");
+                if (booking.TimeStart > Utils.Utils.GetTimeNow())
+                    return ServiceResponse<string>.ErrorResponse("Chưa đến giờ bắt đầu buổi tư vấn.");
+                booking.Status = status;
+            }
+
             if (booking.Status == 2)
             {
                 BackgroundJob.Schedule<IBookingService>(

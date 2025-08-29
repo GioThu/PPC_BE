@@ -367,7 +367,6 @@ namespace PPC.Service.Services
             if (couple == null)
                 return ServiceResponse<List<CounselorWithSubDto>>.ErrorResponse("Không tìm thấy cặp đôi");
 
-            // Rec1 từ Couple, Rec2 từ Member (member chính của cặp)
             Member member = null;
             if (!string.IsNullOrWhiteSpace(couple.Member))
             {
@@ -405,7 +404,6 @@ namespace PPC.Service.Services
 
                 var matchedSubCategories = subCategories.Count;
 
-                // Tính score (giữ nguyên form của bạn)
                 double score = (c.Rating+1) * Math.Max(1, Math.Log(c.Reviews + 1)) * (1 + matchedSubCategories);
 
                 return new
