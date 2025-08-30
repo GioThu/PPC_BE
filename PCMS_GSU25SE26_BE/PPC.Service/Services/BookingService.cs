@@ -411,6 +411,14 @@ namespace PPC.Service.Services
                                 DocNo       = booking.Id,
                                 Description = $"Buổi tư vấn từ {startStr} đến {endStr} đã kết thúc. Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi"
                             },
+
+                              new NotificationCreateItem
+                            {
+                                CreatorId   = booking.Member2Id,
+                                NotiType    = "1",
+                                DocNo       = booking.Id,
+                                Description = $"Buổi tư vấn từ {startStr} đến {endStr} đã kết thúc. Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi"
+                            },
                         }
                     );
                 return ServiceResponse<string>.SuccessResponse("Đã hoàn thành buổi tư vấn");
@@ -448,14 +456,14 @@ namespace PPC.Service.Services
                     new NotificationCreateItem
                     {
                         CreatorId   = booking.CounselorId,
-                        NotiType    = "1",
+                        NotiType    = "2",
                         DocNo       = booking.Id,
                         Description = $"Một lịch tư vấn từ {startStr} đến {endStr} của bạn đã bị hủy"
                     },
                     new NotificationCreateItem
                     {
                         CreatorId   = booking.MemberId,
-                        NotiType    = "1",
+                        NotiType    = "2",
                         DocNo       = booking.Id,
                         Description = $"Bạn đã hủy một buổi tư vấn từ {startStr} đến {endStr} bạn được hoàn 50% số tiền tương đương {booking.Price / 2}VND"
                     }
@@ -566,7 +574,7 @@ namespace PPC.Service.Services
                             CreatorId   = booking.CounselorId,
                             NotiType    = "1",
                             DocNo       = booking.Id,
-                            Description = $"Một lịch tư vấn từ {startStr} đến {endStr} của bạn đã được thanh toán vào ví. Số dư mới: {counselor.Account.Wallet.Remaining}"
+                            Description = $"Một lịch tư vấn từ {startStr} đến {endStr} của bạn đã được thanh toán vào ví. Bạn nhận được {booking.Price*7/10}VND . Số dư mới: {counselor.Account.Wallet.Remaining}"
                         },
                 }
                 );

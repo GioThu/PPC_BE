@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using AutoMapper.Execution;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
@@ -26,19 +28,29 @@ namespace PPC.Service.Services
         private readonly IWalletRepository _walletRepository;
         private readonly IMapper _mapper;
         private readonly ISysTransactionRepository _sysTransactionRepository;
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IMemberRepository _memberRepository;
+        private readonly ICounselorRepository _counselorRepository;
+
 
         public DepositService(
             IAccountRepository accountRepository,
             IDepositRepository depositRepository,
             IWalletRepository walletRepository,
             IMapper mapper,
-            ISysTransactionRepository sysTransactionRepository)
+            ISysTransactionRepository sysTransactionRepository,
+            IServiceScopeFactory serviceScopeFactory,
+            IMemberRepository memberRepository,
+            ICounselorRepository counselorRepository)
         {
             _accountRepository = accountRepository;
             _depositRepository = depositRepository;
             _walletRepository = walletRepository;
             _mapper = mapper;
             _sysTransactionRepository = sysTransactionRepository;
+            _scopeFactory = serviceScopeFactory;
+            _memberRepository = memberRepository;
+            _counselorRepository = counselorRepository;
         }
 
         public async Task<ServiceResponse<string>> CreateDepositAsync(string accountId, DepositCreateRequest request)
@@ -76,6 +88,22 @@ namespace PPC.Service.Services
             };
             await _sysTransactionRepository.CreateAsync(transaction);
 
+            var member = await _memberRepository.GetByAccountIdAsync(accountId);
+            NotificationBackground.FireAndForgetCreateMany(
+                _scopeFactory,
+                new List<NotificationCreateItem>
+                {
+                    new NotificationCreateItem
+                    {
+                        CreatorId   = member.Id,
+                        NotiType    = "7",
+                        DocNo       = deposit.Id,
+                        Description = $"Bạn đã nạp thành công số tiền {request.Total}VND. Số dư mới {wallet.Remaining}VND"
+                    },
+                 
+                }
+            );
+
             return ServiceResponse<string>.SuccessResponse("Giao dịch nạp tiền thành công");
         }
 
@@ -105,6 +133,7 @@ namespace PPC.Service.Services
                 CreateBy = wallet.Accounts.FirstOrDefault()?.Id,
                 CreateDate = Utils.Utils.GetTimeNow()
             };
+
 
             await _sysTransactionRepository.CreateAsync(transaction);
 
