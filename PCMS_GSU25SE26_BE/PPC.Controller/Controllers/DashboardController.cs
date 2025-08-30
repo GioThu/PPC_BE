@@ -36,5 +36,13 @@ namespace PPC.Controller.Controllers
             if (resp.Success) return Ok(resp);
             return BadRequest(resp);
         }
+
+        [HttpGet("overview-booking")]
+        public async Task<IActionResult> GetSummaryAdmin()
+        {
+            var resp = await _dashboardService.GetOverviewAsync();
+            if (resp.Success) return Ok(resp);
+            return BadRequest(resp);
+        }
     }
 }

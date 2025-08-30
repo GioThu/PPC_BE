@@ -64,5 +64,36 @@ namespace PPC.Service.Services
 
             return ServiceResponse<AdminDashboardDto>.SuccessResponse(dto);
         }
+
+        public async Task<ServiceResponse<AdminOverviewDto>> GetOverviewAsync()
+        {
+            var now = DateTime.UtcNow; // hoặc DateTime.Now nếu dùng local time
+            var firstDay = new DateTime(now.Year, now.Month, 1);
+            var nextMonth = firstDay.AddMonths(1);
+
+            var raw = await _dashboardRepository.GetOverviewAsync(firstDay, nextMonth);
+
+            var dto = new AdminOverviewDto
+            {
+                TotalMembers = raw.TotalMembers,
+                NewMembersThisMonth = raw.NewMembersThisMonth,
+                TotalCounselors = raw.TotalCounselors,
+                NewCounselorsThisMonth = raw.NewCounselorsThisMonth,
+                TotalBookings = raw.TotalBookings,
+                BookingsThisMonth = raw.BookingsThisMonth,
+                BookingRevenue = raw.BookingRevenue,
+                BookingRevenueThisMonth = raw.BookingRevenueThisMonth,
+                TotalCoursesPurchased = raw.TotalCoursesPurchased,
+                CoursesPurchasedThisMonth = raw.CoursesPurchasedThisMonth,
+                CourseRevenue = raw.CourseRevenue,
+                CourseRevenueThisMonth = raw.CourseRevenueThisMonth,
+                TotalMemberships = raw.TotalMemberships,
+                MembershipsThisMonth = raw.MembershipsThisMonth,
+                MembershipRevenue = raw.MembershipRevenue,
+                MembershipRevenueThisMonth = raw.MembershipRevenueThisMonth
+            };
+
+            return ServiceResponse<AdminOverviewDto>.SuccessResponse(dto);
+        }
     }
 }

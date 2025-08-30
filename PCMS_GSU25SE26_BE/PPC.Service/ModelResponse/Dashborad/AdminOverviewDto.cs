@@ -4,38 +4,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PPC.Repository.Interfaces
+namespace PPC.Service.ModelResponse.Dashborad
 {
-    public interface IDashboardRepository
+    public class AdminOverviewDto
     {
-        Task<double> GetWalletRemainingByAccountIdAsync(string accountId);
-        Task<double> GetThisMonthIncomeByCounselorAsync(string counselorId);
-        Task<double> GetPendingPaymentByCounselorAsync(string counselorId);
-        Task<double> GetWithdrawnTotalByAccountIdAsync(string accountId);
-        Task<double> GetPendingDepositByAccountIdAsync(string accountId);
-        Task<(double currentBalance, double thisMonthIncome, double pendingPayment, double withdrawnTotal, double pendingDeposit, int totalBooking, int completedBooking, double revenue, double avgRating)> GetDashboardDataAsync();
-        Task<AdminOverviewRaw> GetOverviewAsync(DateTime firstDay, DateTime nextMonth);
-
-    }
-
-    public class AdminOverviewRaw
-    {
+        // Member
         public int TotalMembers { get; set; }
         public int NewMembersThisMonth { get; set; }
 
+        // Counselor
         public int TotalCounselors { get; set; }
         public int NewCounselorsThisMonth { get; set; }
 
+        // Booking (quy tắc tiền: status=6 bỏ, status=4 tính 1/2, còn lại full)
         public int TotalBookings { get; set; }
         public int BookingsThisMonth { get; set; }
         public double BookingRevenue { get; set; }
         public double BookingRevenueThisMonth { get; set; }
 
+        // Course (EnrollCourse)
         public int TotalCoursesPurchased { get; set; }
         public int CoursesPurchasedThisMonth { get; set; }
         public double CourseRevenue { get; set; }
         public double CourseRevenueThisMonth { get; set; }
 
+        // Membership (MemberMemberShip)
         public int TotalMemberships { get; set; }
         public int MembershipsThisMonth { get; set; }
         public double MembershipRevenue { get; set; }

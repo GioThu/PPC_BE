@@ -125,5 +125,115 @@ namespace PPC.Repository.Repositories
             return (currentBalance, thisMonthIncome, pendingPayment, withdrawnTotal, pendingDeposit,
                     totalBooking, completedBooking, revenue, avgRating);
         }
+
+
+
+        public async Task<AdminOverviewRaw> GetOverviewAsync(DateTime firstDay, DateTime nextMonth)
+        {
+            // MEMBERS (tuần tự)
+            var members = await _context.Members
+                .AsNoTracking()
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    NewThisMonth = g.Count(m => m.Account.CreateAt >= firstDay && m.Account.CreateAt < nextMonth)
+                })
+                .FirstOrDefaultAsync()
+                ?? new { Total = 0, NewThisMonth = 0 };
+
+            // COUNSELORS (tuần tự)
+            var counselors = await _context.Counselors
+                .AsNoTracking()
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    NewThisMonth = g.Count(c => c.Account.CreateAt >= firstDay && c.Account.CreateAt < nextMonth)
+                })
+                .FirstOrDefaultAsync()
+                ?? new { Total = 0, NewThisMonth = 0 };
+
+            // BOOKINGS (tuần tự) — status=6 bỏ, status=4 tính 1/2
+            var bookings = await _context.Bookings
+                .AsNoTracking()
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    ThisMonth = g.Count(b => b.CreateAt >= firstDay && b.CreateAt < nextMonth),
+                    Revenue = g.Sum(b =>
+                        b.Status == 6 ? (double?)0 :
+                        b.Status == 4 ? ((double?)(b.Price ?? 0) / 2) :
+                                        (double?)(b.Price ?? 0)
+                    ) ?? 0,
+                    RevenueThisMonth = g.Sum(b =>
+                        (b.CreateAt >= firstDay && b.CreateAt < nextMonth)
+                            ? (b.Status == 6 ? (double?)0 :
+                               b.Status == 4 ? ((double?)(b.Price ?? 0) / 2) :
+                                               (double?)(b.Price ?? 0))
+                            : 0
+                    ) ?? 0
+                })
+                .FirstOrDefaultAsync()
+                ?? new { Total = 0, ThisMonth = 0, Revenue = 0.0, RevenueThisMonth = 0.0 };
+
+            // ENROLL COURSE (tuần tự)
+            var courses = await _context.EnrollCourses
+                .AsNoTracking()
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    ThisMonth = g.Count(e => e.CreateDate >= firstDay && e.CreateDate < nextMonth),
+                    Revenue = g.Sum(e => (double?)(e.Price ?? 0)) ?? 0,
+                    RevenueThisMonth = g.Sum(e =>
+                        (e.CreateDate >= firstDay && e.CreateDate < nextMonth) ? (double?)(e.Price ?? 0) : 0
+                    ) ?? 0
+                })
+                .FirstOrDefaultAsync()
+                ?? new { Total = 0, ThisMonth = 0, Revenue = 0.0, RevenueThisMonth = 0.0 };
+
+            // MEMBERSHIP (tuần tự)
+            var memberships = await _context.MemberMemberShips
+                .AsNoTracking()
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    ThisMonth = g.Count(m => m.CreateDate >= firstDay && m.CreateDate < nextMonth),
+                    Revenue = g.Sum(m => (double?)(m.Price ?? 0)) ?? 0,
+                    RevenueThisMonth = g.Sum(m =>
+                        (m.CreateDate >= firstDay && m.CreateDate < nextMonth) ? (double?)(m.Price ?? 0) : 0
+                    ) ?? 0
+                })
+                .FirstOrDefaultAsync()
+                ?? new { Total = 0, ThisMonth = 0, Revenue = 0.0, RevenueThisMonth = 0.0 };
+
+            return new AdminOverviewRaw
+            {
+                TotalMembers = members.Total,
+                NewMembersThisMonth = members.NewThisMonth,
+
+                TotalCounselors = counselors.Total,
+                NewCounselorsThisMonth = counselors.NewThisMonth,
+
+                TotalBookings = bookings.Total,
+                BookingsThisMonth = bookings.ThisMonth,
+                BookingRevenue = bookings.Revenue,
+                BookingRevenueThisMonth = bookings.RevenueThisMonth,
+
+                TotalCoursesPurchased = courses.Total,
+                CoursesPurchasedThisMonth = courses.ThisMonth,
+                CourseRevenue = courses.Revenue,
+                CourseRevenueThisMonth = courses.RevenueThisMonth,
+
+                TotalMemberships = memberships.Total,
+                MembershipsThisMonth = memberships.ThisMonth,
+                MembershipRevenue = memberships.Revenue,
+                MembershipRevenueThisMonth = memberships.RevenueThisMonth
+            };
+        }
+
     }
 }
