@@ -31,6 +31,8 @@ namespace PPC.Service.ModelResponse.CourseResponse
         public double? Price { get; set; }
         public int? Rank { get; set; }
         public double? Rating { get; set; }
+
+        public int? MyRating { get; set; }
         public int ProcessingCount { get; set; }
         public int ChapterCount { get; set; }
         public string? Comment { get; set; }

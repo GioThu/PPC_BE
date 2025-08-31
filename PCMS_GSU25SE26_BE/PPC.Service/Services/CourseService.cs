@@ -456,6 +456,8 @@ namespace PPC.Service.Services
             if (dto.Rank.HasValue && rankToMembershipName.TryGetValue(dto.Rank.Value, out var name))
             {
                 dto.FreeByMembershipName = name;
+                dto.Comment = enroll?.Feedback;
+                dto.MyRating = enroll?.Rating;
             }
 
             return ServiceResponse<MemberCourseDto>.SuccessResponse(dto);
