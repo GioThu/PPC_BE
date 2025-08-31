@@ -388,14 +388,11 @@ namespace PPC.Service.Services
                     return ServiceResponse<string>.ErrorResponse("Chưa đến giờ bắt đầu buổi tư vấn.");
                 booking.Status = status;
                 await _bookingRepository.UpdateAsync(booking);
-            }
 
-            if (booking.Status == 2)
-            {
                 BackgroundJob.Schedule<IBookingService>(
-                    x => x.AutoCompleteBookingIfStillPending(booking.Id),
-                    TimeSpan.FromDays(1)
-                );
+                   x => x.AutoCompleteBookingIfStillPending(booking.Id),
+                   TimeSpan.FromDays(1)
+               );
 
                 var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
                 var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
@@ -423,6 +420,8 @@ namespace PPC.Service.Services
                     );
                 return ServiceResponse<string>.SuccessResponse("Đã hoàn thành buổi tư vấn");
             }
+
+            
 
             else if (status == 4)
             {
@@ -563,6 +562,10 @@ namespace PPC.Service.Services
                     CreateBy = counselor.Account.Id,
                     CreateDate = Utils.Utils.GetTimeNow()
                 });
+
+                booking.Status = status;
+                await _bookingRepository.UpdateAsync(booking);
+
                 var startStr = booking.TimeStart?.ToString("HH:mm dd/MM/yyyy");
                 var endStr = booking.TimeEnd?.ToString("HH:mm dd/MM/yyyy") ?? string.Empty;
                 NotificationBackground.FireAndForgetCreateMany(
@@ -598,8 +601,6 @@ namespace PPC.Service.Services
                  
                 }
 
-
-                booking.Status = status;
             }
 
             await _bookingRepository.UpdateAsync(booking);
