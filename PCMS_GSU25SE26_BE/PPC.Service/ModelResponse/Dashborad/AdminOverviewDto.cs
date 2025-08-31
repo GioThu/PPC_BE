@@ -34,4 +34,12 @@ namespace PPC.Service.ModelResponse.Dashborad
         public double MembershipRevenue { get; set; }
         public double MembershipRevenueThisMonth { get; set; }
     }
+
+    public class WeeklyCountsDto
+    {
+        public string[] Labels { get; set; }
+        public int[] Bookings { get; set; }
+        public int[] Courses { get; set; }
+        public int[] Memberships { get; set; }
+    }
 }

@@ -273,17 +273,21 @@ namespace PPC.Service.Services
             }
             else
             {
-                counselors = new List<Counselor>();
+                // Nếu không có gợi ý category, đừng trả list rỗng -> fallback ngay
+                var fallback = await GetTopCounselorsFallbackAsync();
+                return ServiceResponse<List<CounselorWithSubDto>>.SuccessResponse(fallback);
             }
 
             var ranked = counselors.Select(c =>
             {
-                var subCategories = c.CounselorSubCategories
+                // 1) Lấy ĐỦ subcategory đang active của counselor (KHÔNG lọc theo categoryIds)
+                var allActiveSubCategories = c.CounselorSubCategories
                     .Where(cs =>
+                        cs.SubCategory != null &&
                         cs.SubCategory.Status == 1 &&
-                        cs.SubCategory.Category.Status == 1 &&
-                        categoryIds.Contains(cs.SubCategory.CategoryId))
-                    .GroupBy(sc => sc.SubCategory.Id)
+                        cs.SubCategory.Category != null &&
+                        cs.SubCategory.Category.Status == 1)
+                    .GroupBy(cs => cs.SubCategory.Id)
                     .Select(g => new SubCategoryDto
                     {
                         Id = g.Key,
@@ -291,20 +295,26 @@ namespace PPC.Service.Services
                     })
                     .ToList();
 
-                var matchedSubCategories = subCategories.Count;
+                // 2) Chỉ DÙNG ĐỂ TÍNH ĐIỂM: số subcategory thuộc các category được recommend
+                var matchedSubCategoriesCount = c.CounselorSubCategories
+                    .Count(cs =>
+                        cs.SubCategory != null &&
+                        cs.SubCategory.Status == 1 &&
+                        cs.SubCategory.Category != null &&
+                        cs.SubCategory.Category.Status == 1 &&
+                        categoryIds.Contains(cs.SubCategory.CategoryId));
 
-                // Tính score
-                double score =(c.Rating+1) * Math.Max(1,Math.Log(c.Reviews + 1)) * (1 + matchedSubCategories);
-
+                // 3) Score (LINQ-to-Objects nên Math.Log OK)
+                double score = (c.Rating + 1) * Math.Max(1, Math.Log(c.Reviews + 1)) * (1 + matchedSubCategoriesCount);
                 return new
                 {
                     Counselor = c,
-                    SubCategories = subCategories,
+                    SubCategoriesAll = allActiveSubCategories,
                     Score = score
                 };
             })
             .OrderByDescending(x => x.Score)
-            .Take(5)  
+            .Take(5)
             .Select(x => new CounselorWithSubDto
             {
                 Id = x.Counselor.Id,
@@ -318,7 +328,8 @@ namespace PPC.Service.Services
                 Phone = x.Counselor.Phone,
                 Status = x.Counselor.Status,
                 IsBookingAvailible = true,
-                SubCategories = x.SubCategories
+                // TRẢ VỀ ĐỦ subcategory active
+                SubCategories = x.SubCategoriesAll
             })
             .ToList();
 
@@ -329,6 +340,7 @@ namespace PPC.Service.Services
 
             return ServiceResponse<List<CounselorWithSubDto>>.SuccessResponse(ranked);
         }
+
 
         private async Task<List<CounselorWithSubDto>> GetTopCounselorsFallbackAsync()
         {
@@ -384,53 +396,67 @@ namespace PPC.Service.Services
             }
             else
             {
-                counselors = new List<Counselor>();
+                // Nếu không có rec category nào thì fallback sớm
+                var fb = await GetTopCounselorsFallbackAsync();
+                return ServiceResponse<List<CounselorWithSubDto>>.SuccessResponse(fb);
             }
 
-            var ranked = counselors.Select(c =>
-            {
-                var subCategories = c.CounselorSubCategories
-                    .Where(cs =>
-                        cs.SubCategory.Status == 1 &&
-                        cs.SubCategory.Category.Status == 1 &&
-                        categoryIds.Contains(cs.SubCategory.CategoryId))
-                    .GroupBy(sc => sc.SubCategory.Id)
-                    .Select(g => new SubCategoryDto
-                    {
-                        Id = g.Key,
-                        Name = g.First().SubCategory.Name
-                    })
-                    .ToList();
-
-                var matchedSubCategories = subCategories.Count;
-
-                double score = (c.Rating+1) * Math.Max(1, Math.Log(c.Reviews + 1)) * (1 + matchedSubCategories);
-
-                return new
+            var ranked = counselors
+                .Select(c =>
                 {
-                    Counselor = c,
-                    SubCategories = subCategories,
-                    Score = score
-                };
-            })
-            .OrderByDescending(x => x.Score)
-            .Take(5)
-            .Select(x => new CounselorWithSubDto
-            {
-                Id = x.Counselor.Id,
-                Fullname = x.Counselor.Fullname,
-                Avatar = x.Counselor.Avatar,
-                Description = x.Counselor.Description,
-                Price = x.Counselor.Price,
-                Rating = x.Counselor.Rating,
-                Reviews = x.Counselor.Reviews,
-                YearOfJob = x.Counselor.YearOfJob,
-                Phone = x.Counselor.Phone,
-                Status = x.Counselor.Status,
-                IsBookingAvailible = true,
-                SubCategories = x.SubCategories
-            })
-            .ToList();
+                    // 1) LẤY ĐỦ subcategory đang active (KHÔNG lọc theo categoryIds)
+                    var allActiveSubCategories = c.CounselorSubCategories
+                        .Where(cs =>
+                            cs.SubCategory != null &&
+                            cs.SubCategory.Status == 1 &&
+                            cs.SubCategory.Category != null &&
+                            cs.SubCategory.Category.Status == 1)
+                        .GroupBy(cs => cs.SubCategory.Id)
+                        .Select(g => new SubCategoryDto
+                        {
+                            Id = g.Key,
+                            Name = g.First().SubCategory.Name
+                        })
+                        .ToList();
+
+                    // 2) Đếm subcategory match categoryIds CHỈ để tính điểm
+                    var matchedSubCategoriesCount = c.CounselorSubCategories
+                        .Count(cs =>
+                            cs.SubCategory != null &&
+                            cs.SubCategory.Status == 1 &&
+                            cs.SubCategory.Category != null &&
+                            cs.SubCategory.Category.Status == 1 &&
+                            categoryIds.Contains(cs.SubCategory.CategoryId));
+
+                    // 3) Score
+                    double score = (c.Rating + 1) * Math.Max(1, Math.Log(c.Reviews + 1)) * (1 + matchedSubCategoriesCount);
+
+                    return new
+                    {
+                        Counselor = c,
+                        SubsAll = allActiveSubCategories,
+                        Score = score
+                    };
+                })
+                .OrderByDescending(x => x.Score)
+                .Take(5)
+                .Select(x => new CounselorWithSubDto
+                {
+                    Id = x.Counselor.Id,
+                    Fullname = x.Counselor.Fullname,
+                    Avatar = x.Counselor.Avatar,
+                    Description = x.Counselor.Description,
+                    Price = x.Counselor.Price,
+                    Rating = x.Counselor.Rating,
+                    Reviews = x.Counselor.Reviews,
+                    YearOfJob = x.Counselor.YearOfJob,
+                    Phone = x.Counselor.Phone,
+                    Status = x.Counselor.Status,
+                    IsBookingAvailible = true,
+                    // TRẢ VỀ ĐỦ subcategory active
+                    SubCategories = x.SubsAll
+                })
+                .ToList();
 
             if (!ranked.Any())
             {
@@ -439,5 +465,6 @@ namespace PPC.Service.Services
 
             return ServiceResponse<List<CounselorWithSubDto>>.SuccessResponse(ranked);
         }
+
     }
 }

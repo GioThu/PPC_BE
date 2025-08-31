@@ -128,110 +128,106 @@ namespace PPC.Repository.Repositories
 
 
 
-        public async Task<AdminOverviewRaw> GetOverviewAsync(DateTime firstDay, DateTime nextMonth)
+        public async Task<AdminOverviewRawEnvelope> GetOverviewRawOnceAsync(DateTime rangeStart, DateTime rangeEnd)
         {
-            // MEMBERS (tuần tự)
-            var members = await _context.Members
-                .AsNoTracking()
-                .GroupBy(_ => 1)
-                .Select(g => new
-                {
-                    Total = g.Count(),
-                    NewThisMonth = g.Count(m => m.Account.CreateAt >= firstDay && m.Account.CreateAt < nextMonth)
-                })
-                .FirstOrDefaultAsync()
-                ?? new { Total = 0, NewThisMonth = 0 };
+            // ===== All-time totals (aggregate) =====
+            // Members / Counselors
+            var totalMembers = await _context.Members.AsNoTracking().CountAsync();
+            var totalCounselors = await _context.Counselors.AsNoTracking().CountAsync();
 
-            // COUNSELORS (tuần tự)
-            var counselors = await _context.Counselors
-                .AsNoTracking()
+            // Bookings revenue with rule (6=0, 4=1/2, else full)
+            var bookingAgg = await _context.Bookings.AsNoTracking()
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {
                     Total = g.Count(),
-                    NewThisMonth = g.Count(c => c.Account.CreateAt >= firstDay && c.Account.CreateAt < nextMonth)
-                })
-                .FirstOrDefaultAsync()
-                ?? new { Total = 0, NewThisMonth = 0 };
-
-            // BOOKINGS (tuần tự) — status=6 bỏ, status=4 tính 1/2
-            var bookings = await _context.Bookings
-                .AsNoTracking()
-                .GroupBy(_ => 1)
-                .Select(g => new
-                {
-                    Total = g.Count(),
-                    ThisMonth = g.Count(b => b.CreateAt >= firstDay && b.CreateAt < nextMonth),
                     Revenue = g.Sum(b =>
                         b.Status == 6 ? (double?)0 :
                         b.Status == 4 ? ((double?)(b.Price ?? 0) / 2) :
-                                        (double?)(b.Price ?? 0)
-                    ) ?? 0,
-                    RevenueThisMonth = g.Sum(b =>
-                        (b.CreateAt >= firstDay && b.CreateAt < nextMonth)
-                            ? (b.Status == 6 ? (double?)0 :
-                               b.Status == 4 ? ((double?)(b.Price ?? 0) / 2) :
-                                               (double?)(b.Price ?? 0))
-                            : 0
+                                        ((double?)(b.Price ?? 0)*3/10)
                     ) ?? 0
                 })
-                .FirstOrDefaultAsync()
-                ?? new { Total = 0, ThisMonth = 0, Revenue = 0.0, RevenueThisMonth = 0.0 };
+                .FirstOrDefaultAsync() ?? new { Total = 0, Revenue = 0.0 };
 
-            // ENROLL COURSE (tuần tự)
-            var courses = await _context.EnrollCourses
-                .AsNoTracking()
+            // Courses
+            var courseAgg = await _context.EnrollCourses.AsNoTracking()
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {
                     Total = g.Count(),
-                    ThisMonth = g.Count(e => e.CreateDate >= firstDay && e.CreateDate < nextMonth),
-                    Revenue = g.Sum(e => (double?)(e.Price ?? 0)) ?? 0,
-                    RevenueThisMonth = g.Sum(e =>
-                        (e.CreateDate >= firstDay && e.CreateDate < nextMonth) ? (double?)(e.Price ?? 0) : 0
-                    ) ?? 0
+                    Revenue = g.Sum(e => (double?)(e.Price ?? 0)) ?? 0
                 })
-                .FirstOrDefaultAsync()
-                ?? new { Total = 0, ThisMonth = 0, Revenue = 0.0, RevenueThisMonth = 0.0 };
+                .FirstOrDefaultAsync() ?? new { Total = 0, Revenue = 0.0 };
 
-            // MEMBERSHIP (tuần tự)
-            var memberships = await _context.MemberMemberShips
-                .AsNoTracking()
+            // Memberships
+            var membershipAgg = await _context.MemberMemberShips.AsNoTracking()
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {
                     Total = g.Count(),
-                    ThisMonth = g.Count(m => m.CreateDate >= firstDay && m.CreateDate < nextMonth),
-                    Revenue = g.Sum(m => (double?)(m.Price ?? 0)) ?? 0,
-                    RevenueThisMonth = g.Sum(m =>
-                        (m.CreateDate >= firstDay && m.CreateDate < nextMonth) ? (double?)(m.Price ?? 0) : 0
-                    ) ?? 0
+                    Revenue = g.Sum(m => (double?)(m.Price ?? 0)) ?? 0
                 })
-                .FirstOrDefaultAsync()
-                ?? new { Total = 0, ThisMonth = 0, Revenue = 0.0, RevenueThisMonth = 0.0 };
+                .FirstOrDefaultAsync() ?? new { Total = 0, Revenue = 0.0 };
 
-            return new AdminOverviewRaw
+            var totals = new AdminTotalsRaw
             {
-                TotalMembers = members.Total,
-                NewMembersThisMonth = members.NewThisMonth,
+                TotalMembers = totalMembers,
+                TotalCounselors = totalCounselors,
+                TotalBookings = bookingAgg.Total,
+                BookingRevenue = bookingAgg.Revenue,
+                TotalCoursesPurchased = courseAgg.Total,
+                CourseRevenue = courseAgg.Revenue,
+                TotalMemberships = membershipAgg.Total,
+                MembershipRevenue = membershipAgg.Revenue
+            };
 
-                TotalCounselors = counselors.Total,
-                NewCounselorsThisMonth = counselors.NewThisMonth,
+            // ===== Items trong khoảng [rangeStart, rangeEnd) =====
+            var membersInRange = await _context.Members.AsNoTracking()
+                .Where(m => m.Account.CreateAt >= rangeStart && m.Account.CreateAt < rangeEnd)
+                .Select(m => new MemberMeta { CreateAt = m.Account.CreateAt })
+                .ToListAsync();
 
-                TotalBookings = bookings.Total,
-                BookingsThisMonth = bookings.ThisMonth,
-                BookingRevenue = bookings.Revenue,
-                BookingRevenueThisMonth = bookings.RevenueThisMonth,
+            var counselorsInRange = await _context.Counselors.AsNoTracking()
+                .Where(c => c.Account.CreateAt >= rangeStart && c.Account.CreateAt < rangeEnd)
+                .Select(c => new CounselorMeta { CreateAt = c.Account.CreateAt })
+                .ToListAsync();
 
-                TotalCoursesPurchased = courses.Total,
-                CoursesPurchasedThisMonth = courses.ThisMonth,
-                CourseRevenue = courses.Revenue,
-                CourseRevenueThisMonth = courses.RevenueThisMonth,
+            var bookingsInRange = await _context.Bookings.AsNoTracking()
+                .Where(b => b.CreateAt >= rangeStart && b.CreateAt < rangeEnd)
+                .Select(b => new BookingMeta
+                {
+                    CreateAt = b.CreateAt,
+                    Status = b.Status,
+                    Price = b.Price
+                })
+                .ToListAsync();
 
-                TotalMemberships = memberships.Total,
-                MembershipsThisMonth = memberships.ThisMonth,
-                MembershipRevenue = memberships.Revenue,
-                MembershipRevenueThisMonth = memberships.RevenueThisMonth
+            var coursesInRange = await _context.EnrollCourses.AsNoTracking()
+                .Where(e => e.CreateDate >= rangeStart && e.CreateDate < rangeEnd)
+                .Select(e => new EnrollCourseMeta
+                {
+                    CreateDate = e.CreateDate,
+                    Price = e.Price
+                })
+                .ToListAsync();
+
+            var membershipsInRange = await _context.MemberMemberShips.AsNoTracking()
+                .Where(m => m.CreateDate >= rangeStart && m.CreateDate < rangeEnd)
+                .Select(m => new MembershipMeta
+                {
+                    CreateDate = m.CreateDate,
+                    Price = m.Price
+                })
+                .ToListAsync();
+
+            return new AdminOverviewRawEnvelope
+            {
+                Totals = totals,
+                MembersInRange = membersInRange,
+                CounselorsInRange = counselorsInRange,
+                BookingsInRange = bookingsInRange,
+                CoursesInRange = coursesInRange,
+                MembershipsInRange = membershipsInRange
             };
         }
 

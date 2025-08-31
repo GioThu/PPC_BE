@@ -55,19 +55,33 @@ namespace PPC.Repository.Repositories
 
         public async Task<List<Counselor>> GetCounselorsByCategoriesAsync(List<string> categoryIds)
         {
-            return await _context.Counselors
-        .Where(c => c.Status == 1)
-        .Include(c => c.CounselorSubCategories)
-            .ThenInclude(cs => cs.SubCategory)
-            .ThenInclude(sc => sc.Category)
-        .Where(c => c.CounselorSubCategories.Any(cs =>
-            categoryIds.Contains(cs.SubCategory.CategoryId)
-            && cs.SubCategory.Status == 1
-            && cs.SubCategory.Category.Status == 1
-        ))
-        .ToListAsync();
-        }
+            if (categoryIds == null || categoryIds.Count == 0)
+                return new List<Counselor>();
 
+            // Bước 1: Lấy danh sách CounselorId thỏa điều kiện
+            var counselorIds = await _context.CounselorSubCategories
+                .Where(cs =>
+                    cs.Counselor.Status == 1 &&
+                    cs.SubCategory != null &&
+                    cs.SubCategory.Category != null &&
+                    categoryIds.Contains(cs.SubCategory.CategoryId))
+                .Select(cs => cs.CounselorId)
+                .Distinct()
+                .ToListAsync();
+
+            if (counselorIds.Count == 0) return new List<Counselor>();
+
+            var counselors = await _context.Counselors
+                .Where(c => counselorIds.Contains(c.Id))
+                .Include(c => c.CounselorSubCategories)
+                    .ThenInclude(cs => cs.SubCategory)
+                        .ThenInclude(sc => sc.Category)
+                .AsNoTracking()
+                .AsSplitQuery()
+                .ToListAsync();
+
+            return counselors;
+        }
         public async Task<List<Counselor>> GetTopCounselorsAsync(int topN)
         {
             var query = _context.Counselors

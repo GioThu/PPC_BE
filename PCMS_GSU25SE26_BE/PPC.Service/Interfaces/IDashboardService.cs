@@ -12,6 +12,7 @@ namespace PPC.Service.Interfaces
     {
         Task<ServiceResponse<DashboardSummaryDto>> GetSummaryAsync(string counselorId, string accountId);
         Task<ServiceResponse<AdminDashboardDto>> GetDashboardAsync();
-        Task<ServiceResponse<AdminOverviewDto>> GetOverviewAsync();
+        Task<ServiceResponse<List<AdminOverviewDto>>> GetOverviewLast3MonthsAsync();
+        Task<ServiceResponse<WeeklyCountsDto>> GetWeeklyCountsAsync(int year, int month);
     }
 }
