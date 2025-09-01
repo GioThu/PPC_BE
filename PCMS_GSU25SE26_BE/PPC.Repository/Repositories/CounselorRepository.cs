@@ -64,7 +64,8 @@ namespace PPC.Repository.Repositories
                     cs.Counselor.Status == 1 &&
                     cs.SubCategory != null &&
                     cs.SubCategory.Category != null &&
-                    categoryIds.Contains(cs.SubCategory.CategoryId))
+                    categoryIds.Contains(cs.SubCategory.CategoryId) &&
+                    cs.Status == 1)
                 .Select(cs => cs.CounselorId)
                 .Distinct()
                 .ToListAsync();
@@ -73,7 +74,9 @@ namespace PPC.Repository.Repositories
 
             var counselors = await _context.Counselors
                 .Where(c => counselorIds.Contains(c.Id))
-                .Include(c => c.CounselorSubCategories)
+                .Include(c => c.CounselorSubCategories
+                    .Where(cs => cs.Status == 1) 
+                )
                     .ThenInclude(cs => cs.SubCategory)
                         .ThenInclude(sc => sc.Category)
                 .AsNoTracking()
@@ -86,7 +89,9 @@ namespace PPC.Repository.Repositories
         {
             var query = _context.Counselors
                 .Where(c => c.Status == 1)
-                .Include(c => c.CounselorSubCategories)
+                .Include(c => c.CounselorSubCategories
+                    .Where(cs => cs.Status == 1)
+                )
                     .ThenInclude(cs => cs.SubCategory)
                         .ThenInclude(s => s.Category)
                 .OrderByDescending(c => c.Rating)
