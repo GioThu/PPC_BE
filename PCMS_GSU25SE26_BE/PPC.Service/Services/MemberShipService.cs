@@ -1,10 +1,11 @@
-﻿using PPC.Repository.Interfaces;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PPC.DAO.Models;
+using PPC.Repository.Interfaces;
 using PPC.Service.Interfaces;
 using PPC.Service.Mappers;
 using PPC.Service.ModelRequest.MemberShipRequest;
 using PPC.Service.ModelResponse;
 using PPC.Service.ModelResponse.MemberShipResponse;
-using PPC.DAO.Models;
 
 namespace PPC.Service.Services
 {
@@ -16,8 +17,10 @@ namespace PPC.Service.Services
         private readonly ISysTransactionRepository _sysTransactionRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IMemberMemberShipRepository _memberMemberShipRepository;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public MemberShipService(IMemberShipRepository memberShipRepository, IMemberRepository memberRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IAccountRepository accountRepository, IMemberMemberShipRepository memberMemberShipRepository)
+
+        public MemberShipService(IMemberShipRepository memberShipRepository, IMemberRepository memberRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IAccountRepository accountRepository, IMemberMemberShipRepository memberMemberShipRepository, IServiceScopeFactory scopeFactory)
         {
             _memberShipRepository = memberShipRepository;
             _memberRepository = memberRepository;
@@ -25,6 +28,7 @@ namespace PPC.Service.Services
             _sysTransactionRepository = sysTransactionRepository;
             _accountRepository = accountRepository;
             _memberMemberShipRepository = memberMemberShipRepository;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task<ServiceResponse<string>> CreateMemberShipAsync(MemberShipCreateRequest request)
@@ -151,6 +155,21 @@ namespace PPC.Service.Services
                 TransactionId = sysTransaction.Id,
                 Message = "Buy membership successfully"
             };
+
+            NotificationBackground.FireAndForgetCreateMany(
+                _scopeFactory,
+                new List<NotificationCreateItem>
+                {
+                    new NotificationCreateItem
+                    {
+                        CreatorId   = memberId,
+                        NotiType    = "1",
+                        DocNo       = memberId,
+                        Description = $"Bạn đã đặt mua gói {membership.MemberShipName} với giá {membership.Price}VND"
+                    },
+                }
+
+            );
 
             return ServiceResponse<MemberBuyMemberShipResponse>.SuccessResponse(response);
         }

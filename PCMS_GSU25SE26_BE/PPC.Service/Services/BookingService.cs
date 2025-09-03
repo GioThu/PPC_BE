@@ -845,7 +845,26 @@ namespace PPC.Service.Services
             try
             {
                 await _bookingRepository.UpdateMember2Async(bookingId, memberCode);
+
+                var booking = await _bookingRepository.GetByIdAsync(bookingId);
+
+
+                NotificationBackground.FireAndForgetCreateMany(
+                    _scopeFactory,
+                    new List<NotificationCreateItem>
+                    {
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = booking.Member2Id,
+                            NotiType    = "1",
+                            DocNo       = booking.Id,
+                            Description = $"Bạn đã có một lời mời cho 1 buổi tư vấn"
+                        }
+                    }
+
+                );
                 return ServiceResponse<string>.SuccessResponse("Đã cập nhật Người dùng 2 thành công");
+
             }
             catch (Exception ex)
             {

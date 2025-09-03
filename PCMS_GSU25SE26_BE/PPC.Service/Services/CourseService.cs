@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
+using AutoMapper.Execution;
+using Azure.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using PPC.DAO.Models;
 using PPC.Repository.Interfaces;
 using PPC.Repository.Repositories;
@@ -35,10 +38,12 @@ namespace PPC.Service.Services
         private readonly IProcessingRepository _processingRepository;
         private readonly ICoupleRepository _coupleRepository;
         private readonly IMemberShipService _memberShipService;
+        private readonly IServiceScopeFactory _scopeFactory;
 
 
 
-        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository, IAccountRepository accountRepository, IEnrollCourseRepository enrollCourseRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IMemberMemberShipRepository memberMemberShipRepository, IMemberRepository memberRepository, IProcessingRepository processingRepository, ICoupleRepository coupleRepository, IMemberShipService memberShipService)
+
+        public CourseService(ICourseRepository courseRepository, IMapper mapper, ICourseSubCategoryRepository courseSubCategoryRepository, ILectureRepository lectureRepository, IChapterRepository chapterRepository, IQuizRepository quizRepository, IMemberShipRepository memberShipRepository, IAccountRepository accountRepository, IEnrollCourseRepository enrollCourseRepository, IWalletRepository walletRepository, ISysTransactionRepository sysTransactionRepository, IMemberMemberShipRepository memberMemberShipRepository, IMemberRepository memberRepository, IProcessingRepository processingRepository, ICoupleRepository coupleRepository, IMemberShipService memberShipService, IServiceScopeFactory scopeFactory)
         {
             _courseRepository = courseRepository;
             _mapper = mapper;
@@ -56,6 +61,7 @@ namespace PPC.Service.Services
             _processingRepository = processingRepository;
             _coupleRepository = coupleRepository;
             _memberShipService = memberShipService;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task<ServiceResponse<string>> CreateCourseAsync(string creatorId, CourseCreateRequest request)
@@ -232,7 +238,7 @@ namespace PPC.Service.Services
                 dto.IsEnrolled = enrolled?.IsOpen == true;
                 dto.IsBuy = enrolled?.Status == 0 || enrolled?.Status == 1;
 
-                dto.IsFree = dto.Rank.HasValue && memberMaxRank >= dto.Rank.Value;
+                dto.IsFree = dto.Rank != 0 && memberMaxRank >= dto.Rank.Value;
 
                 if (dto.Rank.HasValue && rankToMembershipName.TryGetValue(dto.Rank.Value, out var name))
                 {
@@ -277,7 +283,7 @@ namespace PPC.Service.Services
             var activeMemberships = await _memberShipRepository.GetActiveMemberShipsByMemberIdAsync(member.Id);
 
             // Kiểm tra miễn phí
-            bool isFree = activeMemberships.Any(ms => ms.MemberShip.Rank >= course.Rank);
+            bool isFree = activeMemberships.Any(ms => ms.MemberShip.Rank >= course.Rank) && course.Rank != 0;
             double coursePrice = course.Price ?? 0;
             double finalPrice = 0;
 
@@ -325,7 +331,21 @@ namespace PPC.Service.Services
                 await _sysTransactionRepository.CreateAsync(transaction);
 
                 transactionId = transaction.Id;
-            
+
+            NotificationBackground.FireAndForgetCreateMany(
+                _scopeFactory,
+                new List<NotificationCreateItem>
+                {
+                    new NotificationCreateItem
+                    {
+                        CreatorId   = member.Id,
+                        NotiType    = "1",
+                        DocNo       = member.Id,
+                        Description = $"Bạn đã đặt mua khóa học {course.Name} với giá {enroll.Price}VND"
+                    },
+                }
+            );
+
 
             return ServiceResponse<EnrollCourseResultDto>.SuccessResponse(new EnrollCourseResultDto
             {
@@ -451,9 +471,9 @@ namespace PPC.Service.Services
                 .DefaultIfEmpty(0)
                 .Max();
 
-            dto.IsFree = dto.Rank.HasValue && memberMaxRank >= dto.Rank.Value;
+            dto.IsFree = dto.Rank != 0 && memberMaxRank >= dto.Rank.Value;
 
-            if (dto.Rank.HasValue && rankToMembershipName.TryGetValue(dto.Rank.Value, out var name))
+            if (dto.Rank != 0 && rankToMembershipName.TryGetValue(dto.Rank.Value, out var name))
             {
                 dto.FreeByMembershipName = name;
                 dto.Comment = enroll?.Feedback;
@@ -697,7 +717,7 @@ namespace PPC.Service.Services
             if (couple == null)
                 return ServiceResponse<List<CourseWithSubCategoryDto>>.ErrorResponse("Couple not found.");
 
-            Member member = null;
+            DAO.Models.Member member = null;
             if (!string.IsNullOrWhiteSpace(couple.Member))
             {
                 member = await _memberRepository.GetByIdAsync(couple.Member);
