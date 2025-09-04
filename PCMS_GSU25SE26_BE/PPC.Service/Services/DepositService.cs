@@ -31,6 +31,8 @@ namespace PPC.Service.Services
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IMemberRepository _memberRepository;
         private readonly ICounselorRepository _counselorRepository;
+        private readonly IServiceScopeFactory _notiscopeFactory;
+
 
 
         public DepositService(
@@ -41,7 +43,8 @@ namespace PPC.Service.Services
             ISysTransactionRepository sysTransactionRepository,
             IServiceScopeFactory serviceScopeFactory,
             IMemberRepository memberRepository,
-            ICounselorRepository counselorRepository)
+            ICounselorRepository counselorRepository,
+            IServiceScopeFactory notiscopeFactory)
         {
             _accountRepository = accountRepository;
             _depositRepository = depositRepository;
@@ -51,6 +54,7 @@ namespace PPC.Service.Services
             _scopeFactory = serviceScopeFactory;
             _memberRepository = memberRepository;
             _counselorRepository = counselorRepository;
+            _notiscopeFactory = notiscopeFactory;
         }
 
         public async Task<ServiceResponse<string>> CreateDepositAsync(string accountId, DepositCreateRequest request)
@@ -241,6 +245,25 @@ namespace PPC.Service.Services
             deposit.CancelReason = request.CancelReason;
             await _depositRepository.UpdateAsync(deposit);
 
+            if (deposit.Status == 2)
+            {
+                var counselorNoti = await _counselorRepository.GetByWalletIdAsync(deposit.WalletId);
+                NotificationBackground.FireAndForgetCreateMany(
+                    _scopeFactory,
+                    new List<NotificationCreateItem>
+                    {
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = counselorNoti.Id,
+                            NotiType    = "1",
+                            DocNo       = deposit.Id,
+                            Description = $"Bạn đã được duyệt đơn rút tiền với số tiền {deposit.Total}VND, Số tiền sẽ được chuyển vào số tài khoản của bạn. Nếu có bất kì vấn đề gì liên lạc đến mail: htxtrungkien2002@gmail.com"
+                        }
+              
+                    }
+
+                );
+            }
             return ServiceResponse<string>.SuccessResponse("Trạng thái giao dịch nạp tiền đã được cập nhật thành công");
         }
 

@@ -53,6 +53,20 @@ namespace PPC.Repository.Repositories
                 .FirstOrDefaultAsync(c => c.Id == counselorId);
         }
 
+        public async Task<Counselor> GetByWalletIdAsync(string walletId)
+        {
+            if (string.IsNullOrWhiteSpace(walletId))
+                return null;
+
+            return await _context.Counselors
+                .Include(c => c.Account)
+                    .ThenInclude(a => a.Wallet)
+                .AsNoTracking()
+                .Where(c => c.Account != null && c.Account.WalletId == walletId)
+                .OrderByDescending(c => c.Id) 
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<List<Counselor>> GetCounselorsByCategoriesAsync(List<string> categoryIds)
         {
             if (categoryIds == null || categoryIds.Count == 0)
