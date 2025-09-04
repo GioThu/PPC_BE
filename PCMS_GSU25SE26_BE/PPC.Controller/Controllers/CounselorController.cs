@@ -8,6 +8,7 @@ using PPC.Service.ModelRequest.WorkScheduleRequest;
 namespace PPC.Controller.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class CounselorController : ControllerBase
     {

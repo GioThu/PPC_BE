@@ -6,6 +6,7 @@ using PPC.Service.ModelRequest.PersonTypeRequest;
 namespace PPC.Controller.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class ResultPersonTypeController : ControllerBase
     {

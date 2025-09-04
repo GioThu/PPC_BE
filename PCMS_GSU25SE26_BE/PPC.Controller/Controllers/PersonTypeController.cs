@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.PersonTypeRequest;
 using PPC.Service.ModelResponse;
@@ -7,6 +8,7 @@ using PPC.Service.ModelResponse.PersonTypeResponse;
 namespace PPC.Controller.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class PersonTypeController : ControllerBase
     {

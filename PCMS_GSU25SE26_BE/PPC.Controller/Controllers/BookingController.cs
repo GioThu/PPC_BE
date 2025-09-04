@@ -315,12 +315,15 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize(Roles = "3")]
+
         [HttpGet("feedbacks/{counselorId}")]
         public async Task<IActionResult> GetFeedbacksForCounselor(string counselorId)
         {
             var result = await _bookingService.GetRatingFeedbackByCounselorAsync(counselorId);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
 
         [Authorize(Roles = "3")]
         [HttpGet("my-booking-discount")]
@@ -337,6 +340,7 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize(Roles = "3")]
         [HttpPut("assign-member2")]
         public async Task<IActionResult> AssignMember2([FromQuery] string bookingId, [FromQuery] string memberCode)
         {
@@ -349,6 +353,7 @@ namespace PPC.Controller.Controllers
 
             return BadRequest(response);
         }
+
 
         [HttpGet("invitations")]
         [Authorize(Roles = "3")] // Member role
@@ -401,6 +406,7 @@ namespace PPC.Controller.Controllers
             return response.Success ? Ok(response) : BadRequest(response);
         }
 
+        [Authorize(Roles = "2")]
         [HttpGet("my-dashboard")]
         public async Task<IActionResult> GetMyDashboard()
         {
@@ -413,6 +419,7 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize]
         [HttpPut("report-metadata")]
         public async Task<IActionResult> UpdateReportMetadata([FromBody] UpdateReportMetadataRequest request)
         {
@@ -431,6 +438,7 @@ namespace PPC.Controller.Controllers
             return BadRequest(response);
         }
 
+        [Authorize]
         [HttpPost("person-type-bundle")]
         public async Task<IActionResult> GetPersonTypeBundle([FromBody] GetPersonTypeBundleRequest request)
         {

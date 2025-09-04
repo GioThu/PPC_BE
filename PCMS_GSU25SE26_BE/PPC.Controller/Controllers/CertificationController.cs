@@ -8,6 +8,7 @@ using System.Security.Claims;
 namespace PPC.Controller.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class CertificationController : ControllerBase
     {

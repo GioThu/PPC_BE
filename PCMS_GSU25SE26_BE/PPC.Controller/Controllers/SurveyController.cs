@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PPC.Service.Interfaces;
 using PPC.Service.ModelRequest.SurveyRequest;
 using PPC.Service.Services;
@@ -6,6 +7,8 @@ using PPC.Service.Services;
 namespace PPC.Controller.Controllers
 {
     [ApiController]
+    [Authorize]
+
     [Route("api/[controller]")]
     public class SurveyController : ControllerBase
     {

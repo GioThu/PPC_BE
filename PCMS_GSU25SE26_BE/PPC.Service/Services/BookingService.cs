@@ -882,6 +882,24 @@ namespace PPC.Service.Services
             var success = await _bookingRepository.AcceptInvitationAsync(bookingId, memberId);
             if (!success)
                 return ServiceResponse<string>.ErrorResponse("Không tìm thấy lời mời");
+ 
+            
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            NotificationBackground.FireAndForgetCreateMany(
+                _scopeFactory,
+                new List<NotificationCreateItem>
+                {
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = booking.MemberId,
+                            NotiType    = "1",
+                            DocNo       = booking.Id,
+                            Description = $"Đối tác đã chấp nhận lời mời buổi tư vấn"
+                        }
+                }
+
+            );
+
 
             return ServiceResponse<string>.SuccessResponse("Chấp nhận lời mời thành công");
         }
@@ -890,7 +908,21 @@ namespace PPC.Service.Services
             var success = await _bookingRepository.DeclineInvitationAsync(bookingId, memberId);
             if (!success)
                 return ServiceResponse<string>.ErrorResponse("Không tìm thấy lời mời");
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            NotificationBackground.FireAndForgetCreateMany(
+                _scopeFactory,
+                new List<NotificationCreateItem>
+                {
+                        new NotificationCreateItem
+                        {
+                            CreatorId   = booking.MemberId,
+                            NotiType    = "1",
+                            DocNo       = booking.Id,
+                            Description = $"Đối tác đã tư chối lời mời buổi tư vấn"
+                        }
+                }
 
+            );
             return ServiceResponse<string>.SuccessResponse("Từ chối lời mời thành công");
         }
         public async Task<ServiceResponse<string>> CancelInvitationAsync(string bookingId, string creatorMemberId)
