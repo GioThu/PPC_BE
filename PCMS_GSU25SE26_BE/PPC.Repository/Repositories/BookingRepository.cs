@@ -238,6 +238,8 @@ namespace PPC.Repository.Repositories
                 throw new Exception("Đặt chỗ này đã có thành viên được mời");
 
             booking.Member2Id = $"Member_{memberCode}";
+            if (booking.MemberId == booking.Member2Id)
+                throw new Exception("Không thể mời chính bạn tham gia đặt chỗ này");
             booking.IsCouple = false;
 
             await _context.SaveChangesAsync();
